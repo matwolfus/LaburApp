@@ -5,12 +5,20 @@
 //{ path: '/contratador/nueva-pantalla', element: <NuevaPantalla /> },
 
 import { createBrowserRouter } from 'react-router-dom';
+import AppLayout from '../layouts/AppLayout';
 import Ofertas from '../pages/contratador/Ofertas';
 
 const router = createBrowserRouter([
+  // Rutas SIN header/navbar (login, registro...)
+  // { path: '/login', element: <Login /> },
+
+  // Rutas CON header/navbar
   {
-    path: '/contratador/ofertas',
-    element: <Ofertas />,
+    element: <AppLayout />,
+    children: [
+      { path: '/ofertas', element: <Ofertas /> },
+      // acá inicio, chats, perfil...
+    ],
   },
 ]);
 
