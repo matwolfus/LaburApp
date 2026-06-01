@@ -1,0 +1,117 @@
+:root {
+  --color-primary: #2D3B8E;
+  --color-bg:      #F4F6FB;
+  --color-muted:   #64748B;
+  --header-height: 64px;
+  --nav-height:    66px;
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: var(--color-bg);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+}
+
+@media (min-width: 600px) {
+  .app-shell { max-width: 560px; }
+}
+
+.app-shell__content {
+  padding-bottom: var(--nav-height);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #FFFFFF;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 2px 12px rgba(45, 59, 142, 0.06);
+}
+
+.app-header__logo {
+  height: 80px;
+  width: 80px;           /* ← ancho fijo */
+  object-fit: cover;     /* ← recorta el espacio sobrante */
+  object-position: center; /* ajustá a 'left' si el ícono queda cortado */
+  mix-blend-mode: multiply;
+}
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-header__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #CBD5E1;
+}
+
+.app-header__icon-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  height: var(--nav-height);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #FFFFFF;
+  border-top: 0.5px solid #E8ECF3;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -2px 12px rgba(45, 59, 142, 0.06);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  z-index: 50;
+}
+
+@media (min-width: 600px) {
+  .bottom-nav { max-width: 560px; }
+}
+
+.bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-decoration: none;
+  color: #94A3B8;
+  font-family: 'Nunito', sans-serif;
+  transition: color 0.15s;
+  flex: 1;
+  padding: 6px 0;
+}
+
+.bottom-nav__item--active {
+  color: var(--color-primary);
+}
+
+.bottom-nav__label {
+  font-size: 10px;
+  font-weight: 700;
+}
