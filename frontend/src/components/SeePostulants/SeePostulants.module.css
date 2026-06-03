@@ -1,0 +1,8 @@
+.wrapper {
+  background: #F4F6FB;
+  min-height: 100vh;
+  font-family: 'Nunito', sans-serif;
+  width: 100%;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}

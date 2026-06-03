@@ -1,1 +1,1 @@
-﻿// TODO: VerPostulantes page (contratador)
+﻿import { useParams } from 'react-router-dom'

@@ -1,0 +1,27 @@
+.wrapper {
+  padding: 16px 20px 14px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0 0 8px;
+  line-height: 1.25;
+  font-family: 'Nunito', sans-serif;
+}
+
+.date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 400;
+}
+
+.icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}

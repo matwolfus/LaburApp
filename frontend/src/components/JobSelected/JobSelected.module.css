@@ -1,0 +1,11 @@
+.wrapper {
+  background: var(--color-card);
+  margin-bottom: 8px;
+}
+
+.msg {
+  padding: 16px 20px;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-family: 'Nunito', sans-serif;
+}

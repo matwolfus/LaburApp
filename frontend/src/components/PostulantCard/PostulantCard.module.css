@@ -1,0 +1,129 @@
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  border: 0.5px solid #E8ECF3;
+  box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  font-family: 'Nunito', sans-serif;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-primary);
+  font-family: 'Nunito', sans-serif;
+}
+
+.location {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0 0 4px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 400;
+}
+
+.rating {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+}
+
+.reviews {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+.badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.badge {
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid var(--color-divider);
+  padding-top: 14px;
+}
+
+.profileBtn {
+  flex: 1;
+  border: 1.5px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  padding: 10px 22px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: background 0.15s, color 0.15s;
+  min-height: 40px;
+}
+
+.profileBtn:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.chatBtn {
+  background: var(--color-primary);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.chatBtn:hover {
+  opacity: 0.9;
+}
