@@ -41,4 +41,27 @@ router.get('/activas', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+
+
+  const jobId = req.params.id;
+
+
+  const job =
+    await service.getJobById(jobId);
+
+
+  if (!job) {
+
+
+    return res.status(404).json({
+      message: 'Trabajo no encontrado'
+    });
+  }
+
+
+  return res.status(200).json(job);
+});
+
+
 export default router;

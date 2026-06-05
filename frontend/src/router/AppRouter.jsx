@@ -17,4 +17,11 @@ const router = createBrowserRouter([
   // Rutas CON header/navbar
   {
     element: <AppLayout />,
-    childre
+    children: [
+      { path: '/ofertas', element: <Ofertas /> },
+      // acá inicio, chats, perfil...
+    ],
+  },
+]);
+
+export default router;

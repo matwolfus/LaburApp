@@ -1,20 +1,25 @@
+import { useState, useEffect } from 'react';
 import BackButton from '../BackButton'
 import JobSelected from '../JobSelected'
 import PostulantsArray from '../PostulantsArray'
 import styles from './SeePostulants.module.css'
+import { getTrabajoById } from '../../services/api';
 
 const SeePostulants = ({ JobID }) => {
-  const mockJob = {
-    id: JobID,
-    title: "Paseador de perros para fin de semana",
-    scheduled_at: "Sábado 12 de abril - 10:00 hs",
-    images: [{ id: 1, url: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=1200" }]
-  };
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getTrabajoById(JobID)
+      .then(setJob)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [JobID]);
 
   return (
     <div className={styles.wrapper}>
       <BackButton />
-      <JobSelected job={mockJob} />
+      {!loading && <JobSelected job={job} />}
       <PostulantsArray jobId={JobID} />
     </div>
   );

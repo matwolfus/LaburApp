@@ -1,6 +1,9 @@
 .wrapper {
-  background: var(--color-card);
-  margin-bottom: 8px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 8px;
 }
 
 .msg {

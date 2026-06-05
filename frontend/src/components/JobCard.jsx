@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router-dom';
 
 //El componente recibe un objeto job con todos los datos de un trabajo.
 export default function JobCard({ job }) {
+  const navigate = useNavigate();
 
-  const { title, scheduled_at, image_url, applicants_count } = job; //extrae de JOB en lugar de hacer const title = job.title ...
+  const { id, title, scheduled_at, image_url, applicants_count } = job; //extrae de JOB en lugar de hacer const title = job.title ...
   const date = new Date(scheduled_at);
   const formattedDate = date.toLocaleDateString('es-AR', {
     weekday: 'long', day: 'numeric', month: 'long',
@@ -36,7 +38,7 @@ export default function JobCard({ job }) {
           </div>
           <span className="job-card__count">{applicants_count} postulantes</span>
         </div>
-        <button className="job-card__btn">Ver postulantes</button>
+        <button className="job-card__btn" onClick={() => navigate(`/ofertas/${id}/postulantes`)}>Ver postulantes</button>
       </div>
     </div>
   );

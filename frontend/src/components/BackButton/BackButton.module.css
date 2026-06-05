@@ -5,6 +5,9 @@
   align-items: center;
   gap: 10px;
   border-bottom: 0.5px solid var(--color-divider);
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .backBtn {
@@ -20,8 +23,9 @@
 }
 
 .title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--color-primary);
-  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2f3685;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: -0.45px;
 }

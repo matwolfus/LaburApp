@@ -1,27 +1,27 @@
 .wrapper {
-  padding: 16px 20px 14px;
+  padding: 16px 32px 14px;
 }
 
 .title {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
-  color: var(--color-primary);
+  color: #2f3685;
   margin: 0 0 8px;
   line-height: 1.25;
-  font-family: 'Nunito', sans-serif;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .date {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--color-muted);
-  font-size: 13px;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 400;
+  gap: 8px;
+  color: #464651;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
 }
 
 .icon {
-  color: var(--color-primary);
   flex-shrink: 0;
+  font-size: 12px;
 }

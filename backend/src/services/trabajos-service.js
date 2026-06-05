@@ -14,4 +14,8 @@ export default class TrabajosService {
   async getActiveJobsAsync(employerId) {
     return await this.repository.getJobsByEmployerAndStatus(employerId, 'activa');
   }
+   async getJobById(jobId) {
+    return await this.repository.getJobById(jobId);
+  }
+
 }
