@@ -13,6 +13,7 @@
   max-width: 480px;
   margin: 0 auto;
   position: relative;
+  overflow-x: clip;
 }
 
 @media (min-width: 600px) {

@@ -1,0 +1,14 @@
+.wrapper {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 8px;
+}
+
+.msg {
+  padding: 16px 20px;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-family: 'Nunito', sans-serif;
+}

@@ -28,4 +28,46 @@ async getJobsByEmployerAndStatus(employerId, status) {
     
     return await this.db.queryAll(sql, [employerId, status]);
   }
+
+   async getJobById(jobId) {
+
+
+    const sql = `
+      SELECT
+
+
+        t.id,
+        t.titulo           AS title,
+        t.programado_para  AS scheduled_at,
+
+
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object(
+              'id', i.id,
+              'url', i.url_imagen,
+              'order', i.orden
+            )
+          ) FILTER (WHERE i.id IS NOT NULL),
+          '[]'
+        ) AS images
+
+
+      FROM trabajos t
+
+
+      LEFT JOIN imagenes_trabajo i
+        ON i.id_trabajo = t.id
+
+
+      WHERE t.id = $1
+
+
+      GROUP BY t.id
+    `;
+
+
+    return await this.db.queryOne(sql, [jobId]);
+  }
+
 }

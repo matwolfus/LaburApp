@@ -1,0 +1,31 @@
+.header {
+  background: var(--color-card);
+  padding: 16px 20px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 0.5px solid var(--color-divider);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--color-primary);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2f3685;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: -0.45px;
+}
