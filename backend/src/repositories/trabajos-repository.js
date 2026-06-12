@@ -69,5 +69,6 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
     return await this.db.queryOne(sql, [jobId]);
   }
+  
 
 }
