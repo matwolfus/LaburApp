@@ -1,5 +1,4 @@
-﻿// frontend/src/services/api.js
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+﻿const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
 // GET /api/trabajos/:id
 export async function getTrabajoById(jobId) {
@@ -12,5 +11,26 @@ export async function getTrabajoById(jobId) {
 export async function getPostulantesByTrabajo(jobId) {
   const res = await fetch(`${BASE_URL}/postulaciones/trabajo/${jobId}`);
   if (!res.ok) throw new Error('Error al traer los postulantes');
+  return res.json();
+}
+
+// GET /api/categorias
+export async function getCategorias() {
+  const res = await fetch(`${BASE_URL}/categorias`);
+  if (!res.ok) throw new Error('Error al traer las categorías');
+  return res.json();
+}
+
+// GET /api/usuarios/recomendados
+export async function getRecomendados() {
+  const res = await fetch(`${BASE_URL}/usuarios/recomendados`);
+  if (!res.ok) throw new Error('Error al traer los recomendados');
+  return res.json();
+}
+
+// GET /api/trabajos/contratador?employer_id=X
+export async function getTrabajos(employerId) {
+  const res = await fetch(`${BASE_URL}/trabajos/contratador?employer_id=${employerId}`);
+  if (!res.ok) throw new Error('Error al traer los trabajos');
   return res.json();
 }

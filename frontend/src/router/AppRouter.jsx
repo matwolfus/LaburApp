@@ -8,6 +8,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Ofertas from '../pages/contratador/Ofertas';
 import VerPostulantes from '../pages/contratador/VerPostulantes';
+import InicioContratador from '../pages/contratador/InicioContratador';
+
 
 const router = createBrowserRouter([
   // Rutas SIN header/navbar (login, registro...)
@@ -19,6 +21,7 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { path: '/ofertas', element: <Ofertas /> },
+      {path: '/InicioContratador', element: <InicioContratador/>}
       // acá inicio, chats, perfil...
     ],
   },
