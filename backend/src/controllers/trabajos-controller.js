@@ -41,6 +41,24 @@ router.get('/activas', async (req, res) => {
   }
 });
 
+// ACÁ AGREGUÉ
+// GET /api/trabajos/contratador?employer_id=1  -> "Tus Trabajos" de la home
+// Debe declararse ANTES de '/:id' para que no lo capture la ruta con parámetro.
+router.get('/contratador', async (req, res) => {
+  try {
+    const { employer_id } = req.query;
+    if (!employer_id) {
+      return res.status(400).json({ error: 'employer_id is required' });
+    }
+    const jobs = await service.getJobsByEmployerAsync(parseInt(employer_id));
+    res.json(jobs);
+  } catch (error) {
+    console.error('Error in GET /contratador:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+// ACÁ YA NO
+
 router.get('/:id', async (req, res) => {
 
 
