@@ -57,7 +57,7 @@ export default function Ofertas() {
         <p className="ofertas-page__subtitle">Gestioná tus publicaciones</p>
       </div>
 
-      <SectionHeader title="Proximas Ofertas" onFilter={() => {}} />
+      <SectionHeader title="Proximas Ofertas" />
       <div className="job-list">
         {upcomingJobs.length === 0
           ? <p className="ofertas-empty">No tenés ofertas próximas.</p>
@@ -72,7 +72,7 @@ export default function Ofertas() {
         <button className="cta-card__btn">Publicar tarea</button>
       </div>
 
-      <SectionHeader title="Ofertas activas" onFilter={() => {}} />
+      <SectionHeader title="Ofertas activas" />
       <div className="job-list">
         {activeJobs.length === 0
           ? <p className="ofertas-empty">No tenés ofertas activas.</p>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CategoryCard from "../../components/CategoryCard/CategoryCard.jsx";
 import HomeJobCard from "../../components/HomeJobCard/HomeJobCard.jsx";
 import RecommendedCard from "../../components/RecommendedWorkersCard/RecommendedWorkersCard.jsx";
@@ -15,6 +16,8 @@ export default function InicioContratador() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -82,7 +85,7 @@ export default function InicioContratador() {
         <section aria-labelledby="jobs-heading">
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle} id="jobs-heading">Tus Trabajos</h2>
-            <button className={styles.linkBtn} onClick={() => console.log("Ver todas")}>Ver todas</button>
+            <button className={styles.linkBtn} onClick={() => navigate("/ofertas")}>Ver todas</button>
           </div>
           {jobs.length === 0 ? (
             <p className={styles.emptyText}>Todavía no publicaste ningún trabajo.</p>

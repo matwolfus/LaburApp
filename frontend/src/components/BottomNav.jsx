@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { Home, Search, Briefcase, MessageSquare, User } from 'lucide-react';
 
 const items = [
-  { to: '/',        icon: Home,          label: 'Inicio'   },
+  { to: '/InicioContratador', icon: Home,          label: 'Inicio'   },
   { to: '/buscar',  icon: Search,        label: 'Buscar'   },
   { to: '/ofertas', icon: Briefcase,     label: 'Trabajos' },
   { to: '/chats',   icon: MessageSquare, label: 'Chat'     },
