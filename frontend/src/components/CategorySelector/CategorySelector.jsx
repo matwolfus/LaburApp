@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getCategorias } from "../../services/api";
-import styles from "./CategoryChipsSelector.module.css";
+import styles from "./CategorySelector.module.css";
 
 const CategoryChipsSelector = ({ selectedId, onChange }) => {
   const [categories, setCategories] = useState([]);

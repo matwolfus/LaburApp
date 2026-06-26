@@ -62,7 +62,7 @@ export default function InicioContratador() {
           </h1>
         </section>
 
-        <button className={styles.btnPublish} onClick={() => console.log("Publicar necesidad")}>
+        <button className={styles.btnPublish} onClick={() => navigate("/nuevo-trabajo")}>
           Publicar una necesidad
           <span className={styles.btnPublishIcon} aria-hidden="true">＋</span>
         </button>

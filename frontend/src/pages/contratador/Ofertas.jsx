@@ -1,41 +1,20 @@
 ﻿import { useState, useEffect } from 'react';
 import JobCard from '../../components/JobCard';
 import SectionHeader from '../../components/SectionHeader';
+import { getOfertas } from '../../services/api';
 import '../../styles/ofertas.css';
 
 const EMPLOYER_ID = 2; // TODO: replace with logged-in user id from context
 
 export default function Ofertas() {
-  const [upcomingJobs, setUpcomingJobs] = useState([]);
-  const [activeJobs, setActiveJobs] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const [resUpcoming, resActive] = await Promise.all([
-          fetch(`/api/trabajos/proximas?employer_id=${EMPLOYER_ID}`),
-          fetch(`/api/trabajos/activas?employer_id=${EMPLOYER_ID}`),
-        ]);
-
-        if (!resUpcoming.ok || !resActive.ok) {
-          throw new Error('Failed to load jobs');
-        }
-
-        const [dataUpcoming, dataActive] = await Promise.all([
-          resUpcoming.json(),
-          resActive.json(),
-        ]);
-        //los pasa a .JSON para poder pasarlos a ARRAYS 
-        
-        
-        
-        setUpcomingJobs(dataUpcoming);
-        setActiveJobs(dataActive);
-        //los guarda en e estado 
-      
-    
+        setJobs(await getOfertas(EMPLOYER_ID));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -48,6 +27,11 @@ export default function Ofertas() {
 
   if (loading) return <div className="ofertas-loading">Cargando ofertas...</div>;
   if (error)   return <div className="ofertas-error">Error: {error}</div>;
+
+  // 'abierto' es el estado default de una changua recién publicada (todavía buscando
+  // candidatos), por eso se agrupa junto con 'proxima' en "Próximas Ofertas".
+  const upcomingJobs = jobs.filter((job) => ['abierto', 'proxima'].includes(job.estado));
+  const activeJobs = jobs.filter((job) => job.estado === 'activa');
 
   return (
     <div className="ofertas-page">

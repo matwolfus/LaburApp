@@ -34,3 +34,24 @@ export async function getTrabajos(employerId) {
   if (!res.ok) throw new Error('Error al traer los trabajos');
   return res.json();
 }
+
+// GET /api/trabajos/ofertas?employer_id=X
+export async function getOfertas(employerId) {
+  const res = await fetch(`${BASE_URL}/trabajos/ofertas?employer_id=${employerId}`);
+  if (!res.ok) throw new Error('Error al traer las ofertas');
+  return res.json();
+}
+
+// POST /api/trabajos
+export async function createTrabajo(data) {
+  const res = await fetch(`${BASE_URL}/trabajos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al crear el trabajo');
+  }
+  return res.json(); // { id }
+}

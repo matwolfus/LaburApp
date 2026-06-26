@@ -1,0 +1,160 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--color-bg);
+}
+
+.content {
+  flex: 1;
+  padding: 20px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.heading {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.5px;
+}
+
+.subheading {
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.card {
+  background: var(--color-card);
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.5px;
+}
+
+.textInput,
+.textarea {
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  background: #ececec;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+.textInput:focus,
+.textarea:focus,
+.budgetInput:focus {
+  outline: none;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.budgetInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: #ececec;
+  padding: 14px 16px;
+}
+
+.budgetPrefix {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+}
+
+.budgetInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  font-family: 'Inter', sans-serif;
+}
+
+.mapWrapper {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.photosCard {
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.photosIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
+  display: grid;
+  place-items: center;
+}
+
+.photosTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.photosSubtitle {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.errorText {
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--color-orange);
+  color: var(--color-card);
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submitBtn:not(:disabled):hover {
+  filter: brightness(0.95);
+}

@@ -17,6 +17,13 @@ export default class TrabajosService {
   }
 
   // ACÁ AGREGUÉ
+  // Todas las ofertas de un contratante (cualquier estado) para la pantalla "Ofertas".
+  async getAllJobsAsync(employerId) {
+    return await this.repository.getAllJobsByEmployer(employerId);
+  }
+  // ACÁ YA NO
+
+  // ACÁ AGREGUÉ
   async getJobsByEmployerAsync(employerId) {
     const jobs = await this.repository.getJobsByEmployer(employerId);
     return jobs.map(({ estado, ...job }) => ({

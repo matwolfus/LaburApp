@@ -15,13 +15,14 @@ export default function JobCard({ job }) {
   // Avatares de los postulantes (vienen del backend, hasta 3). El resto se cuenta en "+N".
   const avatars = Array.isArray(applicant_avatars) ? applicant_avatars : [];
   const count = Number(applicants_count) || 0;
-  const date = new Date(scheduled_at);
-  const formattedDate = date.toLocaleDateString('es-AR', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  }); //cambia el date en texto para la CARD
-  const formattedTime = date.toLocaleTimeString('es-AR', {
-    hour: '2-digit', minute: '2-digit',
-  });
+  // scheduled_at puede venir null (changua publicada sin fecha/hora todavía).
+  const date = scheduled_at ? new Date(scheduled_at) : null;
+  const formattedDate = date
+    ? date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+    : 'Sin fecha';
+  const formattedTime = date
+    ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+    : null;
  
   return (
     <div className="job-card">
@@ -42,7 +43,7 @@ export default function JobCard({ job }) {
           <h3 className="job-card__title">{title}</h3>
           <p className="job-card__date">
             <span className="job-card__date-icon">🕐</span>
-            {formattedDate} - {formattedTime} hs
+            {formattedDate}{formattedTime ? ` - ${formattedTime} hs` : ''}
           </p>
         </div>
       </div>

@@ -41,6 +41,38 @@ async getJobsByEmployerAndStatus(employerId, status) {
   }
 
   // ACÁ AGREGUÉ
+  // Todas las ofertas de un contratante (cualquier estado) para la pantalla "Ofertas".
+  // Misma forma que getJobsByEmployerAndStatus (la necesita JobCard), pero sin filtrar por
+  // estado, e incluyendo 'estado' para que el frontend agrupe en Próximas/Activas.
+  async getAllJobsByEmployer(employerId) {
+    const sql = `
+      SELECT
+        t.id,
+        t.titulo          AS title,
+        t.estado,
+        t.programado_para AS scheduled_at,
+        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+        (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
+        COALESCE((
+          SELECT json_agg(sub.url_avatar)
+          FROM (
+            SELECT u.url_avatar
+            FROM postulaciones p
+            JOIN usuarios u ON u.id = p.id_trabajador
+            WHERE p.id_trabajo = t.id
+            ORDER BY p.postulado_en ASC
+            LIMIT 3
+          ) sub
+        ), '[]') AS applicant_avatars
+      FROM trabajos t
+      WHERE t.id_contratante = $1
+      ORDER BY t.programado_para ASC
+    `;
+    return await this.db.queryAll(sql, [employerId]);
+  }
+  // ACÁ YA NO
+
+  // ACÁ AGREGUÉ
   // Trabajos de un contratante para la home ("Tus Trabajos").
   // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado }.
   // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
