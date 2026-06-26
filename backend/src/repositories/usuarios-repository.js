@@ -19,38 +19,42 @@ export default class UsuariosRepository {
 
     return await this.db.queryOne(sql, [email]);
 }
-    async createUser(
-        nombre,
-        apellido,
-        email,
-        contrasena
-    ) {
+   async createUser(
+    nombre,
+    apellido,
+    email,
+    telefono,
+    contrasena
+) {
 
-        const sql = `
-            INSERT INTO usuarios (
-                nombre_completo,
-                email,
-                contrasena,
-                creado_en,
-                actualizado_en
-            )
-            VALUES (
-                $1,
-                $2,
-                $3,
-                NOW(),
-                NOW()
-            )
-            RETURNING id
-        `;
+    const sql = `
+        INSERT INTO usuarios (
+            nombre_completo,
+            email,
+            telefono,
+            contrasena,
+            creado_en,
+            actualizado_en
+        )
+        VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            NOW(),
+            NOW()
+        )
+        RETURNING id
+    `;
 
-        return await this.db.queryReturnId(
-            sql,
-            [
-                `${nombre} ${apellido}`,
-                email,
-                contrasena
-            ]
-        );
-    }
+    return await this.db.queryReturnId(
+        sql,
+        [
+            `${nombre} ${apellido}`,
+            email,
+            telefono,
+            contrasena
+        ]
+    );
+}
 }
