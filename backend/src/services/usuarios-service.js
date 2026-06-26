@@ -74,6 +74,7 @@ async login(email, password) {
         nombre,
         apellido,
         email,
+        telefono,
         contrasena,
         confirmacion
     ) {
@@ -88,6 +89,17 @@ async login(email, password) {
                 errorCode: 'EMAIL_ALREADY_EXISTS'
             };
         }
+
+        const telefonoLimpio = telefono.replace(/\D/g, '');
+
+        if (telefonoLimpio.length !== 8) {
+
+            return {
+                success: false,
+                errorCode: 'INVALID_PHONE_LENGTH'
+            };
+        }
+
 
         if (contrasena !== confirmacion) {
 
@@ -119,6 +131,7 @@ async login(email, password) {
                 nombre,
                 apellido,
                 email,
+                telefono,
                 contrasena
             );
 

@@ -30,6 +30,7 @@ router.post('/register', async (req, res) => {
         nombre,
         apellido,
         email,
+        telefono,
         contrasena,
         confirmacion
     } = req.body;
@@ -39,6 +40,7 @@ router.post('/register', async (req, res) => {
             nombre,
             apellido,
             email,
+            telefono,
             contrasena,
             confirmacion
         );
