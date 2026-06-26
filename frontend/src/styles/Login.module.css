@@ -1,0 +1,215 @@
+.container {
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 16px 40px;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* ── Icon ─────────────────────────────────────────── */
+.iconWrapper {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--color-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(45, 59, 142, 0.10);
+  margin-bottom: 24px;
+}
+
+.iconWrapper svg {
+  width: 32px;
+  height: 32px;
+  stroke: var(--color-primary);
+  fill: none;
+  stroke-width: 1.8;
+}
+
+/* ── Header ───────────────────────────────────────── */
+.title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+}
+
+.subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-muted);
+  margin-bottom: 36px;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* ── Inputs ───────────────────────────────────────── */
+.inputWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 14px;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--color-muted);
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.input {
+  width: 100%;
+  padding: 15px 16px 15px 44px;
+  border-radius: var(--radius-card);
+  border: 0.5px solid var(--color-divider);
+  background: var(--color-card);
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(45, 59, 142, 0.12);
+}
+
+.inputPassword {
+  padding-right: 44px;
+}
+
+/* ── Eye button ───────────────────────────────────── */
+.eyeBtn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.eyeBtn svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--color-muted);
+  fill: none;
+  stroke-width: 1.8;
+}
+
+/* ── Forgot password ──────────────────────────────── */
+.forgotWrapper {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 28px;
+}
+
+.forgotBtn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+}
+
+/* ── Error ────────────────────────────────────────── */
+.errorMsg {
+  color: #EF4444;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+  max-width: 360px;
+}
+
+/* ── Submit button ────────────────────────────────── */
+.submitBtn {
+  width: 100%;
+  max-width: 360px;
+  padding: 15px;
+  border-radius: 50px;
+  border: none;
+  background: var(--color-orange);
+  color: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-bottom: 28px;
+  transition: opacity 0.15s;
+  min-height: 44px;
+}
+
+.submitBtn:hover {
+  opacity: 0.9;
+}
+
+.submitBtn:active {
+  opacity: 0.8;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Register link ────────────────────────────────── */
+.registerText {
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 360px) {
+  .container {
+    padding: 40px 12px 32px;
+  }
+}
