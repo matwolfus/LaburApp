@@ -1,6 +1,6 @@
 ﻿import { useState } from "react"
 import { useNavigate } from "react-router-dom" 
-import Banner from "../../assets/hero.png"
+import Banner from "../../assets/Banner.png"
 import "../../styles/Register.css"
 
 function validatePassword(pwd) {
