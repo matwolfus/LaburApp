@@ -15,32 +15,37 @@ export default class UsuariosService {
         this.repository = new UsuariosRepository();
     }
 
-async login(email, password) {
+    async login(email, password) {
 
-    const user =
-        await this.repository.getByEmail(email);
-
-    if (!user) {
-
+        const user =
+            await this.repository.getByEmail(email);
+        
+        if (!this.validateEmail(email)) {
         return {
             success: false,
-            errorCode: 'EMAIL_NOT_FOUND'
+            errorCode: 'INVALID_EMAIL'
         };
-    }
-
-    if (user.contrasena !== password) {
-
-        return {
-            success: false,
-            errorCode: 'INVALID_PASSWORD'
-        };
-    }
-
-    return {
-        success: true,
-        userId: user.id
-    };
 }
+        if (!user) {
+            return {
+                success: false,
+                errorCode: 'EMAIL_NOT_FOUND'
+            };
+        }
+
+        if (user.contrasena !== password) {
+            return {
+                success: false,
+                errorCode: 'INVALID_PASSWORD'
+            };
+        }
+
+        return {
+            success: true,
+            userId: user.id
+        };
+    }
+
     validatePassword(password) {
 
         const validation = {
@@ -69,6 +74,8 @@ async login(email, password) {
             rules: validation
         };
     }
+    
+    validateEmail(email) {return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);}
 
     async register(
         nombre,
@@ -79,8 +86,14 @@ async login(email, password) {
         confirmacion
     ) {
 
-        const existingUser =
-            await this.repository.getByEmail(email);
+        if (!this.validateEmail(email)) {
+        return {
+            success: false,
+            errorCode: 'INVALID_EMAIL'
+        };
+        }
+
+        const existingUser = await this.repository.getByEmail(email);
 
         if (existingUser) {
 
@@ -92,7 +105,7 @@ async login(email, password) {
 
         const telefonoLimpio = telefono.replace(/\D/g, '');
 
-        if (telefonoLimpio.length !== 8) {
+        if (telefonoLimpio.length !== 10) {
 
             return {
                 success: false,
