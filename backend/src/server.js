@@ -8,6 +8,8 @@ import postulacionesController from './controllers/postulaciones-controller.js';
 // ACÁ AGREGUÉ
 import categoriasRouter from './controllers/categorias-controller.js';
 import usuariosRouter from './controllers/usuarios-controller.js';
+import uploadsRouter from './controllers/uploads-controller.js';
+import { UPLOADS_DIR } from './middlewares/upload-middleware.js';
 // ACÁ YA NO
 
 
@@ -16,6 +18,7 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 app.use('/api/trabajos', trabajosRouter);
 
@@ -26,6 +29,8 @@ app.use('/api/postulaciones', postulacionesController);
 app.use('/api/categorias', categoriasRouter);
 
 app.use('/api/usuarios', usuariosRouter);
+
+app.use('/api/uploads', uploadsRouter);
 // ACÁ YA NO
 
 app.listen(port, () => console.log(`LaburApp backend running at http://localhost:${port}`));

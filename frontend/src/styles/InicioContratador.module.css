@@ -40,7 +40,7 @@
   border-radius: 999px;
   box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
 .btnPublish:hover {
@@ -63,7 +63,7 @@
   font-weight: 700;
   color: var(--color-primary);
   margin-bottom: 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
 .sectionHeader {
@@ -84,7 +84,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }
 
 .categoriesGrid {
@@ -110,5 +110,5 @@
   color: var(--color-muted);
   text-align: center;
   padding: 20px 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Nunito', sans-serif;
 }

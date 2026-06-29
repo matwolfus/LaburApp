@@ -21,6 +21,7 @@ const MapPicker = ({ lat, lng, onChange }) => {
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const onChangeRef = useRef(onChange);
+  const lastEmittedRef = useRef(null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -43,12 +44,15 @@ const MapPicker = ({ lat, lng, onChange }) => {
     const marker = L.marker([center.lat, center.lng], { draggable: true }).addTo(map);
     markerRef.current = marker;
 
-    const emitPosition = (latlng) => onChangeRef.current({ lat: latlng.lat, lng: latlng.lng });
+    const emitPosition = (latlng, isUserAction = false) => {
+      lastEmittedRef.current = { lat: latlng.lat, lng: latlng.lng };
+      onChangeRef.current({ lat: latlng.lat, lng: latlng.lng, isUserAction });
+    };
 
-    marker.on("dragend", () => emitPosition(marker.getLatLng()));
+    marker.on("dragend", () => emitPosition(marker.getLatLng(), true));
     map.on("click", (e) => {
       marker.setLatLng(e.latlng);
-      emitPosition(e.latlng);
+      emitPosition(e.latlng, true);
     });
 
     if (lat == null || lng == null) {
@@ -74,6 +78,21 @@ const MapPicker = ({ lat, lng, onChange }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (lat == null || lng == null) return;
+
+    const last = lastEmittedRef.current;
+    if (last && last.lat === lat && last.lng === lng) return;
+
+    const map = mapRef.current;
+    const marker = markerRef.current;
+    if (!map || !marker) return;
+
+    map.setView([lat, lng], 15);
+    marker.setLatLng([lat, lng]);
+    lastEmittedRef.current = { lat, lng };
+  }, [lat, lng]);
 
   return <div ref={containerRef} className={styles.map} />;
 };

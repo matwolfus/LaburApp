@@ -23,7 +23,7 @@ const DateTimePicker = ({
 
       <div className={styles.card}>
         <label className={styles.label}>
-          HORARIO
+          HORARIO <span className={styles.optional}>(Opcional)</span>
         </label>
 
         <input

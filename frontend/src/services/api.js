@@ -42,6 +42,22 @@ export async function getOfertas(employerId) {
   return res.json();
 }
 
+// POST /api/uploads
+export async function uploadFotos(files) {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('fotos', file));
+
+  const res = await fetch(`${BASE_URL}/uploads`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al subir las fotos');
+  }
+  return res.json(); // { urls }
+}
+
 // POST /api/trabajos
 export async function createTrabajo(data) {
   const res = await fetch(`${BASE_URL}/trabajos`, {

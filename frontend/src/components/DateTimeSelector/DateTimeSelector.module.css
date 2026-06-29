@@ -16,7 +16,12 @@
 
   font-size: 12px;
   font-weight: 700;
-  color: #2f3e8f;
+  color: var(--color-primary);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--color-muted);
 }
 
 .input {

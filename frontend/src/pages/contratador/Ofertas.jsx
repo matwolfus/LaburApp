@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import JobCard from '../../components/JobCard';
 import SectionHeader from '../../components/SectionHeader';
 import { getOfertas } from '../../services/api';
@@ -7,6 +8,7 @@ import '../../styles/ofertas.css';
 const EMPLOYER_ID = 2; // TODO: replace with logged-in user id from context
 
 export default function Ofertas() {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,7 +55,7 @@ export default function Ofertas() {
         <div className="cta-card__icon">✅</div>
         <h3 className="cta-card__title">¿Necesitás algo más?</h3>
         <p className="cta-card__text">Publicá una nueva tarea para recibir propuestas hoy.</p>
-        <button className="cta-card__btn">Publicar tarea</button>
+        <button className="cta-card__btn" onClick={() => navigate('/nuevo-trabajo')}>Publicar tarea</button>
       </div>
 
       <SectionHeader title="Ofertas activas" />

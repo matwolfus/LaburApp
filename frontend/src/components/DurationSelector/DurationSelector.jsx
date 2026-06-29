@@ -8,10 +8,11 @@ const DurationSelector = ({ value, onChange }) => {
       </label>
 
       <select
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
         className={styles.select}
       >
+        <option value="">Indefinida</option>
         <option value={30}>30 minutos</option>
         <option value={45}>45 minutos</option>
         <option value={60}>1 hora</option>
