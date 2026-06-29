@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(sed -i \"s/font-family: 'Inter', sans-serif;/font-family: 'Nunito', sans-serif;/g\" styles/NuevoTrabajo.module.css styles/InicioContratador.module.css components/CategorySelector/CategorySelector.module.css components/CategoryCard/CategoryCard.module.css components/HomeJobCard/HomeJobCard.module.css components/RecommendedWorkersCard/RecommendedWorkersCard.module.css)",
-      "Bash(sed -i \"s/font-family: 'Montserrat', sans-serif;/font-family: 'Nunito', sans-serif;/g\" components/BackButton/BackButton.module.css)",
-      "Bash(npx eslint *)"
-    ]
-  }
-}
