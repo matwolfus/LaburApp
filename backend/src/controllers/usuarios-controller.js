@@ -15,8 +15,8 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { nombre, apellido, email, telefono, contrasena, confirmacion } = req.body;
-    const result = await service.register(nombre, apellido, email, telefono, contrasena, confirmacion);
+    const { nombre, apellido, email, telefono, contrasena, confirmacion, rol } = req.body;
+    const result = await service.register(nombre, apellido, email, telefono, contrasena, confirmacion, rol);
 
     if (!result.success) {
         return res.status(400).json(result);
@@ -31,6 +31,20 @@ router.get('/recomendados', async (req, res) => {
     res.json(workers);
   } catch (error) {
     console.error('Error in GET /recomendados:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/usuarios/:id
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await service.getUserById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error in GET /:id:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -40,7 +40,8 @@ export default class UsuariosService {
 
         return {
             success: true,
-            userId: user.id
+            userId: user.id,
+            rol: user.rol
         };
     }
 
@@ -81,7 +82,8 @@ export default class UsuariosService {
         email,
         telefono,
         contrasena,
-        confirmacion
+        confirmacion,
+        rol
     ) {
 
         if (!this.validateEmail(email)) {
@@ -89,6 +91,13 @@ export default class UsuariosService {
             success: false,
             errorCode: 'INVALID_EMAIL'
         };
+        }
+
+        if (rol !== 'contratador' && rol !== 'trabajador') {
+            return {
+                success: false,
+                errorCode: 'INVALID_ROL'
+            };
         }
 
         const existingUser = await this.repository.getByEmail(email);
@@ -143,13 +152,18 @@ export default class UsuariosService {
                 apellido,
                 email,
                 telefono,
-                contrasena
+                contrasena,
+                rol
             );
 
         return {
             success: true,
             userId
         };
+    }
+
+    async getUserById(id) {
+        return await this.repository.getById(id);
     }
 
     async getRecommendedWorkersAsync() {
