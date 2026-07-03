@@ -124,6 +124,14 @@
   background-color: #0D9488;
 }
 
+/* Placeholder cuando el trabajo no tiene foto (o la URL falla) */
+.job-card__image--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
 .job-card__info { flex: 1; min-width: 0; padding-top: 2px; }
 
 .job-card__title {

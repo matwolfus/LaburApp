@@ -9,7 +9,14 @@ export default class Trabajo {
         id_localidad,
         presupuesto,
         estado,
-        programado_para
+        programado_para,
+        // ACÁ AGREGUÉ
+        prioridad,
+        duracion,
+        direccion,
+        lat,
+        lng
+        // ACÁ YA NO
     ) {
 
         this.id_contratante = id_contratante;
@@ -20,5 +27,12 @@ export default class Trabajo {
         this.presupuesto = presupuesto;
         this.estado = estado;
         this.programado_para = programado_para;
+        // ACÁ AGREGUÉ
+        this.prioridad = prioridad;
+        this.duracion = duracion;
+        this.direccion = direccion;
+        this.lat = lat;
+        this.lng = lng;
+        // ACÁ YA NO
     }
 }

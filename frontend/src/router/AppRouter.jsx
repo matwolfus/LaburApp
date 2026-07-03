@@ -8,17 +8,22 @@ import { createBrowserRouter } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
 import Ofertas from '../pages/contratador/Ofertas';
 import VerPostulantes from '../pages/contratador/VerPostulantes';
+import InicioContratador from '../pages/contratador/InicioContratador';
+import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
+
 
 const router = createBrowserRouter([
   // Rutas SIN header/navbar (login, registro...)
   // { path: '/login', element: <Login /> },
   { path: '/ofertas/:jobId/postulantes', element: <VerPostulantes /> },
+  { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
 
   // Rutas CON header/navbar
   {
     element: <AppLayout />,
     children: [
       { path: '/ofertas', element: <Ofertas /> },
+      {path: '/InicioContratador', element: <InicioContratador/>}
       // acá inicio, chats, perfil...
     ],
   },
