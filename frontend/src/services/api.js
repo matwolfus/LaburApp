@@ -21,6 +21,13 @@ export async function getCategorias() {
   return res.json();
 }
 
+// GET /api/usuarios/:id
+export async function getUsuarioById(id) {
+  const res = await fetch(`${BASE_URL}/usuarios/${id}`);
+  if (!res.ok) throw new Error('Error al traer el usuario');
+  return res.json();
+}
+
 // GET /api/usuarios/recomendados
 export async function getRecomendados() {
   const res = await fetch(`${BASE_URL}/usuarios/recomendados`);

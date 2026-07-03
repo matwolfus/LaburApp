@@ -5,6 +5,7 @@ import styles from "../../styles/Login.module.css"
 const ERROR_MESSAGES = {
   EMAIL_NOT_FOUND: "No existe ninguna cuenta con ese email.",
   INVALID_PASSWORD: "La contraseña es incorrecta.",
+  ROL_NO_SOPORTADO: "El inicio de sesión para trabajadores todavía no está disponible.",
   UNKNOWN: "Ocurrió un error. Intentá de nuevo.",
 }
 
@@ -73,7 +74,11 @@ export default function Login() {
 
       if (data.success) {
         localStorage.setItem("userId", data.userId)
-        navigate("/home")
+        if (data.rol === "contratador") {
+          navigate(`/InicioContratador/${data.userId}`)
+        } else {
+          setApiError("ROL_NO_SOPORTADO")
+        }
       } else {
         setApiError(data.errorCode ?? "UNKNOWN")
       }

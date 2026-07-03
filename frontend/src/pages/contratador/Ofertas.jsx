@@ -5,10 +5,9 @@ import SectionHeader from '../../components/SectionHeader';
 import { getOfertas } from '../../services/api';
 import '../../styles/ofertas.css';
 
-const EMPLOYER_ID = 2; // TODO: replace with logged-in user id from context
-
 export default function Ofertas() {
   const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,7 +15,7 @@ export default function Ofertas() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        setJobs(await getOfertas(EMPLOYER_ID));
+        setJobs(await getOfertas(Number(userId)));
       } catch (err) {
         setError(err.message);
       } finally {

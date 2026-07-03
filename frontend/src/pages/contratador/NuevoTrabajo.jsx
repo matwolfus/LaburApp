@@ -11,13 +11,11 @@ import { createTrabajo, uploadFotos } from "../../services/api";
 import { geocodeAddress, reverseGeocodeAddress } from "../../services/geocoding";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
-// TODO: reemplazar por el id del usuario logueado (auth context).
-// Mismo TODO que InicioContratador.jsx y Ofertas.jsx: hay que tocar los 3 lugares.
-const EMPLOYER_ID = 2;
 const MAX_FOTOS = 2;
 
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
 
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState(null);
@@ -146,7 +144,7 @@ export default function NuevoTrabajo() {
       }
 
       await createTrabajo({
-        id_contratante: EMPLOYER_ID,
+        id_contratante: Number(userId),
         id_categoria: idCategoria,
         titulo: titulo.trim(),
         descripcion: descripcion.trim() || undefined,
@@ -159,7 +157,7 @@ export default function NuevoTrabajo() {
         lng: lng ?? undefined,
         imagenes,
       });
-      navigate("/InicioContratador");
+      navigate(`/InicioContratador/${userId}`);
     } catch (err) {
       setError(err.message || "Error al publicar la tarea");
     } finally {

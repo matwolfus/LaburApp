@@ -21,6 +21,8 @@ const ERROR_MESSAGES = {
   PASSWORDS_DONT_MATCH: "Las contraseñas no coinciden.",
   INVALID_PASSWORD: "La contraseña no cumple los requisitos.",
   INVALID_PHONE_LENGTH: "El teléfono debe tener 10 dígitos.",
+  INVALID_ROL: "Elegí si sos contratador o trabajador.",
+  ROL_NO_SOPORTADO: "El inicio para trabajadores todavía no está disponible.",
 }
 
 const IconUser = () => (
@@ -74,6 +76,7 @@ export default function Register() {
     telefono: "",
     contrasena: "",
     confirmacion: "",
+    rol: "",
   })
 
   const [apiError, setApiError] = useState(null)
@@ -97,6 +100,11 @@ export default function Register() {
     }
   }
 
+  function handleRolChange(rol) {
+    setForm(prev => ({ ...prev, rol }))
+    setApiError(null)
+  }
+
   async function handleSubmit() {
     setLoading(true)
     setApiError(null)
@@ -111,7 +119,11 @@ export default function Register() {
       const data = await res.json()
 
       if (data.success) {
-        navigate("/home")
+        if (form.rol === "contratador") {
+          navigate(`/InicioContratador/${data.userId}`)
+        } else {
+          setApiError("ROL_NO_SOPORTADO")
+        }
       } else {
         if (data.errorCode === "INVALID_PASSWORD" && data.passwordValidation) {
           setPwdValidation(data.passwordValidation)
@@ -134,12 +146,13 @@ export default function Register() {
     form.nombre.trim() !== "" &&
     form.apellido.trim() !== "" &&
     emailValido &&
-    telefonoValido
+    telefonoValido &&
+    form.rol !== ""
 
   return (
     <div className="register-container">
       <div className="register-header">
-        <button className="back-btn" aria-label="Volver">←</button>
+        <button className="back-btn" aria-label="Volver" onClick={() => navigate(-1)}>←</button>
         <div>
           <h2>Crear Cuenta</h2>
           <p>Empezá a laburar o encontrar ayuda</p>
@@ -148,6 +161,27 @@ export default function Register() {
 
       <img src={Banner} alt="" />
       <h1>Súmate a la red de profesionales.</h1>
+
+      <div className="rol-selector" role="radiogroup" aria-label="¿Cómo querés usar LaburApp?">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={form.rol === "contratador"}
+          className={`rol-option ${form.rol === "contratador" ? "active" : ""}`}
+          onClick={() => handleRolChange("contratador")}
+        >
+          Soy contratador
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={form.rol === "trabajador"}
+          className={`rol-option ${form.rol === "trabajador" ? "active" : ""}`}
+          onClick={() => handleRolChange("trabajador")}
+        >
+          Soy trabajador
+        </button>
+      </div>
 
       <div className="input-wrapper">
         <span className="input-icon"><IconUser /></span>

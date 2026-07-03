@@ -26,6 +26,14 @@ const PostulantsArray = ({ jobId }) => {
       .finally(() => setLoading(false));
   }, [jobId]);
 
+  if (!loading && postulantes.length === 0) {
+    return (
+      <div className={styles.wrapper}>
+        <p className={styles.msg}>No hay postulantes aún.</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
@@ -36,9 +44,6 @@ const PostulantsArray = ({ jobId }) => {
         <button className={styles.filterBtn}>⇅ Filtrar</button>
       </div>
       {loading && <p className={styles.msg}>Cargando...</p>}
-      {!loading && postulantes.length === 0 && (
-        <p className={styles.msg}>No hay postulantes aún.</p>
-      )}
       {postulantes.map(p => (
         <PostulantCard key={p.id} postulant={p} />
       ))}

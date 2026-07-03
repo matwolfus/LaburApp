@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import CategoryCard from "../../components/CategoryCard/CategoryCard.jsx";
 import HomeJobCard from "../../components/HomeJobCard/HomeJobCard.jsx";
 import RecommendedCard from "../../components/RecommendedWorkersCard/RecommendedWorkersCard.jsx";
-import { getCategorias, getTrabajos, getRecomendados } from "../../services/api";
+import { getCategorias, getTrabajos, getRecomendados, getUsuarioById } from "../../services/api";
 import styles from "../../styles/InicioContratador.module.css";
 
-const EMPLOYER_ID = 2;
-
 export default function InicioContratador() {
-  const [user, setUser] = useState({ name: "Mati" });
+  const { userId } = useParams();
+  const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [recommended, setRecommended] = useState([]);
@@ -24,11 +23,13 @@ export default function InicioContratador() {
       setLoading(true);
       setError(null);
       try {
-        const [categoriesRes, jobsRes, recommendedRes] = await Promise.all([
+        const [userRes, categoriesRes, jobsRes, recommendedRes] = await Promise.all([
+          getUsuarioById(userId),
           getCategorias(),
-          getTrabajos(EMPLOYER_ID),
+          getTrabajos(Number(userId)),
           getRecomendados(),
         ]);
+        setUser(userRes);
         setCategories(categoriesRes);
         setJobs(jobsRes);
         setRecommended(recommendedRes);
@@ -57,7 +58,7 @@ export default function InicioContratador() {
       <main className={styles.content}>
         <section aria-label="Saludo">
           <h1 className={styles.greetingTitle}>
-            Hola, {user?.name}!<br />
+            Hola, {user?.nombre_completo}!<br />
             ¿Qué necesitas hoy?
           </h1>
         </section>
