@@ -13,6 +13,18 @@ import styles from "../../styles/NuevoTrabajo.module.css";
 
 const MAX_FOTOS = 2;
 
+// Formatea un string de dígitos (+ opcional coma decimal) con puntos de miles: "10000" -> "10.000"
+function formatPresupuesto(raw) {
+  const [entero, decimales] = raw.split(",");
+  const enteroConPuntos = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return decimales !== undefined ? `${enteroConPuntos},${decimales}` : enteroConPuntos;
+}
+
+// Convierte el valor formateado ("10.000,50") al número que espera el backend (10000.5)
+function parsePresupuesto(formatted) {
+  return Number(formatted.replace(/\./g, "").replace(",", "."));
+}
+
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
@@ -120,7 +132,7 @@ export default function NuevoTrabajo() {
       setError("Seleccioná una fecha.");
       return;
     }
-    const presupuestoNum = Number(presupuesto);
+    const presupuestoNum = parsePresupuesto(presupuesto);
     if (!presupuesto || isNaN(presupuestoNum) || presupuestoNum <= 0) {
       setError("Ingresá un presupuesto válido.");
       return;
@@ -130,7 +142,9 @@ export default function NuevoTrabajo() {
       return;
     }
 
-    const programado_para = new Date(`${fecha}T${hora || "00:00"}:00-03:00`).toISOString();
+    // Sin offset a propósito: la columna es "timestamp without time zone" y toda la app
+    // asume una sola timezone (Argentina), así que mandamos la hora tal cual la eligió el usuario.
+    const programado_para = `${fecha}T${hora || "00:00"}:00`;
 
     setSubmitting(true);
     setError(null);
@@ -216,12 +230,16 @@ export default function NuevoTrabajo() {
             <input
               id="presupuesto"
               className={styles.budgetInput}
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00"
               value={presupuesto}
-              onChange={(e) => setPresupuesto(e.target.value)}
+              onChange={(e) => {
+                let raw = e.target.value.replace(/[^\d,]/g, "");
+                const [entero, ...resto] = raw.split(",");
+                if (resto.length > 0) raw = `${entero},${resto.join("").slice(0, 2)}`;
+                setPresupuesto(raw === "" ? "" : formatPresupuesto(raw));
+              }}
             />
           </div>
 

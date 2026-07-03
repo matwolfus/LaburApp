@@ -16,11 +16,18 @@ export default function JobCard({ job }) {
   const avatars = Array.isArray(applicant_avatars) ? applicant_avatars : [];
   const count = Number(applicants_count) || 0;
   // scheduled_at puede venir null (changua publicada sin fecha/hora todavía).
+  // Viene como string local sin offset ("YYYY-MM-DDTHH:MM:SS"), así que new Date()
+  // la interpreta como hora local tal cual está escrita, sin corrimientos.
   const date = scheduled_at ? new Date(scheduled_at) : null;
+
+  // Cuando no se elige horario, NuevoTrabajo manda medianoche (00:00) como default:
+  // no hay forma de distinguir eso de un horario elegido a propósito, así que lo tratamos como "sin horario".
+  const tieneHorario = date && (date.getHours() !== 0 || date.getMinutes() !== 0);
+
   const formattedDate = date
     ? date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
     : 'Sin fecha';
-  const formattedTime = date
+  const formattedTime = tieneHorario
     ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
     : null;
  

@@ -119,6 +119,7 @@ export default function Register() {
       const data = await res.json()
 
       if (data.success) {
+        localStorage.setItem("userId", data.userId)
         if (form.rol === "contratador") {
           navigate(`/InicioContratador/${data.userId}`)
         } else {
