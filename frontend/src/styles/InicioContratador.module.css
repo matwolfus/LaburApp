@@ -1,0 +1,114 @@
+/* frontend/src/styles/InicioContratador.module.css */
+
+.homeScreen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--color-bg);
+}
+
+.content {
+  flex: 1;
+  padding: 16px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.greetingTitle {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-primary);
+  letter-spacing: -0.5px;
+}
+
+.btnPublish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--color-orange);
+  color: var(--color-card);
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+}
+
+.btnPublish:hover {
+  filter: brightness(0.95);
+}
+
+.btnPublishIcon {
+  width: 26px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 14px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.sectionHeader .sectionTitle {
+  margin-bottom: 0;
+}
+
+.linkBtn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+}
+
+.categoriesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.jobsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recommendedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.emptyText {
+  font-size: 13px;
+  color: var(--color-muted);
+  text-align: center;
+  padding: 20px 0;
+  font-family: 'Nunito', sans-serif;
+}

@@ -1,5 +1,4 @@
-﻿import UsuariosRepository from '../repositories/usuarios-repository.js';
-
+import UsuariosRepository from '../repositories/usuarios-repository.js';
 
 const PASSWORD_RULES = {
     MIN_LENGTH: 8,
@@ -7,7 +6,6 @@ const PASSWORD_RULES = {
     REQUIRE_NUMBER: true,
     REQUIRE_SPECIAL_CHARACTER: true
 };
-
 
 export default class UsuariosService {
 
@@ -19,7 +17,7 @@ export default class UsuariosService {
 
         const user =
             await this.repository.getByEmail(email);
-        
+
         if (!this.validateEmail(email)) {
         return {
             success: false,
@@ -74,7 +72,7 @@ export default class UsuariosService {
             rules: validation
         };
     }
-    
+
     validateEmail(email) {return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);}
 
     async register(
@@ -152,5 +150,12 @@ export default class UsuariosService {
             success: true,
             userId
         };
+    }
+
+    async getRecommendedWorkersAsync() {
+        const workers = await this.repository.getRecommendedWorkers();
+        // Refuerzo del contrato: rating siempre number (el ::float ya lo asegura,
+        // pero esto evita que una regresión en la query rompa rating.toFixed(1)).
+        return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
     }
 }

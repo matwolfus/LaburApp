@@ -1,0 +1,38 @@
+.container {
+  display: flex;
+  gap: 12px;
+}
+
+.card {
+  flex: 1;
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 12px;
+
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.input {
+  width: 100%;
+  border: none;
+  background: transparent;
+
+  font-size: 16px;
+  color: #4b5563;
+}
+
+.input:focus {
+  outline: none;
+}

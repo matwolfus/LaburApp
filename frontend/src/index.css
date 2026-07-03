@@ -1,9 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --laburapp-primary: #2D3B8E;
-  --laburapp-orange:  #F97316;
-  --laburapp-bg:      #F4F6FB;
+ --color-primary:  #2D3B8E;
+  --color-orange:   #F97316;
+  --color-bg:       #F4F6FB;
+  --color-card:     #FFFFFF;
+  --color-cta-bg:   #EAF4FD;
+  --color-muted:    #64748B;
+  --color-avatar:   #9CA3AF;
+  --color-divider:  #EEF1F6;
 
   font-family: 'Nunito', sans-serif;
   line-height: 1.5;
@@ -13,7 +18,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; } 
 
 body {
   margin: 0;
