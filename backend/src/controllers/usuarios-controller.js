@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import UsuariosService from '../services/usuarios-service.js';
+import authMiddleware from '../middlewares/auth-middleware.js';
 
 const router = Router();
 const service = new UsuariosService();
@@ -31,6 +32,21 @@ router.get('/recomendados', async (req, res) => {
     res.json(workers);
   } catch (error) {
     console.error('Error in GET /recomendados:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/usuarios/me -> el usuario logueado (identidad tomada del token, no de la URL).
+// Debe declararse ANTES de '/:id' para que no lo capture la ruta con parámetro.
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await service.getUserById(req.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error('Error in GET /me:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

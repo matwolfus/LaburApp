@@ -8,20 +8,39 @@ import PostulacionesService
 import PostulacionEntity
     from './../entities/postulacion.js';
 
+import authMiddleware
+    from './../middlewares/auth-middleware.js';
+
+import TrabajosService
+    from './../services/trabajos-service.js';
+
 const router = Router();
 
 const service = new PostulacionesService();
+
+const trabajosService = new TrabajosService();
 
 
 // =========================================================
 // GET POSTULACIONES POR TRABAJO
 // =========================================================
 
-router.get('/trabajo/:idTrabajo', async (req, res) => {
+router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res) => {
 
     try {
 
         const idTrabajo = req.params.idTrabajo;
+
+        // Solo el dueño del trabajo puede ver sus postulantes.
+        const owner = await trabajosService.getJobOwnerAsync(idTrabajo);
+
+        if (owner === null) {
+            return res.status(404).json({ message: 'Trabajo no encontrado' });
+        }
+
+        if (Number(owner) !== req.userId) {
+            return res.status(403).json({ message: 'No autorizado' });
+        }
 
         const postulaciones =
             await service.getByTrabajoIdAsync(idTrabajo);
@@ -43,11 +62,22 @@ router.get('/trabajo/:idTrabajo', async (req, res) => {
 // GET COUNT POSTULACIONES
 // =========================================================
 
-router.get('/trabajo/:idTrabajo/count', async (req, res) => {
+router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res) => {
 
     try {
 
         const idTrabajo = req.params.idTrabajo;
+
+        // Solo el dueño del trabajo puede ver el conteo de sus postulantes.
+        const owner = await trabajosService.getJobOwnerAsync(idTrabajo);
+
+        if (owner === null) {
+            return res.status(404).json({ message: 'Trabajo no encontrado' });
+        }
+
+        if (Number(owner) !== req.userId) {
+            return res.status(403).json({ message: 'No autorizado' });
+        }
 
         const count =
             await service.getCountByTrabajoIdAsync(idTrabajo);
@@ -69,16 +99,23 @@ router.get('/trabajo/:idTrabajo/count', async (req, res) => {
 // CREAR POSTULACION
 // =========================================================
 
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
 
     try {
+
+        // Validar que el trabajo al que se postula exista (evita el 500 por foreign key).
+        const owner = await trabajosService.getJobOwnerAsync(req.body.id_trabajo);
+
+        if (owner === null) {
+            return res.status(404).json({ message: 'Trabajo no encontrado' });
+        }
 
         const entity = new PostulacionEntity(
 
             0,
 
             req.body.id_trabajo,
-            req.body.id_trabajador,
+            req.userId,        // id_trabajador: sale del token, NO del body
 
             req.body.precio_propuesto,
 
@@ -109,11 +146,28 @@ router.post('/', async (req, res) => {
 // DELETE POSTULACION
 // =========================================================
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req, res) => {
 
     try {
 
         const id = req.params.id;
+
+        // Solo el trabajador dueño de la postulación puede borrarla.
+        const postulacion = await service.getByIdAsync(id);
+
+        if (!postulacion) {
+
+            return res.status(404).json({
+                message: 'Postulacion no encontrada'
+            });
+        }
+
+        if (Number(postulacion.id_trabajador) !== req.userId) {
+
+            return res.status(403).json({
+                message: 'No autorizado'
+            });
+        }
 
         const rowsAffected =
             await service.deleteByIdAsync(id);

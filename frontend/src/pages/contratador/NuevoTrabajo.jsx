@@ -27,7 +27,6 @@ function parsePresupuesto(formatted) {
 
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
 
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState(null);
@@ -158,7 +157,6 @@ export default function NuevoTrabajo() {
       }
 
       await createTrabajo({
-        id_contratante: Number(userId),
         id_categoria: idCategoria,
         titulo: titulo.trim(),
         descripcion: descripcion.trim() || undefined,
@@ -171,7 +169,7 @@ export default function NuevoTrabajo() {
         lng: lng ?? undefined,
         imagenes,
       });
-      navigate(`/InicioContratador/${userId}`);
+      navigate("/inicio");
     } catch (err) {
       setError(err.message || "Error al publicar la tarea");
     } finally {

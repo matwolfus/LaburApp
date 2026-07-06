@@ -135,6 +135,14 @@ async getJobsByEmployerAndStatus(employerId, status) {
     return await this.db.queryOne(sql, [jobId]);
   }
 
+  // Devuelve el id del contratador dueño del trabajo (o null si no existe).
+  // Se usa para chequear propiedad antes de mostrar/tocar postulaciones.
+  async getOwnerId(jobId) {
+    const sql = `SELECT id_contratante FROM trabajos WHERE id = $1`;
+    const row = await this.db.queryOne(sql, [jobId]);
+    return row ? row.id_contratante : null;
+  }
+
   // ACÁ AGREGUÉ
   // Crea un trabajo. NO inserta 'estado' a propósito: usa el DEFAULT de la tabla ('abierto').
   async createJob(entity) {

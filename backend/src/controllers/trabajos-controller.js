@@ -3,6 +3,7 @@
 import { Router } from 'express';
 import TrabajosService from '../services/trabajos-service.js';
 import Trabajo from '../entities/trabajo.js';
+import authMiddleware from '../middlewares/auth-middleware.js';
 
 const router = Router();
 const service = new TrabajosService();
@@ -11,14 +12,10 @@ const service = new TrabajosService();
 // si viene llama al service para traer próximos, devuelve la lista, si algo explota devuelve error 500.
 // router.get('/activas'): Igual que proximas pero trae los activos.
 
-// GET /api/trabajos/proximas?employer_id=1
-router.get('/proximas', async (req, res) => {
+// GET /api/trabajos/proximas -> el contratador sale del token, no de la query.
+router.get('/proximas', authMiddleware, async (req, res) => {
   try {
-    const { employer_id } = req.query;
-    if (!employer_id) {
-      return res.status(400).json({ error: 'employer_id is required' });
-    }
-    const jobs = await service.getUpcomingJobsAsync(parseInt(employer_id));
+    const jobs = await service.getUpcomingJobsAsync(req.userId);
     res.json(jobs);
   } catch (error) {
     console.error('Error in GET /proximas:', error);
@@ -26,14 +23,10 @@ router.get('/proximas', async (req, res) => {
   }
 });
 
-// GET /api/trabajos/activas?employer_id=1
-router.get('/activas', async (req, res) => {
+// GET /api/trabajos/activas -> el contratador sale del token, no de la query.
+router.get('/activas', authMiddleware, async (req, res) => {
   try {
-    const { employer_id } = req.query;
-    if (!employer_id) {
-      return res.status(400).json({ error: 'employer_id is required' });
-    }
-    const jobs = await service.getActiveJobsAsync(parseInt(employer_id));
+    const jobs = await service.getActiveJobsAsync(req.userId);
     res.json(jobs);
   } catch (error) {
     console.error('Error in GET /activas:', error);
@@ -45,13 +38,9 @@ router.get('/activas', async (req, res) => {
 // GET /api/trabajos/ofertas?employer_id=1 -> pantalla "Ofertas": TODAS las publicaciones
 // del contratante (sin filtrar por estado), para que una changua recién publicada
 // ('abierto') aparezca ahí también, no solo 'proxima'/'activa'.
-router.get('/ofertas', async (req, res) => {
+router.get('/ofertas', authMiddleware, async (req, res) => {
   try {
-    const { employer_id } = req.query;
-    if (!employer_id) {
-      return res.status(400).json({ error: 'employer_id is required' });
-    }
-    const jobs = await service.getAllJobsAsync(parseInt(employer_id));
+    const jobs = await service.getAllJobsAsync(req.userId);
     res.json(jobs);
   } catch (error) {
     console.error('Error in GET /ofertas:', error);
@@ -63,13 +52,9 @@ router.get('/ofertas', async (req, res) => {
 // ACÁ AGREGUÉ
 // GET /api/trabajos/contratador?employer_id=1  -> "Tus Trabajos" de la home
 // Debe declararse ANTES de '/:id' para que no lo capture la ruta con parámetro.
-router.get('/contratador', async (req, res) => {
+router.get('/contratador', authMiddleware, async (req, res) => {
   try {
-    const { employer_id } = req.query;
-    if (!employer_id) {
-      return res.status(400).json({ error: 'employer_id is required' });
-    }
-    const jobs = await service.getJobsByEmployerAsync(parseInt(employer_id));
+    const jobs = await service.getJobsByEmployerAsync(req.userId);
     res.json(jobs);
   } catch (error) {
     console.error('Error in GET /contratador:', error);
@@ -81,12 +66,12 @@ router.get('/contratador', async (req, res) => {
 // ACÁ AGREGUÉ
 // POST /api/trabajos -> "Publicar tarea" (pantalla "Nuevo trabajo").
 // No choca con GET /:id: son métodos HTTP distintos.
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req, res) => {
   try {
     const b = req.body;
 
     const entity = new Trabajo(
-      b.id_contratante,
+      req.userId,        // id_contratante: sale del token, NO del body (evita falsear el dueño)
       b.id_categoria,
       b.titulo,
       b.descripcion,

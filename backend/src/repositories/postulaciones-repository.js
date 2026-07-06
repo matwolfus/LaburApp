@@ -68,6 +68,31 @@ export default class PostulacionesRepository {
         return returnArray;
     }
 
+    // Trae una postulación por su id (para chequear de quién es antes de borrarla).
+    getByIdAsync = async (id) => {
+
+        let returnEntity = null;
+
+        try {
+
+            const sql = `
+                SELECT id, id_trabajo, id_trabajador
+                FROM postulaciones
+                WHERE id = $1
+            `;
+
+            const result = await pool.query(sql, [id]);
+
+            returnEntity = result.rows[0] ?? null;
+
+        } catch (error) {
+
+            console.log(error);
+        }
+
+        return returnEntity;
+    }
+
     getCountByTrabajoIdAsync = async (idTrabajo) => {
 
         let returnEntity = null;

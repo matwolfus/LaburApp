@@ -1,5 +1,12 @@
 ﻿const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
+// Devuelve el header Authorization con el JWT guardado (si hay sesión).
+// Se usa en las requests que pegan a rutas protegidas del backend.
+function authHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 // GET /api/trabajos/:id
 export async function getTrabajoById(jobId) {
   const res = await fetch(`${BASE_URL}/trabajos/${jobId}`);
@@ -7,9 +14,11 @@ export async function getTrabajoById(jobId) {
   return res.json();
 }
 
-// GET /api/postulaciones/trabajo/:idTrabajo
+// GET /api/postulaciones/trabajo/:idTrabajo (protegida: solo el dueño del trabajo)
 export async function getPostulantesByTrabajo(jobId) {
-  const res = await fetch(`${BASE_URL}/postulaciones/trabajo/${jobId}`);
+  const res = await fetch(`${BASE_URL}/postulaciones/trabajo/${jobId}`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Error al traer los postulantes');
   return res.json();
 }
@@ -21,9 +30,11 @@ export async function getCategorias() {
   return res.json();
 }
 
-// GET /api/usuarios/:id
-export async function getUsuarioById(id) {
-  const res = await fetch(`${BASE_URL}/usuarios/${id}`);
+// GET /api/usuarios/me -> el usuario logueado (identidad tomada del token).
+export async function getMiUsuario() {
+  const res = await fetch(`${BASE_URL}/usuarios/me`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Error al traer el usuario');
   return res.json();
 }
@@ -35,16 +46,20 @@ export async function getRecomendados() {
   return res.json();
 }
 
-// GET /api/trabajos/contratador?employer_id=X
-export async function getTrabajos(employerId) {
-  const res = await fetch(`${BASE_URL}/trabajos/contratador?employer_id=${employerId}`);
+// GET /api/trabajos/contratador -> el contratador se toma del token, no de la query.
+export async function getTrabajos() {
+  const res = await fetch(`${BASE_URL}/trabajos/contratador`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Error al traer los trabajos');
   return res.json();
 }
 
-// GET /api/trabajos/ofertas?employer_id=X
-export async function getOfertas(employerId) {
-  const res = await fetch(`${BASE_URL}/trabajos/ofertas?employer_id=${employerId}`);
+// GET /api/trabajos/ofertas -> el contratador se toma del token, no de la query.
+export async function getOfertas() {
+  const res = await fetch(`${BASE_URL}/trabajos/ofertas`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Error al traer las ofertas');
   return res.json();
 }
@@ -69,7 +84,7 @@ export async function uploadFotos(files) {
 export async function createTrabajo(data) {
   const res = await fetch(`${BASE_URL}/trabajos`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(data),
   });
   if (!res.ok) {

@@ -7,7 +7,6 @@ import '../../styles/ofertas.css';
 
 export default function Ofertas() {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +14,7 @@ export default function Ofertas() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        setJobs(await getOfertas(Number(userId)));
+        setJobs(await getOfertas());
       } catch (err) {
         setError(err.message);
       } finally {

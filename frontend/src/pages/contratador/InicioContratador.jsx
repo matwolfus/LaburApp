@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CategoryCard from "../../components/CategoryCard/CategoryCard.jsx";
 import HomeJobCard from "../../components/HomeJobCard/HomeJobCard.jsx";
 import RecommendedCard from "../../components/RecommendedWorkersCard/RecommendedWorkersCard.jsx";
-import { getCategorias, getTrabajos, getRecomendados, getUsuarioById } from "../../services/api";
+import { getCategorias, getTrabajos, getRecomendados, getMiUsuario } from "../../services/api";
 import styles from "../../styles/InicioContratador.module.css";
 
 export default function InicioContratador() {
-  const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [categories, setCategories] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -24,9 +23,9 @@ export default function InicioContratador() {
       setError(null);
       try {
         const [userRes, categoriesRes, jobsRes, recommendedRes] = await Promise.all([
-          getUsuarioById(userId),
+          getMiUsuario(),
           getCategorias(),
-          getTrabajos(Number(userId)),
+          getTrabajos(),
           getRecomendados(),
         ]);
         setUser(userRes);
