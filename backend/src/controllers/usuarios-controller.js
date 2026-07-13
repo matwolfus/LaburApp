@@ -51,6 +51,30 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/:id/perfil', async (req, res) => {
+    try {
+
+        const perfil = await service.getPerfil(req.params.id);
+
+        if (!perfil) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        res.json(perfil);
+
+    } catch (error) {
+
+        console.error('Error in GET /:id/perfil:', error);
+
+        res.status(500).json({
+            error: 'Internal server error'
+        });
+
+    }
+});
+
 // GET /api/usuarios/:id
 router.get('/:id', async (req, res) => {
   try {

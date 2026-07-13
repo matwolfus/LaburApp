@@ -193,4 +193,20 @@ export default class UsuariosService {
         // pero esto evita que una regresión en la query rompa rating.toFixed(1)).
         return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
     }
+
+    async getPerfil(idUsuario) {
+        const perfil = await this.repository.getPerfil(idUsuario);
+    }
+
+    async updatePerfil(idUsuario, datos) {
+
+    const usuario = await this.repository.getUserById(idUsuario);
+
+    if (!usuario) {
+        return null;
+    }
+
+    return await this.repository.updatePerfil(idUsuario, datos);
+
+    }
 }

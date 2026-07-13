@@ -51,4 +51,153 @@ export default class UsuariosRepository {
         `;
         return await this.db.queryAll(sql, [limit]);
     }
+
+    async getPerfil(idUsuario) {
+
+        const usuario = await this.db.queryOne(`
+            SELECT
+                u.id,
+                u.nombre_completo,
+                u.url_avatar,
+                u.biografia,
+                u.verificado,
+                u.prom_calif_trabajador,
+                u.prom_calif_contratante,
+                u.creado_en,
+                l.nombre AS localidad
+            FROM usuarios u
+            LEFT JOIN localidades l
+                ON l.id = u.id_localidad
+            WHERE u.id = $1
+        `, [idUsuario]);
+
+        if (!usuario)
+            return null;
+
+        const contratos = await this.db.queryOne(`
+            SELECT
+                COUNT(*) FILTER (
+                    WHERE id_trabajador = $1
+                    AND estado = 'completado'
+                )::int AS trabajos_realizados,
+
+                COUNT(*) FILTER (
+                    WHERE id_contratante = $1
+                    AND estado = 'completado'
+                )::int AS trabajos_publicados
+
+            FROM contratos;
+        `, [idUsuario]);
+
+        const cantidadResenas = await this.db.queryOne(`
+            SELECT
+                COUNT(*)::int AS cantidad
+            FROM resenas
+            WHERE id_receptor = $1;
+        `, [idUsuario]);
+
+        const categorias = await this.db.queryAll(`
+            SELECT DISTINCT
+                c.nombre
+            FROM contratos co
+            INNER JOIN trabajos t
+                ON t.id = co.id_trabajo
+            INNER JOIN categorias c
+                ON c.id = t.id_categoria
+            WHERE co.id_trabajador = $1
+            ORDER BY c.nombre;
+        `, [idUsuario]);
+
+        const resenas = await this.db.queryAll(`
+            SELECT
+                r.id,
+                r.calificacion,
+                r.comentario,
+                r.creado_en,
+
+                u.id AS autor_id,
+                u.nombre_completo,
+                u.url_avatar
+
+            FROM resenas r
+
+            INNER JOIN usuarios u
+                ON u.id = r.id_autor
+
+            WHERE r.id_receptor = $1
+
+            ORDER BY r.creado_en DESC
+            LIMIT 10;
+        `, [idUsuario]);
+
+        return {
+            id: usuario.id,
+            nombreCompleto: usuario.nombre_completo,
+            avatar: usuario.url_avatar,
+            localidad: usuario.localidad,
+            verificado: usuario.verificado,
+            biografia: usuario.biografia,
+            miembroDesde: usuario.creado_en,
+
+            ratingTrabajador: usuario.prom_calif_trabajador,
+            ratingContratante: usuario.prom_calif_contratante,
+
+            trabajosRealizados: contratos.trabajos_realizados,
+            trabajosPublicados: contratos.trabajos_publicados,
+            cantidadResenas: cantidadResenas.cantidad,
+
+            categorias: categorias.map(c => c.nombre),
+
+            resenas: resenas.map(r => ({
+                id: r.id,
+                calificacion: r.calificacion,
+                comentario: r.comentario,
+                fecha: r.creado_en,
+                autor: {
+                    id: r.autor_id,
+                    nombre: r.nombre_completo,
+                    avatar: r.url_avatar
+                }
+            }))
+        };
+    }
+
+    async updatePerfil(idUsuario, datos) {
+
+    const {
+        nombreCompleto,
+        telefono,
+        biografia,
+        idLocalidad,
+        avatar
+    } = datos;
+
+    const result = await this.db.queryOne(`
+        UPDATE usuarios
+        SET
+            nombre_completo = $1,
+            telefono = $2,
+            biografia = $3,
+            id_localidad = $4,
+            url_avatar = $5
+        WHERE id = $6
+        RETURNING
+            id,
+            nombre_completo,
+            telefono,
+            biografia,
+            id_localidad,
+            url_avatar;
+    `, [
+        nombreCompleto,
+        telefono,
+        biografia,
+        idLocalidad,
+        avatar,
+        idUsuario
+    ]);
+
+    return result;
+}
+
 }
