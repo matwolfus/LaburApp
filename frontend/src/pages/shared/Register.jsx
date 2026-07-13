@@ -119,9 +119,10 @@ export default function Register() {
       const data = await res.json()
 
       if (data.success) {
+        localStorage.setItem("token", data.token)
         localStorage.setItem("userId", data.userId)
         if (form.rol === "contratador") {
-          navigate(`/InicioContratador/${data.userId}`)
+          navigate("/inicio")
         } else {
           setApiError("ROL_NO_SOPORTADO")
         }
@@ -192,6 +193,7 @@ export default function Register() {
           placeholder="Nombre"
           value={form.nombre}
           onChange={handleChange}
+          autoComplete="off"
         />
       </div>
 
@@ -203,6 +205,7 @@ export default function Register() {
           placeholder="Apellido"
           value={form.apellido}
           onChange={handleChange}
+          autoComplete="off"
         />
       </div>
 
@@ -214,6 +217,7 @@ export default function Register() {
           placeholder="Correo electrónico"
           value={form.email}
           onChange={handleChange}
+          autoComplete="off"
         />
       </div>
 
@@ -234,6 +238,7 @@ export default function Register() {
           placeholder="Teléfono"
           value={form.telefono}
           onChange={handleChange}
+          autoComplete="off"
         />
       </div>
 
@@ -253,6 +258,7 @@ export default function Register() {
           placeholder="Contraseña"
           value={form.contrasena}
           onChange={handleChange}
+          autoComplete="new-password"
         />
         <button
           className="eye-btn"
@@ -288,6 +294,7 @@ export default function Register() {
           placeholder="Confirmar contraseña"
           value={form.confirmacion}
           onChange={handleChange}
+          autoComplete="new-password"
         />
         <button
           className="eye-btn"

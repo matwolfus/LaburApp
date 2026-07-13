@@ -73,9 +73,10 @@ export default function Login() {
       const data = await res.json()
 
       if (data.success) {
+        localStorage.setItem("token", data.token)
         localStorage.setItem("userId", data.userId)
         if (data.rol === "contratador") {
-          navigate(`/InicioContratador/${data.userId}`)
+          navigate("/inicio")
         } else {
           setApiError("ROL_NO_SOPORTADO")
         }
@@ -113,6 +114,7 @@ export default function Login() {
           placeholder="Correo electrónico"
           value={form.email}
           onChange={handleChange}
+          autoComplete="off"
         />
       </div>
 
@@ -127,6 +129,7 @@ export default function Login() {
           placeholder="Contraseña"
           value={form.contrasena}
           onChange={handleChange}
+          autoComplete="new-password"
         />
         <button
           className={styles.eyeBtn}

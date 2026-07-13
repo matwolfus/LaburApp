@@ -2,10 +2,8 @@ import { NavLink } from 'react-router-dom';
 import { Home, Search, Briefcase, MessageSquare, User } from 'lucide-react';
 
 export default function BottomNav() {
-  const userId = localStorage.getItem('userId');
-
   const items = [
-    { to: `/InicioContratador/${userId}`, icon: Home,          label: 'Inicio'   },
+    { to: '/inicio', icon: Home,          label: 'Inicio'   },
     { to: '/buscar',  icon: Search,        label: 'Buscar'   },
     { to: '/ofertas', icon: Briefcase,     label: 'Trabajos' },
     { to: '/chats',   icon: MessageSquare, label: 'Chat'     },

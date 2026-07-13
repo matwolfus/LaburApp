@@ -14,6 +14,7 @@ import { UPLOADS_DIR } from './middlewares/upload-middleware.js';
 const app  = express();
 const port = process.env.PORT || 3000;
 
+// TODO: en producción restringir a { origin: process.env.FRONTEND_URL }
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(UPLOADS_DIR));

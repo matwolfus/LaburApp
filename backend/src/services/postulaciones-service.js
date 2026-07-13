@@ -16,6 +16,11 @@ export default class PostulacionesService {
         return postulaciones;
     }
 
+    getByIdAsync = async (id) => {
+
+        return await this.repository.getByIdAsync(id);
+    }
+
     getCountByTrabajoIdAsync = async (idTrabajo) => {
 
         const count =

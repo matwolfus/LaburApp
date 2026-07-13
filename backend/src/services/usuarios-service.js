@@ -1,4 +1,7 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import UsuariosRepository from '../repositories/usuarios-repository.js';
+import { JWT_SECRET, JWT_EXPIRES_IN } from '../configs/jwt-config.js';
 
 const PASSWORD_RULES = {
     MIN_LENGTH: 8,
@@ -31,15 +34,24 @@ export default class UsuariosService {
             };
         }
 
-        if (user.contrasena !== password) {
+        const passwordOk = await bcrypt.compare(password, user.contrasena);
+
+        if (!passwordOk) {
             return {
                 success: false,
                 errorCode: 'INVALID_PASSWORD'
             };
         }
 
+        const token = jwt.sign(
+            { userId: user.id, rol: user.rol },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+
         return {
             success: true,
+            token,
             userId: user.id,
             rol: user.rol
         };
@@ -146,18 +158,27 @@ export default class UsuariosService {
             };
         }
 
+        const contrasenaHash = await bcrypt.hash(contrasena, 10);
+
         const userId =
             await this.repository.createUser(
                 nombre,
                 apellido,
                 email,
                 telefono,
-                contrasena,
+                contrasenaHash,
                 rol
             );
 
+        const token = jwt.sign(
+            { userId, rol },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+
         return {
             success: true,
+            token,
             userId
         };
     }

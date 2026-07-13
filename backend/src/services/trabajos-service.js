@@ -44,6 +44,11 @@ export default class TrabajosService {
     return await this.repository.getJobById(jobId);
   }
 
+  // Devuelve el id del contratador dueño del trabajo (o null si el trabajo no existe).
+  async getJobOwnerAsync(jobId) {
+    return await this.repository.getOwnerId(jobId);
+  }
+
   // ACÁ AGREGUÉ
   // Crea un trabajo (POST de "Publicar tarea"). Valida con el mismo estilo de throw
   // que postulaciones-service y, si vienen, inserta las fotos en imagenes_trabajo.

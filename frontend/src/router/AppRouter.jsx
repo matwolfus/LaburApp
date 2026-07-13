@@ -6,6 +6,7 @@
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';
+import PrivateRoute from './PrivateRoute';
 import Ofertas from '../pages/contratador/Ofertas';
 import VerPostulantes from '../pages/contratador/VerPostulantes';
 import Register from '../pages/shared/Register';
@@ -17,20 +18,29 @@ import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
 const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/login" replace /> },
 
-  // Rutas SIN header/navbar (login, registro...)
-  // { path: '/login', element: <Login /> },
-  { path: '/ofertas/:jobId/postulantes', element: <VerPostulantes /> },
-  {path : '/registro', element: <Register /> },
-  {path: '/login', element: <Login />},
-  { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
+  // Rutas públicas (login, registro)
+  { path: '/registro', element: <Register /> },
+  { path: '/login', element: <Login /> },
 
-  // Rutas CON header/navbar
+  // Rutas privadas: requieren token, si no redirigen a /login.
+  // NOTA: hoy solo cubren el flujo de contratador (las únicas que existen).
+  // Cuando se sume el flujo de trabajador, esas rutas también hay que meterlas acá.
   {
-    element: <AppLayout />,
+    element: <PrivateRoute />,
     children: [
-      { path: '/ofertas', element: <Ofertas /> },
-      {path: '/InicioContratador/:userId', element: <InicioContratador/>}
-      // acá inicio, chats, perfil...
+      // Sin header/navbar
+      { path: '/ofertas/:jobId/postulantes', element: <VerPostulantes /> },
+      { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
+
+      // Con header/navbar
+      {
+        element: <AppLayout />,
+        children: [
+          { path: '/ofertas', element: <Ofertas /> },
+          { path: '/inicio', element: <InicioContratador /> },
+          // acá inicio, chats, perfil...
+        ],
+      },
     ],
   },
 ]);
