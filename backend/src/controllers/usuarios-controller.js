@@ -89,4 +89,33 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+router.patch('/me', authMiddleware, async (req, res) => {
+
+    try {
+
+        const perfilActualizado = await service.updatePerfil(
+            req.userId,
+            req.body
+        );
+
+        if (!perfilActualizado) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        res.json(perfilActualizado);
+
+    } catch (error) {
+
+        console.error('Error in PATCH /me:', error);
+
+        res.status(500).json({
+            error: 'Internal server error'
+        });
+
+    }
+
+});
+
 export default router;
