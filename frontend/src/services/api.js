@@ -93,3 +93,8 @@ export async function createTrabajo(data) {
   }
   return res.json(); // { id }
 }
+
+// Cierra la sesión del usuario eliminando el JWT guardado.
+export function logout() {
+  localStorage.removeItem("token");
+}
