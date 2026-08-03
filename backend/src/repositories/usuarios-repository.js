@@ -8,7 +8,7 @@ export default class UsuariosRepository {
 
     async getByEmail(email) {
         const sql = `
-            SELECT id, email, contrasena, rol
+            SELECT id, email, contrasena, ultimo_rol
             FROM usuarios
             WHERE email = $1
         `;
@@ -18,7 +18,7 @@ export default class UsuariosRepository {
     async createUser(nombre, apellido, email, telefono, contrasena, rol) {
         const sql = `
             INSERT INTO usuarios (
-                nombre_completo, email, telefono, contrasena, rol, creado_en, actualizado_en
+                nombre_completo, email, telefono, contrasena, ultimo_rol, creado_en, actualizado_en
             )
             VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
             RETURNING id
@@ -28,7 +28,7 @@ export default class UsuariosRepository {
 
     async getById(id) {
         const sql = `
-            SELECT id, nombre_completo, url_avatar, rol
+            SELECT id, nombre_completo, url_avatar, ultimo_rol
             FROM usuarios
             WHERE id = $1
         `;
@@ -42,10 +42,10 @@ export default class UsuariosRepository {
                 id,
                 nombre_completo                           AS name,
                 url_avatar                                AS photo_url,
-                biografia                                 AS description,
+                biografia_trabajador                      AS description,
                 COALESCE(prom_calif_trabajador, 0)::float AS rating
             FROM usuarios
-            WHERE rol = 'trabajador'
+            WHERE biografia_trabajador NOT NULL
             ORDER BY rating DESC
             LIMIT $1
         `;
@@ -59,7 +59,8 @@ export default class UsuariosRepository {
                 u.id,
                 u.nombre_completo,
                 u.url_avatar,
-                u.biografia,
+                u.biografia_trabajador,
+                u.biografia_contratante
                 u.verificado,
                 u.prom_calif_trabajador,
                 u.prom_calif_contratante,
@@ -136,7 +137,8 @@ export default class UsuariosRepository {
             avatar: usuario.url_avatar,
             localidad: usuario.localidad,
             verificado: usuario.verificado,
-            biografia: usuario.biografia,
+            biografia_contratante: usuario.biografia_contratante,
+            biografia_trabajador: usuario.biografia_trabajador,
             miembroDesde: usuario.creado_en,
 
             ratingTrabajador: usuario.prom_calif_trabajador,
@@ -167,7 +169,8 @@ export default class UsuariosRepository {
     const {
         nombreCompleto,
         telefono,
-        biografia,
+        biografia_contratante,
+        biografia_trabajador,
         idLocalidad,
         avatar
     } = datos;
@@ -177,10 +180,11 @@ export default class UsuariosRepository {
         SET
             nombre_completo = $1,
             telefono = $2,
-            biografia = $3,
-            id_localidad = $4,
-            url_avatar = $5
-        WHERE id = $6
+            biografia_contratante = $3,
+            biografia_trabajador = $4,
+            id_localidad = $5,
+            url_avatar = $6
+        WHERE id = $7
         RETURNING
             id,
             nombre_completo,
@@ -191,7 +195,8 @@ export default class UsuariosRepository {
     `, [
         nombreCompleto,
         telefono,
-        biografia,
+        biografia_contratante,
+        biografia_trabajador,
         idLocalidad,
         avatar,
         idUsuario
