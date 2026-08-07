@@ -44,7 +44,10 @@ export default class UsuariosService {
         }
 
         const token = jwt.sign(
-            { userId: user.id, rol: user.rol },
+            {
+                userId: user.id,
+                rol: user.ultimo_rol
+            },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -53,7 +56,7 @@ export default class UsuariosService {
             success: true,
             token,
             userId: user.id,
-            rol: user.rol
+            rol: user.ultimo_rol
         };
     }
 
@@ -195,12 +198,12 @@ export default class UsuariosService {
     }
 
     async getPerfil(idUsuario) {
-        const perfil = await this.repository.getPerfil(idUsuario);
+        return await this.repository.getPerfil(idUsuario);
     }
 
     async updatePerfil(idUsuario, datos) {
 
-    const usuario = await this.repository.getUserById(idUsuario);
+    const usuario = await this.repository.getById(idUsuario);
 
     if (!usuario) {
         return null;
