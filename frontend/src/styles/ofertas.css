@@ -193,6 +193,12 @@
   font-family: 'Nunito', sans-serif;
 }
 
+.job-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .job-card__btn {
   border: 1.5px solid var(--color-primary);
   background: transparent;
@@ -209,6 +215,16 @@
 }
 .job-card__btn:hover  { background: var(--color-primary); color: white; }
 .job-card__btn:active { opacity: 0.85; }
+
+/* Variante secundaria (botón "Detalle"): mismo tamaño, tono neutro */
+.job-card__btn--outline {
+  border-color: var(--color-muted);
+  color: var(--color-muted);
+}
+.job-card__btn--outline:hover {
+  background: var(--color-muted);
+  color: white;
+}
 
 /* ── CTA card ─────────────────────────────────────── */
 .cta-card {

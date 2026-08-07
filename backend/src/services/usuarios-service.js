@@ -34,7 +34,9 @@ export default class UsuariosService {
             };
         }
 
-        const passwordOk = await bcrypt.compare(password, user.contrasena);
+        // Filas viejas (cargadas antes de bcrypt) pueden tener contrasena NULL;
+        // bcrypt.compare tira si el hash no es un string, así que se corta antes.
+        const passwordOk = !!user.contrasena && await bcrypt.compare(password, user.contrasena);
 
         if (!passwordOk) {
             return {

@@ -8,7 +8,7 @@ export default class UsuariosRepository {
 
     async getByEmail(email) {
         const sql = `
-            SELECT id, email, contrasena, rol
+            SELECT id, email, contrasena, ultimo_rol AS rol
             FROM usuarios
             WHERE email = $1
         `;
@@ -18,7 +18,7 @@ export default class UsuariosRepository {
     async createUser(nombre, apellido, email, telefono, contrasena, rol) {
         const sql = `
             INSERT INTO usuarios (
-                nombre_completo, email, telefono, contrasena, rol, creado_en, actualizado_en
+                nombre_completo, email, telefono, contrasena, ultimo_rol, creado_en, actualizado_en
             )
             VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
             RETURNING id
@@ -28,7 +28,7 @@ export default class UsuariosRepository {
 
     async getById(id) {
         const sql = `
-            SELECT id, nombre_completo, url_avatar, rol
+            SELECT id, nombre_completo, url_avatar, ultimo_rol AS rol
             FROM usuarios
             WHERE id = $1
         `;
@@ -42,10 +42,10 @@ export default class UsuariosRepository {
                 id,
                 nombre_completo                           AS name,
                 url_avatar                                AS photo_url,
-                biografia                                 AS description,
+                biografia_trabajador                      AS description,
                 COALESCE(prom_calif_trabajador, 0)::float AS rating
             FROM usuarios
-            WHERE rol = 'trabajador'
+            WHERE ultimo_rol = 'trabajador'
             ORDER BY rating DESC
             LIMIT $1
         `;

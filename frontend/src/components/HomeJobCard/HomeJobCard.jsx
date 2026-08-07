@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Zap } from "lucide-react";
 import styles from "./HomeJobCard.module.css";
 
@@ -6,14 +7,28 @@ const TRUNCATE_AT = 60;
 
 const HomeJobCard = ({ job }) => {
   const [expanded, setExpanded] = useState(false);
-  const { title, description, status } = job;
+  const navigate = useNavigate();
+  const { id, title, description, status } = job;
 
   const desc = description ?? "";
   const isLong = desc.length > TRUNCATE_AT;
   const isPending = status === "PENDIENTE";
 
+  const goToDetalle = () => navigate(`/ofertas/${id}/detalle`);
+
   return (
-    <div className={styles.card}>
+    <div
+      className={styles.card}
+      role="button"
+      tabIndex={0}
+      onClick={goToDetalle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          goToDetalle();
+        }
+      }}
+    >
       <div className={styles.iconWrap}>
         <Zap className={styles.icon} aria-hidden="true" />
       </div>
@@ -30,7 +45,10 @@ const HomeJobCard = ({ job }) => {
         {isLong && (
           <button
             className={styles.expandBtn}
-            onClick={() => setExpanded(!expanded)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!expanded);
+            }}
           >
             {expanded ? "Ver menos" : "Ver más"}
           </button>

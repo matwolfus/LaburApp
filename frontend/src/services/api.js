@@ -93,3 +93,17 @@ export async function createTrabajo(data) {
   }
   return res.json(); // { id }
 }
+
+// PUT /api/trabajos/:id
+export async function updateTrabajo(jobId, data) {
+  const res = await fetch(`${BASE_URL}/trabajos/${jobId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al guardar los cambios');
+  }
+  return res.json(); // { id }
+}

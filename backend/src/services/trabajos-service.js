@@ -50,9 +50,9 @@ export default class TrabajosService {
   }
 
   // ACÁ AGREGUÉ
-  // Crea un trabajo (POST de "Publicar tarea"). Valida con el mismo estilo de throw
-  // que postulaciones-service y, si vienen, inserta las fotos en imagenes_trabajo.
-  async createJobAsync(entity, imagenes = []) {
+  // Validaciones compartidas por crear y editar un trabajo. OJO: no valida "estado" a
+  // propósito (updateJobAsync manda estado: null porque acá no se edita el estado).
+  #validateJobFields(entity, imagenes) {
     // Requeridos
     if (!entity?.id_contratante) throw new Error('id_contratante es requerido');
     if (!entity?.id_categoria)   throw new Error('id_categoria es requerido');
@@ -90,6 +90,12 @@ export default class TrabajosService {
         throw new Error('imagenes debe ser un array de strings (URLs)');
       }
     }
+  }
+
+  // Crea un trabajo (POST de "Publicar tarea"). Valida con el mismo estilo de throw
+  // que postulaciones-service y, si vienen, inserta las fotos en imagenes_trabajo.
+  async createJobAsync(entity, imagenes = []) {
+    this.#validateJobFields(entity, imagenes);
 
     const newId = await this.repository.createJob(entity);
 
@@ -98,6 +104,17 @@ export default class TrabajosService {
     }
 
     return newId;
+  }
+  // ACÁ YA NO
+
+  // ACÁ AGREGUÉ
+  // Edita un trabajo (pantalla "Editar trabajo", reusa el form de "Nuevo trabajo").
+  // A diferencia de crear, acá SIEMPRE se manda la lista final de fotos (vacía si el
+  // usuario las borró todas), y el update + reemplazo de fotos son atómicos (ver repository).
+  async updateJobAsync(jobId, entity, imagenes = []) {
+    this.#validateJobFields(entity, imagenes);
+
+    return await this.repository.updateJobWithImages(jobId, entity, imagenes ?? []);
   }
   // ACÁ YA NO
 
