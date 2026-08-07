@@ -9,6 +9,7 @@ import AppLayout from '../layouts/AppLayout';
 import PrivateRoute from './PrivateRoute';
 import Ofertas from '../pages/contratador/Ofertas';
 import VerPostulantes from '../pages/contratador/VerPostulantes';
+import DetalleTrabajo from '../pages/contratador/DetalleTrabajo';
 import Register from '../pages/shared/Register';
 import Login from '../pages/shared/Login';
 import InicioContratador from '../pages/contratador/InicioContratador';
@@ -30,6 +31,8 @@ const router = createBrowserRouter([
     children: [
       // Sin header/navbar
       { path: '/ofertas/:jobId/postulantes', element: <VerPostulantes /> },
+      { path: '/ofertas/:jobId/detalle', element: <DetalleTrabajo /> },
+      { path: '/ofertas/:jobId/editar', element: <NuevoTrabajo /> },
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
 
       // Con header/navbar

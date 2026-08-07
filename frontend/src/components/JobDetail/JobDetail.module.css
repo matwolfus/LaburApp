@@ -1,0 +1,185 @@
+.wrapper {
+  background-color: var(--color-bg);
+  min-height: 100vh;
+}
+
+.msg {
+  padding: 24px 20px;
+  font-size: 14px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Hero image ───────────────────────────────────── */
+.hero {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: var(--radius-card);
+  display: block;
+}
+
+.heroPlaceholder {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius-card);
+  background-color: #0D9488;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Header ───────────────────────────────────────── */
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.badge {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 50px;
+  white-space: nowrap;
+}
+
+.badgeAbierto {
+  background: rgba(45, 59, 142, 0.1);
+  color: var(--color-primary);
+}
+
+.badgeActiva {
+  background: rgba(13, 148, 136, 0.12);
+  color: #0D9488;
+}
+
+.urgente {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-orange);
+  background: rgba(249, 115, 22, 0.1);
+  padding: 6px 14px;
+  border-radius: 50px;
+}
+
+/* ── Info grid ────────────────────────────────────── */
+.infoGrid {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  border: 0.5px solid #E8ECF3;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.infoIcon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+/* ── Section (dirección / descripción) ───────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.sectionText {
+  font-size: 14px;
+  color: var(--color-muted);
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-line;
+}
+
+/* ── Gallery ──────────────────────────────────────── */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.galleryImg {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-img);
+}
+
+/* ── CTA ──────────────────────────────────────────── */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.postulantesBtn {
+  flex: 1;
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  min-height: 44px;
+  transition: opacity 0.15s;
+}
+
+.postulantesBtn:hover { opacity: 0.9; }
+.postulantesBtn:active { opacity: 0.85; }
+
+.editBtn {
+  flex: 1;
+  border: 1.5px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.editBtn:hover { background: var(--color-primary); color: white; }
+.editBtn:active { opacity: 0.85; }

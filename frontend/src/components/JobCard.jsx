@@ -79,7 +79,10 @@ export default function JobCard({ job }) {
           </div>
           <span className="job-card__count">{count} postulantes</span>
         </div>
-        <button className="job-card__btn" onClick={() => navigate(`/ofertas/${id}/postulantes`)}>Ver postulantes</button>
+        <div className="job-card__actions">
+          <button className="job-card__btn job-card__btn--outline" onClick={() => navigate(`/ofertas/${id}/detalle`)}>Detalle</button>
+          <button className="job-card__btn" onClick={() => navigate(`/ofertas/${id}/postulantes`)}>Ver postulantes</button>
+        </div>
       </div>
     </div>
   );

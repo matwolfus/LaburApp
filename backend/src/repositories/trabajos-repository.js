@@ -94,17 +94,26 @@ async getJobsByEmployerAndStatus(employerId, status) {
   }
   // ACÁ YA NO
 
+   // Detalle completo de un trabajo (pantalla "Detalle" del contratador).
    async getJobById(jobId) {
-
 
     const sql = `
       SELECT
-
-
         t.id,
         t.titulo           AS title,
+        t.descripcion      AS description,
+        t.estado,
+        t.presupuesto      AS budget,
         t.programado_para  AS scheduled_at,
-
+        t.prioridad        AS priority,
+        t.duracion         AS duration,
+        t.direccion        AS address,
+        t.lat,
+        t.lng,
+        t.id_categoria,
+        c.nombre           AS category,
+        l.nombre           AS localidad,
+        pr.nombre          AS provincia,
 
         COALESCE(
           json_agg(
@@ -117,20 +126,24 @@ async getJobsByEmployerAndStatus(employerId, status) {
           '[]'
         ) AS images
 
-
       FROM trabajos t
 
+      LEFT JOIN categorias c
+        ON c.id = t.id_categoria
+
+      LEFT JOIN localidades l
+        ON l.id = t.id_localidad
+
+      LEFT JOIN provincias pr
+        ON pr.id = l.id_provincia
 
       LEFT JOIN imagenes_trabajo i
         ON i.id_trabajo = t.id
 
-
       WHERE t.id = $1
 
-
-      GROUP BY t.id
+      GROUP BY t.id, c.nombre, l.nombre, pr.nombre
     `;
-
 
     return await this.db.queryOne(sql, [jobId]);
   }
@@ -184,8 +197,9 @@ async getJobsByEmployerAndStatus(employerId, status) {
   }
 
   // Inserta todas las fotos en UNA sola query (multi-row). Si no hay URLs, no hace nada.
-  // orden = índice de la foto en el array.
-  async addImagesToJob(jobId, urls) {
+  // orden = índice de la foto en el array. Recibe "db" para poder reusarse tanto suelta
+  // como dentro de una transacción (updateJobWithImages le pasa el client transaccional).
+  async addImagesToJob(jobId, urls, db = this.db) {
     if (!urls || urls.length === 0) return;
 
     // Arma "($1, $2, $3), ($1, $4, $5), ..." -> $1 es siempre el jobId.
@@ -202,8 +216,55 @@ async getJobsByEmployerAndStatus(employerId, status) {
       VALUES ${tuples.join(', ')}
     `;
 
-    return await this.db.queryAll(sql, values);
+    return await db.queryAll(sql, values);
   }
   // ACÁ YA NO
+
+  // Actualiza los datos de un trabajo y reemplaza sus fotos, todo en una sola transacción:
+  // si el reemplazo de fotos falla, el UPDATE de los datos también se revierte (no queda
+  // el trabajo con los datos nuevos pero las fotos borradas a mitad de camino).
+  async updateJobWithImages(jobId, entity, urls) {
+    return await this.db.withTransaction(async (txDb) => {
+      const updateSql = `
+        UPDATE trabajos
+        SET
+          titulo          = $2,
+          descripcion     = $3,
+          id_categoria    = $4,
+          presupuesto     = $5,
+          programado_para = $6,
+          prioridad       = $7,
+          duracion        = $8,
+          direccion       = $9,
+          lat             = $10,
+          lng             = $11,
+          actualizado_en  = NOW()
+        WHERE id = $1
+        RETURNING id
+      `;
+
+      const updateValues = [
+        jobId,
+        entity.titulo,
+        entity.descripcion ?? null,
+        entity.id_categoria,
+        entity.presupuesto ?? null,
+        entity.programado_para ?? null,
+        entity.prioridad ?? 'normal',
+        entity.duracion ?? null,
+        entity.direccion ?? null,
+        entity.lat ?? null,
+        entity.lng ?? null,
+      ];
+
+      const updated = await txDb.queryOne(updateSql, updateValues);
+      if (!updated) return null;
+
+      await txDb.queryAll('DELETE FROM imagenes_trabajo WHERE id_trabajo = $1', [jobId]);
+      await this.addImagesToJob(jobId, urls, txDb);
+
+      return updated.id;
+    });
+  }
 
 }
