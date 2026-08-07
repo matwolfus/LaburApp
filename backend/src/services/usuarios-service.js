@@ -46,7 +46,7 @@ export default class UsuariosService {
         const token = jwt.sign(
             {
                 userId: user.id,
-                rol: user.ultimo_rol
+                rol: user.rol
             },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
@@ -56,7 +56,7 @@ export default class UsuariosService {
             success: true,
             token,
             userId: user.id,
-            rol: user.ultimo_rol
+            rol: user.rol
         };
     }
 
