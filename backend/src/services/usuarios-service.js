@@ -195,4 +195,20 @@ export default class UsuariosService {
         // pero esto evita que una regresión en la query rompa rating.toFixed(1)).
         return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
     }
+
+    // Reemplaza el set completo de categorías que ofrece el usuario autenticado.
+    async updateCategoriasAsync(idUsuario, categoriaIds) {
+        if (!Array.isArray(categoriaIds)) {
+            return { success: false, errorCode: 'INVALID_CATEGORIA_IDS' };
+        }
+
+        await this.repository.setCategorias(idUsuario, categoriaIds);
+        return { success: true };
+    }
+
+    // Trabajadores que ofrecen una categoría determinada, para la pantalla "Buscar".
+    async searchByCategoriaAsync(idCategoria) {
+        const workers = await this.repository.searchByCategoria(idCategoria);
+        return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
+    }
 }

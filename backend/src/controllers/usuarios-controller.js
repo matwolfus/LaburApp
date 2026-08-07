@@ -51,6 +51,34 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
+// PUT /api/usuarios/me/categorias -> reemplaza el set de categorías del usuario logueado.
+// Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
+router.put('/me/categorias', authMiddleware, async (req, res) => {
+  try {
+    const { categoriaIds } = req.body;
+    const result = await service.updateCategoriasAsync(req.userId, categoriaIds);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error in PUT /me/categorias:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/usuarios/buscar?categoria=<id> -> trabajadores que ofrecen esa categoría.
+// Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
+router.get('/buscar', async (req, res) => {
+  try {
+    const workers = await service.searchByCategoriaAsync(req.query.categoria);
+    res.json(workers);
+  } catch (error) {
+    console.error('Error in GET /buscar:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/usuarios/:id
 router.get('/:id', async (req, res) => {
   try {
