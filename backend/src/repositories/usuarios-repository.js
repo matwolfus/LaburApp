@@ -84,6 +84,7 @@ export default class UsuariosRepository {
                 u.prom_calif_trabajador,
                 u.prom_calif_contratante,
                 u.creado_en,
+                u.ultimo_rol,
                 l.nombre AS localidad
 
             FROM usuarios u
@@ -224,6 +225,8 @@ export default class UsuariosRepository {
             biografiaContratante: usuario.biografia_contratante,
 
             miembroDesde: usuario.creado_en,
+
+            ultimoRol: usuario.ultimo_rol,
 
             ratingTrabajador: usuario.prom_calif_trabajador,
             ratingContratante: usuario.prom_calif_contratante,
