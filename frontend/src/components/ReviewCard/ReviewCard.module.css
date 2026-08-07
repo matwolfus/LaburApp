@@ -1,0 +1,51 @@
+.card{
+
+    display:flex;
+
+    gap:18px;
+
+    border:1px solid #ECECEC;
+
+    border-radius:16px;
+
+    padding:18px;
+
+    align-items:flex-start;
+
+}
+
+.avatar{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+.nombre{
+
+    font-size:17px;
+
+    font-weight:700;
+
+}
+
+.estrellas{
+
+    color:#FFC107;
+
+    margin:6px 0;
+
+}
+
+.comentario{
+
+    color:#666;
+
+    line-height:1.6;
+
+}

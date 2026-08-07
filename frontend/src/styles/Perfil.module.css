@@ -1,0 +1,14 @@
+.page {
+    background: #F5F7FA;
+    min-height: 100vh;
+    padding: 32px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+}

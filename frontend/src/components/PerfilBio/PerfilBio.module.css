@@ -1,0 +1,29 @@
+.container{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:28px;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+}
+
+.titulo{
+
+    font-size:22px;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+}
+
+.texto{
+
+    line-height:1.7;
+
+    color:#555;
+
+}

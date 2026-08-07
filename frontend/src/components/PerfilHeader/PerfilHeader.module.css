@@ -1,0 +1,89 @@
+.container{
+
+    background:white;
+
+    border-radius:20px;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+    padding:40px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+.avatar{
+
+    width:150px;
+
+    height:150px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:5px solid #1E88E5;
+
+}
+
+.nombre{
+
+    margin-top:20px;
+
+    font-size:32px;
+
+    font-weight:700;
+
+    color:#222;
+
+}
+
+.localidad{
+
+    color:#7A7A7A;
+
+    margin-top:6px;
+
+    font-size:16px;
+
+}
+
+.switch{
+
+    display:flex;
+
+    gap:12px;
+
+    margin-top:28px;
+
+}
+
+.switch button{
+
+    border:none;
+
+    border-radius:40px;
+
+    padding:12px 30px;
+
+    cursor:pointer;
+
+    background:#F1F3F5;
+
+    font-size:15px;
+
+    transition:.2s;
+
+}
+
+.activo{
+
+    background:#1E88E5 !important;
+
+    color:white;
+
+}

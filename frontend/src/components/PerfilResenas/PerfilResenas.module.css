@@ -1,0 +1,31 @@
+.container{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:28px;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+}
+
+.lista{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+    margin-top:20px;
+
+}
+
+.titulo{
+
+    font-size:22px;
+
+    font-weight:700;
+
+}

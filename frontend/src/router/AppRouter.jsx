@@ -13,6 +13,7 @@ import Register from '../pages/shared/Register';
 import Login from '../pages/shared/Login';
 import InicioContratador from '../pages/contratador/InicioContratador';
 import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
+import Perfil from '../pages/shared/Perfil';
 
 
 const router = createBrowserRouter([
@@ -38,6 +39,8 @@ const router = createBrowserRouter([
         children: [
           { path: '/ofertas', element: <Ofertas /> },
           { path: '/inicio', element: <InicioContratador /> },
+          { path: '/perfil', element: <Perfil />},
+
           // acá inicio, chats, perfil...
         ],
       },

@@ -98,3 +98,22 @@ export async function createTrabajo(data) {
 export function logout() {
   localStorage.removeItem("token");
 }
+
+
+// GET /api/usuarios/:id/perfil
+export async function getPerfil(idUsuario) {
+
+  const res = await fetch(`${BASE_URL}/usuarios/${idUsuario}/perfil`, {
+    headers: {
+      ...authHeaders(),
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Error al traer el perfil");
+  }
+
+  return await res.json();
+
+}
