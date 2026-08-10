@@ -3,11 +3,11 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-
 import trabajosRouter from './controllers/trabajos-controller.js';
 import postulacionesController from './controllers/postulaciones-controller.js';
 import categoriasRouter from './controllers/categorias-controller.js';
 import usuariosRouter from './controllers/usuarios-controller.js';
+import localidadesRouter from './controllers/localidades-controller.js';
 import uploadsRouter from './controllers/uploads-controller.js';
 import { UPLOADS_DIR } from './middlewares/upload-middleware.js';
 
@@ -26,6 +26,8 @@ app.use('/api/postulaciones', postulacionesController);
 app.use('/api/categorias', categoriasRouter);
 
 app.use('/api/usuarios', usuariosRouter);
+
+app.use('/api/localidades', localidadesRouter);
 
 app.use('/api/uploads', uploadsRouter);
 
