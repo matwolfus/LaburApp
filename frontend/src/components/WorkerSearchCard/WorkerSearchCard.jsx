@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import styles from './WorkerSearchCard.module.css';
+
 const WorkerSearchCard = ({
   id,
   name,
@@ -5,90 +8,74 @@ const WorkerSearchCard = ({
   description,
   rating = 0,
 }) => {
+  const [liked, setLiked] = useState(false);
+
   return (
-    <article className="worker-search-card">
+    <article className={styles.card}>
 
       {/* PARTE SUPERIOR */}
-      <div className="worker-search-card-top">
+      <div className={styles.top}>
 
-        <div className="worker-search-avatar-wrapper">
+        <div className={styles.avatarWrapper}>
           {photo_url ? (
             <img
               src={photo_url}
               alt={`Foto de ${name}`}
-              className="worker-search-avatar"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none';
-              }}
+              className={styles.avatar}
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           ) : (
-            <div className="worker-search-avatar-fallback">
+            <div className={styles.avatarFallback}>
               {name?.charAt(0)?.toUpperCase() || '?'}
             </div>
           )}
         </div>
 
-        <div className="worker-search-info">
-
-          <div className="worker-search-name-row">
-            <h2 className="worker-search-name">
-              {name}
-            </h2>
-
-            <span
-              className="worker-search-verified"
-              aria-label="Perfil verificado"
-            >
-              ✓
-            </span>
+        <div className={styles.info}>
+          <div className={styles.nameRow}>
+            <h2 className={styles.name}>{name}</h2>
+            <span className={styles.verified} aria-label="Perfil verificado">✓</span>
           </div>
 
-          <div className="worker-search-rating-row">
-            <span className="worker-search-star">
-              ★
-            </span>
-
-            <span className="worker-search-rating">
-              {Number(rating).toFixed(1)}
-            </span>
+          <div className={styles.ratingRow}>
+            <span className={styles.star}>★</span>
+            <span className={styles.ratingValue}>{Number(rating).toFixed(1)}</span>
           </div>
-
         </div>
+
+        {/* CORAZÓN */}
+        <button
+          type="button"
+          className={`${styles.favorite} ${liked ? styles.favoriteActive : ''}`}
+          onClick={() => setLiked(!liked)}
+          aria-label={liked ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          aria-pressed={liked}
+        >
+          {liked ? '♥' : '♡'}
+        </button>
+
       </div>
 
       {/* DESCRIPCIÓN */}
       {description && (
-        <div className="worker-search-description-box">
-          <span className="worker-search-quote">
-            “
-          </span>
-
-          <p className="worker-search-description">
-            {description}
-          </p>
-
-          <span className="worker-search-quote">
-            ”
-          </span>
+        <div className={styles.descriptionBox}>
+          <span className={styles.quote}>"</span>
+          <p className={styles.description}>{description}</p>
+          <span className={styles.quote}>"</span>
         </div>
       )}
 
       {/* CONTACTAR */}
-      <div className="worker-search-card-footer">
-
-        <span className="worker-search-available-text">
-          Disponible próximamente
-        </span>
-
+      <div className={styles.details}>
+        <span className={styles.detailLabel}>Disponible próximamente</span>
         <button
           type="button"
-          className="worker-search-contact-button"
+          className={styles.contactBtn}
           disabled
           title="Disponible próximamente"
         >
           Contactar
         </button>
-
       </div>
 
     </article>

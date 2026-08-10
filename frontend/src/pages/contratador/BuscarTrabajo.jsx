@@ -20,17 +20,12 @@ export default function BuscarTrabajo() {
     (category) => category.id === categoriaId
   );
 
-  // =============================
-  // CARGAR CATEGORÍAS
-  // =============================
   useEffect(() => {
     const cargarCategorias = async () => {
       setLoadingCategories(true);
       setError(null);
-
       try {
         const data = await getCategorias();
-
         setCategories(data || []);
       } catch (err) {
         console.error('Error cargando categorías:', err);
@@ -39,88 +34,54 @@ export default function BuscarTrabajo() {
         setLoadingCategories(false);
       }
     };
-
     cargarCategorias();
   }, []);
 
-  // =============================
-  // BUSCAR TRABAJADORES
-  // =============================
   useEffect(() => {
     if (!categoriaId) {
       setWorkers([]);
       return;
     }
-
     const buscar = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const data = await buscarTrabajadoresPorCategoria(categoriaId);
-
         setWorkers(data || []);
       } catch (err) {
         console.error('Error buscando trabajadores:', err);
-
-        setError(
-          err.message || 'No pudimos cargar los trabajadores.'
-        );
-
+        setError(err.message || 'No pudimos cargar los trabajadores.');
         setWorkers([]);
       } finally {
         setLoading(false);
       }
     };
-
     buscar();
   }, [categoriaId]);
 
-  // =============================
-  // FILTRADO POR TEXTO
-  // =============================
   const filteredWorkers = useMemo(() => {
     const query = search.trim().toLowerCase();
-
-    if (!query) {
-      return workers;
-    }
-
+    if (!query) return workers;
     return workers.filter((worker) => {
       const name = worker.name?.toLowerCase() || '';
-      const description =
-        worker.description?.toLowerCase() || '';
-
-      return (
-        name.includes(query) ||
-        description.includes(query)
-      );
+      const description = worker.description?.toLowerCase() || '';
+      return name.includes(query) || description.includes(query);
     });
   }, [workers, search]);
 
-  // =============================
-  // CAMBIAR CATEGORÍA
-  // =============================
   const handleCategoryChange = (categoryId) => {
     setCategoriaId(categoryId);
     setSearch('');
     setError(null);
   };
 
-  // =============================
-  // CONTENIDO
-  // =============================
   const renderContent = () => {
     if (loading) {
       return (
         <div className="buscar-state-container">
           <div className="buscar-spinner" />
-
           <h3>Buscando trabajadores...</h3>
-
-          <p>
-            Estamos buscando profesionales disponibles.
-          </p>
+          <p>Estamos buscando profesionales disponibles.</p>
         </div>
       );
     }
@@ -129,23 +90,16 @@ export default function BuscarTrabajo() {
       return (
         <div className="buscar-state-container">
           <span className="buscar-state-icon">!</span>
-
           <h3>Ocurrió un problema</h3>
-
           <p>{error}</p>
-
           <button
             type="button"
             className="buscar-retry-button"
             onClick={() => {
               if (categoriaId) {
                 const currentCategory = categoriaId;
-
                 setCategoriaId(null);
-
-                setTimeout(() => {
-                  setCategoriaId(currentCategory);
-                }, 0);
+                setTimeout(() => setCategoriaId(currentCategory), 0);
               }
             }}
           >
@@ -159,13 +113,8 @@ export default function BuscarTrabajo() {
       return (
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
-
           <h3>Elegí una categoría</h3>
-
-          <p>
-            Seleccioná una categoría para ver trabajadores
-            disponibles.
-          </p>
+          <p>Seleccioná una categoría para ver trabajadores disponibles.</p>
         </div>
       );
     }
@@ -174,13 +123,8 @@ export default function BuscarTrabajo() {
       return (
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
-
           <h3>Todavía no hay trabajadores</h3>
-
-          <p>
-            No hay trabajadores disponibles en esta
-            categoría todavía.
-          </p>
+          <p>No hay trabajadores disponibles en esta categoría todavía.</p>
         </div>
       );
     }
@@ -189,12 +133,8 @@ export default function BuscarTrabajo() {
       return (
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
-
           <h3>No encontramos resultados</h3>
-
-          <p>
-            Probá con otro nombre o término de búsqueda.
-          </p>
+          <p>Probá con otro nombre o término de búsqueda.</p>
         </div>
       );
     }
@@ -202,10 +142,7 @@ export default function BuscarTrabajo() {
     return (
       <div className="buscar-workers-list">
         {filteredWorkers.map((worker) => (
-          <WorkerSearchCard
-            key={worker.id}
-            {...worker}
-          />
+          <WorkerSearchCard key={worker.id} {...worker} />
         ))}
       </div>
     );
@@ -213,71 +150,26 @@ export default function BuscarTrabajo() {
 
   return (
     <main className="buscar-page">
-
-      {/* HEADER */}
-      <header className="buscar-header">
-        <div className="buscar-header-logo">
-          <span className="buscar-logo-icon">✣</span>
-        </div>
-
-        <div className="buscar-header-actions">
-          <button
-            type="button"
-            className="buscar-header-icon"
-            aria-label="Notificaciones"
-          >
-            ♡
-          </button>
-
-          <button
-            type="button"
-            className="buscar-header-icon"
-            aria-label="Menú"
-          >
-            ☰
-          </button>
-        </div>
-      </header>
-
-      {/* CONTENIDO */}
       <div className="buscar-content">
 
         {/* HERO */}
         <section className="buscar-hero">
-          <h1>
-            {selectedCategory?.name || 'Buscar trabajadores'}
-          </h1>
-
-          <p>
-            Encontrá la solución ideal para tus necesidades.
-          </p>
+          <h1>{selectedCategory?.name || 'Buscar trabajadores'}</h1>
+          <p>Encontrá la solución ideal para tus necesidades.</p>
         </section>
 
         {/* BUSCADOR */}
-        <section
-          className="buscar-search-section"
-          aria-label="Buscar trabajadores"
-        >
+        <section className="buscar-search-section" aria-label="Buscar trabajadores">
           <div className="buscar-search-box">
-
-            <span
-              className="buscar-search-icon"
-              aria-hidden="true"
-            >
-              ⌕
-            </span>
-
+            <span className="buscar-search-icon" aria-hidden="true">⌕</span>
             <input
               type="search"
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
+              onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar trabajadores..."
               aria-label="Buscar trabajadores"
               disabled={!categoriaId}
             />
-
             {search && (
               <button
                 type="button"
@@ -292,15 +184,8 @@ export default function BuscarTrabajo() {
         </section>
 
         {/* CATEGORÍAS */}
-        <section
-          className="buscar-filters-section"
-          aria-label="Filtrar por categoría"
-        >
-          <div
-            className="buscar-chips-row"
-            role="radiogroup"
-            aria-label="Categorías"
-          >
+        <section className="buscar-filters-section" aria-label="Filtrar por categoría">
+          <div className="buscar-chips-row" role="radiogroup" aria-label="Categorías">
             {loadingCategories ? (
               <>
                 <div className="buscar-chip-skeleton" />
@@ -313,17 +198,13 @@ export default function BuscarTrabajo() {
                   key={category.id}
                   type="button"
                   role="radio"
-                  aria-checked={
-                    categoriaId === category.id
-                  }
+                  aria-checked={categoriaId === category.id}
                   className={
                     categoriaId === category.id
                       ? 'buscar-chip buscar-chip-selected'
                       : 'buscar-chip'
                   }
-                  onClick={() =>
-                    handleCategoryChange(category.id)
-                  }
+                  onClick={() => handleCategoryChange(category.id)}
                 >
                   {category.name}
                 </button>
@@ -336,19 +217,12 @@ export default function BuscarTrabajo() {
         <div className="buscar-location">
           <span>⌖</span>
           <span>Cerca tuyo</span>
-
-          <span className="buscar-location-separator">
-            •
-          </span>
-
+          <span className="buscar-location-separator">•</span>
           <span>San Isidro</span>
         </div>
 
         {/* RESULTADOS */}
-        <section
-          className="buscar-results-section"
-          aria-label="Resultados de trabajadores"
-        >
+        <section className="buscar-results-section" aria-label="Resultados de trabajadores">
           <div className="buscar-results-header">
             <span>
               {loading
@@ -358,41 +232,10 @@ export default function BuscarTrabajo() {
                   : 'Profesionales disponibles'}
             </span>
           </div>
-
           {renderContent()}
         </section>
+
       </div>
-
-      {/* NAVEGACIÓN INFERIOR */}
-      <nav
-        className="buscar-bottom-navigation"
-        aria-label="Navegación principal"
-      >
-        <button type="button" aria-label="Inicio">
-          ⌂
-        </button>
-
-        <button
-          type="button"
-          className="buscar-active-nav"
-          aria-label="Buscar"
-        >
-          ⌕
-        </button>
-
-        <button type="button" aria-label="Trabajos">
-          □
-        </button>
-
-        <button type="button" aria-label="Mensajes">
-          ▢
-        </button>
-
-        <button type="button" aria-label="Perfil">
-          ♙
-        </button>
-      </nav>
-
     </main>
   );
 }
