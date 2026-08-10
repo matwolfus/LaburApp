@@ -14,6 +14,7 @@ import Register from '../pages/shared/Register';
 import Login from '../pages/shared/Login';
 import InicioContratador from '../pages/contratador/InicioContratador';
 import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
+import BuscarTrabajo from '../pages/contratador/BuscarTrabajo';
 
 
 const router = createBrowserRouter([
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
         children: [
           { path: '/ofertas', element: <Ofertas /> },
           { path: '/inicio', element: <InicioContratador /> },
+          { path: '/buscar', element: <BuscarTrabajo /> }
           // acá inicio, chats, perfil...
         ],
       },

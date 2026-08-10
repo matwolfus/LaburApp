@@ -268,14 +268,14 @@ export default function NuevoTrabajo() {
           <button
             type="button"
             className={`${styles.submitBtn} ${styles.confirmPrimaryBtn}`}
-            onClick={() => navigate(`/ofertas/${jobId}/detalle`)}
+            onClick={() => navigate('/inicio', { replace: true })}
           >
-            Volver al detalle
+            Volver al inicio
           </button>
           <button
             type="button"
             className={styles.confirmSecondaryBtn}
-            onClick={() => navigate(`/ofertas/${jobId}/postulantes`)}
+            onClick={() => navigate(`/ofertas/${jobId}/postulantes`, { replace: true })}
           >
             Ver postulantes
           </button>

@@ -75,7 +75,10 @@ export default function InicioContratador() {
             <div className={styles.categoriesGrid} role="list">
               {categories.map((cat) => (
                 <div key={cat.id} role="listitem">
-                  <CategoryCard category={cat} />
+                  <CategoryCard
+                    category={cat}
+                    onClick={(category) => navigate(`/buscar?categoria=${category.id}`)}
+                  />
                 </div>
               ))}
             </div>

@@ -107,3 +107,14 @@ export async function updateTrabajo(jobId, data) {
   }
   return res.json(); // { id }
 }
+
+// Agregar al final de frontend/src/services/api.js
+export async function buscarTrabajadoresPorCategoria(categoriaId) {
+  const res = await fetch(`${BASE_URL}/usuarios/buscar?categoria=${categoriaId}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al buscar trabajadores');
+  }
+  return res.json();
+}
+
