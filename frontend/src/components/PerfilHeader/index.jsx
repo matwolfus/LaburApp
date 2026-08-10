@@ -1,35 +1,71 @@
 import styles from "./PerfilHeader.module.css";
 
+function getIniciales(nombre = "") {
+    return nombre
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((palabra) => palabra[0]?.toUpperCase())
+        .join("");
+}
+
 export default function PerfilHeader({ perfil, modo, setModo }) {
 
     return (
-        <div className="perfil-header">
+        <div className={styles.header}>
 
-            <img
-                src={perfil.avatar}
-                alt={perfil.nombreCompleto}
-                className="perfil-avatar"
-            />
+            {perfil.avatar ? (
+                <img
+                    src={perfil.avatar}
+                    alt={perfil.nombreCompleto}
+                    className={styles.avatar}
+                />
+            ) : (
+                <div className={styles.avatarPlaceholder}>
+                    {getIniciales(perfil.nombreCompleto)}
+                </div>
+            )}
 
-            <h1>
+            <h1 className={styles.nombre}>
                 {perfil.nombreCompleto}
 
-                {perfil.verificado && " ✔️"}
+                {perfil.verificado && (
+                    <span
+                        className={styles.verificadoIcono}
+                        title="Verificado"
+                    >
+                        ✔️
+                    </span>
+                )}
             </h1>
 
-            <p>{perfil.localidad}</p>
+            {perfil.localidad && (
+                <p className={styles.localidad}>
+                    📍 {perfil.localidad}
+                </p>
+            )}
 
-            <div className="perfil-switch">
+            <div className={styles.switch}>
 
                 <button
-                    className={modo === "trabajador" ? "activo" : ""}
+                    type="button"
+                    className={
+                        modo === "trabajador"
+                            ? `${styles.switchBtn} ${styles.activo}`
+                            : styles.switchBtn
+                    }
                     onClick={() => setModo("trabajador")}
                 >
                     Trabajador
                 </button>
 
                 <button
-                    className={modo === "contratador" ? "activo" : ""}
+                    type="button"
+                    className={
+                        modo === "contratador"
+                            ? `${styles.switchBtn} ${styles.activo}`
+                            : styles.switchBtn
+                    }
                     onClick={() => setModo("contratador")}
                 >
                     Contratador
@@ -39,5 +75,4 @@ export default function PerfilHeader({ perfil, modo, setModo }) {
 
         </div>
     );
-
 }

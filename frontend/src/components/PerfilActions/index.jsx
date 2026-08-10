@@ -11,13 +11,19 @@ export default function PerfilActions({ onLogout }) {
     }
 
     return (
-        <div className={styles["perfil-actions"]}>
+        <div className={styles.actions}>
 
-            <button onClick={() => navigate("/perfil/editar")}>
-                Editar perfil
+            <button
+                className={styles.editar}
+                onClick={() => navigate("/perfil/editar")}
+            >
+                ✏️ Editar Perfil
             </button>
 
-            <button onClick={cerrarSesion}>
+            <button
+                className={styles.logout}
+                onClick={cerrarSesion}
+            >
                 Cerrar sesión
             </button>
 
