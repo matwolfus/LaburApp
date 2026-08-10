@@ -14,6 +14,7 @@ import Login from '../pages/shared/Login';
 import InicioContratador from '../pages/contratador/InicioContratador';
 import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
 import Perfil from '../pages/shared/Perfil';
+import EditarPerfil from '../pages/shared/editarPerfil';
 
 
 const router = createBrowserRouter([
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
       // Sin header/navbar
       { path: '/ofertas/:jobId/postulantes', element: <VerPostulantes /> },
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
+      { path: '/perfil/editar', element: <EditarPerfil/>},
 
       // Con header/navbar
       {
