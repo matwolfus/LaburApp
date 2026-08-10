@@ -117,3 +117,14 @@ export async function getPerfil(idUsuario) {
   return await res.json();
 
 }
+
+// GET /api/localidades
+export async function getLocalidades() {
+  const res = await fetch(`${BASE_URL}/localidades`);
+
+  if (!res.ok) {
+    throw new Error('Error al traer las localidades');
+  }
+
+  return res.json();
+}
