@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   getCategorias,
   buscarTrabajadoresPorCategoria,
@@ -7,8 +8,13 @@ import {
 import WorkerSearchCard from '../../components/WorkerSearchCard/WorkerSearchCard.jsx';
 
 export default function BuscarTrabajo() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
-  const [categoriaId, setCategoriaId] = useState(null);
+  const [categoriaId, setCategoriaId] = useState(() => {
+    const fromUrl = searchParams.get('categoria');
+    const parsed = Number(fromUrl);
+    return fromUrl && !Number.isNaN(parsed) ? parsed : null;
+  });
   const [workers, setWorkers] = useState([]);
 
   const [search, setSearch] = useState('');
@@ -71,6 +77,7 @@ export default function BuscarTrabajo() {
 
   const handleCategoryChange = (categoryId) => {
     setCategoriaId(categoryId);
+    setSearchParams({ categoria: categoryId }, { replace: true });
     setSearch('');
     setError(null);
   };
@@ -170,16 +177,6 @@ export default function BuscarTrabajo() {
               aria-label="Buscar trabajadores"
               disabled={!categoriaId}
             />
-            {search && (
-              <button
-                type="button"
-                className="buscar-clear-button"
-                onClick={() => setSearch('')}
-                aria-label="Limpiar búsqueda"
-              >
-                ×
-              </button>
-            )}
           </div>
         </section>
 
