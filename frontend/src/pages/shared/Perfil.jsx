@@ -24,7 +24,6 @@ export default function PerfilPage() {
 
                 setPerfil(perfilCompleto);
                 setModo(perfilCompleto.ultimoRol);
-                console.log(perfilCompleto)
 
             } catch (error) {
 
