@@ -1,34 +1,34 @@
 import styles from "./PerfilCategorias.module.css";
 
-export default function PerfilCategorias({ categorias }) {
+export default function PerfilCategorias({ categorias = [] }) {
 
     return (
+        <section className={styles.card}>
 
-        <section>
+            <h3 className={styles.title}>
+                Categorías
+            </h3>
 
-            <h3>Categorías</h3>
+            {categorias.length === 0 ? (
 
-            <div className="categorias">
+                <p className={styles.vacio}>
+                    Todavía no seleccionaste categorías.
+                </p>
 
-                {
+            ) : (
 
-                    categorias.map((categoria) => (
+                <div className={styles.lista}>
 
-                        <span
-                            key={categoria}
-                            className="categoria"
-                        >
+                    {categorias.map((categoria) => (
+                        <span key={categoria} className={styles.pill}>
                             {categoria}
                         </span>
+                    ))}
 
-                    ))
+                </div>
 
-                }
-
-            </div>
+            )}
 
         </section>
-
     );
-
 }

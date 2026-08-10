@@ -3,19 +3,16 @@ import styles from "./PerfilBio.module.css";
 export default function PerfilBio({ biografia }) {
 
     return (
+        <section className={styles.card}>
 
-        <section>
+            <h3 className={styles.title}>
+                ¿Quién soy?
+            </h3>
 
-            <h3>Biografía</h3>
-
-            <p>
-
+            <p className={styles.text}>
                 {biografia || "Este usuario todavía no agregó una biografía."}
-
             </p>
 
         </section>
-
     );
-
 }

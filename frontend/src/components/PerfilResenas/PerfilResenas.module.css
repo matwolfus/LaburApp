@@ -1,31 +1,22 @@
-.container{
-
-    background:white;
-
-    border-radius:20px;
-
-    padding:28px;
-
-    box-shadow:0 6px 18px rgba(0,0,0,.08);
-
+.card {
+    margin: 0 16px 14px;
 }
 
-.lista{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:18px;
-
-    margin-top:20px;
-
+.title {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a2560;
 }
 
-.titulo{
+.vacio {
+    margin: 0;
+    font-size: 13px;
+    color: #9aa0b4;
+}
 
-    font-size:22px;
-
-    font-weight:700;
-
+.lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
