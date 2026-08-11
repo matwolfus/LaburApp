@@ -1,14 +1,25 @@
 import ReviewCard from "../ReviewCard";
 import styles from "./PerfilResenas.module.css";
 
-export default function PerfilResenas({ resenas = [], cantidad = 0 }) {
+export default function PerfilResenas({
+    resenas = [],
+    cantidad = 0
+}) {
 
     return (
         <section className={styles.card}>
 
-            <h3 className={styles.title}>
-                Reseñas ({cantidad})
-            </h3>
+            <div className={styles.header}>
+
+                <h2 className={styles.title}>
+                    Reseñas
+                </h2>
+
+                <span className={styles.cantidad}>
+                    {cantidad}
+                </span>
+
+            </div>
 
             {resenas.length === 0 ? (
 
@@ -21,7 +32,10 @@ export default function PerfilResenas({ resenas = [], cantidad = 0 }) {
                 <div className={styles.lista}>
 
                     {resenas.map((review) => (
-                        <ReviewCard key={review.id} review={review} />
+                        <ReviewCard
+                            key={review.id}
+                            review={review}
+                        />
                     ))}
 
                 </div>

@@ -1,39 +1,75 @@
 import styles from "./ReviewCard.module.css";
+
 export default function ReviewCard({ review }) {
 
+    const calificacion = Math.max(
+        0,
+        Math.min(
+            5,
+            Number(review?.calificacion) || 0
+        )
+    );
+
     return (
+        <article className={styles.card}>
 
-        <div className="review-card">
+            <div className={styles.reviewTop}>
 
-            <img
-                src={review.autor.avatar}
-                alt={review.autor.nombre}
-            />
+                {review?.autor?.avatar ? (
 
-            <div>
+                    <img
+                        src={review.autor.avatar}
+                        alt={`Foto de ${review.autor.nombre}`}
+                        className={styles.avatar}
+                    />
 
-                <strong>
+                ) : (
 
-                    {review.autor.nombre}
+                    <div className={styles.avatarPlaceholder}>
+                        {review?.autor?.nombre
+                            ?.charAt(0)
+                            ?.toUpperCase() || "U"}
+                    </div>
 
-                </strong>
+                )}
 
-                <div>
+                <div className={styles.info}>
 
-                    ⭐ {review.calificacion}
+                    <h3 className={styles.nombre}>
+                        {review?.autor?.nombre || "Usuario"}
+                    </h3>
+
+                    <div className={styles.rating}>
+
+                        <span className={styles.estrellas}>
+                            {"★".repeat(calificacion)}
+                        </span>
+
+                        <span className={styles.ratingNumero}>
+                            {review?.calificacion ?? "—"}/5
+                        </span>
+
+                    </div>
 
                 </div>
 
-                <p>
-
-                    {review.comentario}
-
-                </p>
-
             </div>
 
-        </div>
+            {review?.comentario && (
+                <p className={styles.comentario}>
+                    {review.comentario}
+                </p>
+            )}
 
+            {review?.fecha && (
+                <time
+                    className={styles.fecha}
+                    dateTime={review.fecha}
+                >
+                    {new Date(review.fecha).toLocaleDateString("es-AR")}
+                </time>
+            )}
+
+        </article>
     );
-
 }

@@ -4,11 +4,22 @@
     padding: 32px;
 }
 
-.container{
-    max-width:900px;
-    margin:auto;
+.container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
 
-    display:flex;
-    flex-direction:column;
-    gap:24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+@media (max-width: 600px) {
+    .page {
+        padding: 24px 16px;
+    }
+
+    .container {
+        width: 100%;
+    }
 }

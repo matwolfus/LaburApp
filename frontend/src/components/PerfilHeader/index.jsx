@@ -31,11 +31,11 @@ export default function PerfilHeader({ perfil, modo, setModo }) {
 
                 {perfil.verificado && (
                     <span
-                        className={styles.verificadoIcono}
-                        title="Verificado"
-                    >
-                        ✔️
-                    </span>
+    className={styles.verificado}
+    title="Usuario verificado"
+>
+    ✓
+</span>
                 )}
             </h1>
 
