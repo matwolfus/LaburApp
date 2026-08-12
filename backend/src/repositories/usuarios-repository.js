@@ -77,6 +77,7 @@ export default class UsuariosRepository {
             SELECT
                 u.id,
                 u.nombre_completo,
+                u.telefono,
                 u.url_avatar,
                 u.biografia_trabajador,
                 u.biografia_contratante,
@@ -217,6 +218,7 @@ export default class UsuariosRepository {
         return {
             id: usuario.id,
             nombreCompleto: usuario.nombre_completo,
+            telefono: usuario.telefono,
             avatar: usuario.url_avatar,
             localidad: usuario.localidad,
             verificado: usuario.verificado,
