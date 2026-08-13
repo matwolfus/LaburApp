@@ -97,6 +97,49 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 // ACÁ YA NO
 
+// ACÁ AGREGUÉ
+// PUT /api/trabajos/:id -> "Guardar cambios" (pantalla "Editar trabajo").
+// Solo el dueño del trabajo puede editarlo.
+router.put('/:id', authMiddleware, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const owner = await service.getJobOwnerAsync(jobId);
+    if (owner === null) {
+      return res.status(404).json({ error: 'Trabajo no encontrado' });
+    }
+    if (Number(owner) !== req.userId) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    const b = req.body;
+
+    const entity = new Trabajo(
+      req.userId,        // id_contratante: sale del token, NO del body
+      b.id_categoria,
+      b.titulo,
+      b.descripcion,
+      b.id_localidad,
+      b.presupuesto,
+      null,            // estado: no se edita acá
+      b.programado_para,
+      b.prioridad,
+      b.duracion,
+      b.direccion,
+      b.lat,
+      b.lng
+    );
+
+    await service.updateJobAsync(jobId, entity, b.imagenes ?? []);
+
+    return res.status(200).json({ id: jobId });
+  } catch (error) {
+    console.error('Error in PUT /trabajos/:id:', error.message);
+    return res.status(400).json({ error: error.message });
+  }
+});
+// ACÁ YA NO
+
 router.get('/:id', async (req, res) => {
 
 

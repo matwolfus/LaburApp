@@ -21,7 +21,7 @@ export default class PostulacionesRepository {
 
                     u.nombre_completo,
                     u.url_avatar,
-                    u.biografia,
+                    u.biografia_trabajador AS biografia,
                     u.prom_calif_trabajador,
 
                     l.nombre AS localidad,

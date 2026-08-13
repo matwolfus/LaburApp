@@ -8,7 +8,7 @@ export default class UsuariosRepository {
 
     async getByEmail(email) {
         const sql = `
-            SELECT id, email, contrasena, ultimo_rol
+            SELECT id, email, contrasena, ultimo_rol AS rol
             FROM usuarios
             WHERE email = $1
         `;
@@ -45,7 +45,7 @@ export default class UsuariosRepository {
                 id,
                 nombre_completo,
                 url_avatar,
-                ultimo_rol
+                ultimo_rol AS rol
             FROM usuarios
             WHERE id = $1
         `;
@@ -69,6 +69,42 @@ export default class UsuariosRepository {
         `;
 
         return await this.db.queryAll(sql, [limit]);
+    }
+
+    // Reemplaza el set completo de categorías que ofrece el usuario (no es un append).
+    async setCategorias(idUsuario, categoriaIds) {
+        const uniqueIds = [...new Set(categoriaIds)];
+
+        return await this.db.withTransaction(async (tx) => {
+            await tx.queryAll('DELETE FROM usuario_categoria WHERE id_usuario = $1', [idUsuario]);
+
+            for (const idCategoria of uniqueIds) {
+                await tx.queryAll(
+                    'INSERT INTO usuario_categoria (id_usuario, id_categoria) VALUES ($1, $2)',
+                    [idUsuario, idCategoria]
+                );
+            }
+
+            return uniqueIds;
+        });
+    }
+
+    // Trabajadores que ofrecen una categoría determinada, para la pantalla "Buscar".
+    async searchByCategoria(idCategoria) {
+        const sql = `
+            SELECT
+                u.id,
+                u.nombre_completo                           AS name,
+                u.url_avatar                                AS photo_url,
+                u.biografia_trabajador                      AS description,
+                COALESCE(u.prom_calif_trabajador, 0)::float AS rating
+            FROM usuarios u
+            JOIN usuario_categoria uc ON uc.id_usuario = u.id
+            WHERE uc.id_categoria = $1
+              AND u.ultimo_rol   = 'trabajador'
+            ORDER BY rating DESC
+        `;
+        return await this.db.queryAll(sql, [idCategoria]);
     }
 
     async getPerfil(idUsuario) {

@@ -128,3 +128,27 @@ export async function getLocalidades() {
 
   return res.json();
 }
+
+// PUT /api/trabajos/:id
+export async function updateTrabajo(jobId, data) {
+  const res = await fetch(`${BASE_URL}/trabajos/${jobId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al guardar los cambios');
+  }
+  return res.json(); // { id }
+}
+
+// Agregar al final de frontend/src/services/api.js
+export async function buscarTrabajadoresPorCategoria(categoriaId) {
+  const res = await fetch(`${BASE_URL}/usuarios/buscar?categoria=${categoriaId}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al buscar trabajadores');
+  }
+  return res.json();
+}

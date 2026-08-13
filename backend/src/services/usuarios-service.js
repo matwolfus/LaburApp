@@ -34,7 +34,9 @@ export default class UsuariosService {
             };
         }
 
-        const passwordOk = await bcrypt.compare(password, user.contrasena);
+        // Filas viejas (cargadas antes de bcrypt) pueden tener contrasena NULL;
+        // bcrypt.compare tira si el hash no es un string, así que se corta antes.
+        const passwordOk = !!user.contrasena && await bcrypt.compare(password, user.contrasena);
 
         if (!passwordOk) {
             return {
@@ -211,5 +213,21 @@ export default class UsuariosService {
 
     return await this.repository.updatePerfil(idUsuario, datos);
 
+    }
+
+    // Reemplaza el set completo de categorías que ofrece el usuario autenticado.
+    async updateCategoriasAsync(idUsuario, categoriaIds) {
+        if (!Array.isArray(categoriaIds)) {
+            return { success: false, errorCode: 'INVALID_CATEGORIA_IDS' };
+        }
+
+        await this.repository.setCategorias(idUsuario, categoriaIds);
+        return { success: true };
+    }
+
+    // Trabajadores que ofrecen una categoría determinada, para la pantalla "Buscar".
+    async searchByCategoriaAsync(idCategoria) {
+        const workers = await this.repository.searchByCategoria(idCategoria);
+        return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
     }
 }

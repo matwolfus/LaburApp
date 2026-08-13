@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Camera, X } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Camera, X, Check, Bell, FileEdit } from "lucide-react";
 import BackButton from "../../components/BackButton";
 import CategorySelector from "../../components/CategorySelector/CategorySelector";
 import DateTimePicker from "../../components/DateTimeSelector/DateTimeSelector";
 import DurationSelector from "../../components/DurationSelector/DurationSelector";
 import PrioritySelector from "../../components/PrioritySelector/PrioritySelector";
 import MapPicker from "../../components/MapPicker/MapPicker";
-import { createTrabajo, uploadFotos } from "../../services/api";
+import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos } from "../../services/api";
 import { geocodeAddress, reverseGeocodeAddress } from "../../services/geocoding";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
@@ -25,8 +25,20 @@ function parsePresupuesto(formatted) {
   return Number(formatted.replace(/\./g, "").replace(",", "."));
 }
 
+// Inverso de parsePresupuesto: number/string que viene del backend -> valor mostrable en el input.
+function budgetToInputValue(budget) {
+  if (budget == null) return "";
+  const num = Number(budget);
+  if (isNaN(num)) return "";
+  const hasDecimals = Math.round((num % 1) * 100) !== 0;
+  const raw = hasDecimals ? num.toFixed(2).replace(".", ",") : String(Math.round(num));
+  return formatPresupuesto(raw);
+}
+
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
+  const { jobId } = useParams();
+  const isEdit = Boolean(jobId);
 
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState(null);
@@ -47,20 +59,56 @@ export default function NuevoTrabajo() {
   const [geocodingError, setGeocodingError] = useState(null);
   const reverseGeocodeRequestRef = useRef(0);
 
+  // Fotos nuevas (Files todavía no subidos) y fotos que el trabajo ya tenía (solo en edición).
   const [fotos, setFotos] = useState([]);
+  const [existingFotos, setExistingFotos] = useState([]);
   const [uploadingFotos, setUploadingFotos] = useState(false);
   const [fotosError, setFotosError] = useState(null);
   const fileInputRef = useRef(null);
+
+  const [loadingJob, setLoadingJob] = useState(isEdit);
+  const [loadJobError, setLoadJobError] = useState(null);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!isEdit) return;
+
+    getTrabajoById(jobId)
+      .then((job) => {
+        setTitulo(job.title ?? "");
+        setIdCategoria(job.id_categoria ?? null);
+        setDescripcion(job.description ?? "");
+
+        if (job.scheduled_at) {
+          const [fechaPart, horaPart] = job.scheduled_at.split("T");
+          setFecha(fechaPart ?? "");
+          setHora(horaPart ? horaPart.slice(0, 5) : "");
+        }
+
+        setPrioridad(job.priority ?? "normal");
+        setDuracion(job.duration != null ? Number(job.duration) : null);
+        setPresupuesto(budgetToInputValue(job.budget));
+        setDireccion(job.address ?? "");
+        setLat(job.lat ?? null);
+        setLng(job.lng ?? null);
+        setExistingFotos((job.images ?? []).map((img) => ({ id: img.id, url: img.url })));
+      })
+      .catch((err) => setLoadJobError(err.message || "Error al cargar el trabajo"))
+      .finally(() => setLoadingJob(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
 
   useEffect(() => {
     return () => fotos.forEach((foto) => URL.revokeObjectURL(foto.previewUrl));
   }, [fotos]);
 
+  const totalFotos = existingFotos.length + fotos.length;
+
   const handleFotosChange = (e) => {
     const selected = Array.from(e.target.files);
     e.target.value = "";
 
-    if (fotos.length + selected.length > MAX_FOTOS) {
+    if (totalFotos + selected.length > MAX_FOTOS) {
       setFotosError(`Podés subir hasta ${MAX_FOTOS} fotos.`);
       return;
     }
@@ -75,6 +123,10 @@ export default function NuevoTrabajo() {
       URL.revokeObjectURL(prev[index].previewUrl);
       return prev.filter((_, i) => i !== index);
     });
+  };
+
+  const handleRemoveExistingFoto = (index) => {
+    setExistingFotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleGeocodeAddress = async () => {
@@ -149,14 +201,14 @@ export default function NuevoTrabajo() {
     setError(null);
 
     try {
-      let imagenes;
+      let nuevasUrls = [];
       if (fotos.length > 0) {
         setUploadingFotos(true);
         const { urls } = await uploadFotos(fotos.map((f) => f.file));
-        imagenes = urls;
+        nuevasUrls = urls;
       }
 
-      await createTrabajo({
+      const datosComunes = {
         id_categoria: idCategoria,
         titulo: titulo.trim(),
         descripcion: descripcion.trim() || undefined,
@@ -167,25 +219,101 @@ export default function NuevoTrabajo() {
         direccion: direccion.trim(),
         lat: lat ?? undefined,
         lng: lng ?? undefined,
-        imagenes,
-      });
-      navigate("/inicio");
+      };
+
+      if (isEdit) {
+        // En edición siempre se manda la lista final completa de fotos (puede quedar vacía).
+        const imagenes = [...existingFotos.map((f) => f.url), ...nuevasUrls];
+        await updateTrabajo(jobId, { ...datosComunes, imagenes });
+        setSaved(true);
+      } else {
+        await createTrabajo({ ...datosComunes, imagenes: nuevasUrls.length > 0 ? nuevasUrls : undefined });
+        navigate("/inicio");
+      }
     } catch (err) {
-      setError(err.message || "Error al publicar la tarea");
+      setError(err.message || (isEdit ? "Error al guardar los cambios" : "Error al publicar la tarea"));
     } finally {
       setSubmitting(false);
       setUploadingFotos(false);
     }
   };
 
+  if (saved) {
+    return (
+      <div className={styles.screen}>
+        <div className={styles.confirmWrapper}>
+          <div className={styles.confirmIconOuter}>
+            <div className={styles.confirmIconInner}>
+              <Check size={32} color="white" strokeWidth={3} />
+            </div>
+          </div>
+
+          <h1 className={styles.confirmTitle}>¡Cambios guardados!</h1>
+          <p className={styles.confirmSubtitle}>Tu publicación fue actualizada</p>
+
+          <div className={styles.confirmCard}>
+            <div className={styles.confirmRow}>
+              <Bell size={18} className={styles.confirmRowIcon} />
+              <span>Los postulantes verán la información actualizada</span>
+            </div>
+            <div className={styles.confirmDivider} />
+            <div className={styles.confirmRow}>
+              <FileEdit size={18} className={styles.confirmRowIcon} />
+              <span>Tu publicación ya está al día</span>
+            </div>
+          </div>
+
+          <p className={styles.confirmHint}>Podés seguir editando cuando quieras</p>
+
+          <button
+            type="button"
+            className={`${styles.submitBtn} ${styles.confirmPrimaryBtn}`}
+            onClick={() => navigate('/inicio', { replace: true })}
+          >
+            Volver al inicio
+          </button>
+          <button
+            type="button"
+            className={styles.confirmSecondaryBtn}
+            onClick={() => navigate(`/ofertas/${jobId}/postulantes`, { replace: true })}
+          >
+            Ver postulantes
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingJob) {
+    return (
+      <div className={styles.screen}>
+        <BackButton title="Editar trabajo" />
+        <p className={styles.subheading} style={{ padding: "20px" }}>Cargando...</p>
+      </div>
+    );
+  }
+
+  if (loadJobError) {
+    return (
+      <div className={styles.screen}>
+        <BackButton title="Editar trabajo" />
+        <p className={styles.errorText} style={{ padding: "20px" }} role="alert">{loadJobError}</p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.screen}>
-      <BackButton title="Nuevo Trabajo" />
+      <BackButton title={isEdit ? "Editar trabajo" : "Nuevo Trabajo"} />
 
       <form className={styles.content} onSubmit={handleSubmit}>
         <div className={styles.intro}>
-          <h1 className={styles.heading}>Nuevo trabajo</h1>
-          <p className={styles.subheading}>Describe lo que necesitas y encontrá la ayuda ideal.</p>
+          <h1 className={styles.heading}>{isEdit ? "Editar trabajo" : "Nuevo trabajo"}</h1>
+          <p className={styles.subheading}>
+            {isEdit
+              ? "Actualizá los datos de tu publicación."
+              : "Describe lo que necesitas y encontrá la ayuda ideal."}
+          </p>
         </div>
 
         <div className={styles.card}>
@@ -278,11 +406,24 @@ export default function NuevoTrabajo() {
             </div>
           </div>
 
-          {fotos.length > 0 && (
+          {(existingFotos.length > 0 || fotos.length > 0) && (
             <div className={styles.photosGrid}>
+              {existingFotos.map((foto, index) => (
+                <div key={foto.url} className={styles.photoThumb}>
+                  <img src={foto.url} alt={`Foto ${index + 1}`} />
+                  <button
+                    type="button"
+                    className={styles.photoRemoveBtn}
+                    onClick={() => handleRemoveExistingFoto(index)}
+                    aria-label="Quitar foto"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
               {fotos.map((foto, index) => (
                 <div key={foto.previewUrl} className={styles.photoThumb}>
-                  <img src={foto.previewUrl} alt={`Foto ${index + 1}`} />
+                  <img src={foto.previewUrl} alt={`Foto ${existingFotos.length + index + 1}`} />
                   <button
                     type="button"
                     className={styles.photoRemoveBtn}
@@ -296,7 +437,7 @@ export default function NuevoTrabajo() {
             </div>
           )}
 
-          {fotos.length < MAX_FOTOS && (
+          {totalFotos < MAX_FOTOS && (
             <>
               <input
                 ref={fileInputRef}
@@ -322,7 +463,9 @@ export default function NuevoTrabajo() {
         {error && <p className={styles.errorText} role="alert">{error}</p>}
 
         <button type="submit" className={styles.submitBtn} disabled={submitting}>
-          {submitting ? (uploadingFotos ? "Subiendo fotos..." : "Publicando...") : "Publicar tarea"}
+          {submitting
+            ? (uploadingFotos ? "Subiendo fotos..." : (isEdit ? "Guardando..." : "Publicando..."))
+            : (isEdit ? "Guardar cambios" : "Publicar tarea")}
         </button>
       </form>
     </div>

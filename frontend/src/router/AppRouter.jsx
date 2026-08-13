@@ -9,13 +9,15 @@ import AppLayout from '../layouts/AppLayout';
 import PrivateRoute from './PrivateRoute';
 import Ofertas from '../pages/contratador/Ofertas';
 import VerPostulantes from '../pages/contratador/VerPostulantes';
+import DetalleTrabajo from '../pages/contratador/DetalleTrabajo';
 import Register from '../pages/shared/Register';
 import Login from '../pages/shared/Login';
 import InicioContratador from '../pages/contratador/InicioContratador';
 import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
 import Perfil from '../pages/shared/Perfil';
-import EditarPerfil from '../pages/shared/EditarPerfil';
+import EditarPerfil from '../pages/shared/editarPerfil';
 import VerPerfil from '../pages/shared/VerPerfil';
+import BuscarTrabajo from '../pages/contratador/BuscarTrabajo';
 
 
 const router = createBrowserRouter([
@@ -33,6 +35,8 @@ const router = createBrowserRouter([
     children: [
       // Sin header/navbar
       { path: '/ofertas/:jobId/postulantes', element: <VerPostulantes /> },
+      { path: '/ofertas/:jobId/detalle', element: <DetalleTrabajo /> },
+      { path: '/ofertas/:jobId/editar', element: <NuevoTrabajo /> },
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
       { path: '/perfil/editar', element: <EditarPerfil/>},
 
@@ -44,6 +48,7 @@ const router = createBrowserRouter([
           { path: '/inicio', element: <InicioContratador /> },
           { path: '/perfil', element: <Perfil />},
           { path: '/perfil/:id', element: <VerPerfil/>},
+          { path: '/buscar', element: <BuscarTrabajo /> },
 
           // acá inicio, chats, perfil...
         ],
