@@ -104,7 +104,7 @@ export default function Login() {
       <h1 className={styles.title}>Bienvenido de nuevo</h1>
       <p className={styles.subtitle}>Iniciá sesión para continuar</p>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={styles.form}>
 
       <div className={styles.inputWrapper}>
         <span className={styles.inputIcon}>

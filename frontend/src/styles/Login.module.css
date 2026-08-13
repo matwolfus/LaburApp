@@ -8,6 +8,13 @@
   font-family: 'Nunito', sans-serif;
 }
 
+/* El form no debe generar su propia caja: sus hijos tienen que participar
+   del flex layout de .container como si el form no estuviera (igual que
+   antes de envolverlos en un <form> para el submit con Enter). */
+.form {
+  display: contents;
+}
+
 /* ── Icon ─────────────────────────────────────────── */
 .iconWrapper {
   width: 68px;
