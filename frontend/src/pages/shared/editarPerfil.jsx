@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { uploadFotos } from "../../services/api";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -20,6 +21,15 @@ export default function EditarPerfil() {
     const [biografiaTrabajador, setBiografiaTrabajador] = useState("");
     const [idLocalidad, setIdLocalidad] = useState("");
     const [avatar, setAvatar] = useState("");
+
+    // =====================================
+    // ESTADO FOTO DE PERFIL
+    // =====================================
+
+    const [avatarPreview, setAvatarPreview] = useState("");
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    const [avatarError, setAvatarError] = useState("");
+    const fileInputRef = useRef(null);
 
     // =====================================
     // ESTADO LOCALIDADES
@@ -163,6 +173,52 @@ export default function EditarPerfil() {
         cargarDatosIniciales();
 
     }, [navigate]);
+
+    // =====================================
+    // FOTO DE PERFIL
+    // =====================================
+
+    useEffect(() => {
+        return () => {
+            if (avatarPreview) {
+                URL.revokeObjectURL(avatarPreview);
+            }
+        };
+    }, [avatarPreview]);
+
+    async function handleAvatarChange(event) {
+
+        const file = event.target.files[0];
+        event.target.value = "";
+
+        if (!file) {
+            return;
+        }
+
+        setAvatarError("");
+        const previewUrl = URL.createObjectURL(file);
+        setAvatarPreview(previewUrl);
+        setUploadingAvatar(true);
+
+        try {
+
+            const { urls } = await uploadFotos([file]);
+            setAvatar(urls[0]);
+
+        } catch (err) {
+
+            setAvatarError(
+                err.message || "No se pudo subir la foto."
+            );
+
+        } finally {
+
+            setAvatarPreview("");
+            setUploadingAvatar(false);
+
+        }
+
+    }
 
     // =====================================
     // GUARDAR CAMBIOS
@@ -515,18 +571,50 @@ export default function EditarPerfil() {
                     <div className={styles.field}>
 
                         <label htmlFor="avatar">
-                            URL del avatar
+                            Foto de perfil
                         </label>
 
-                        <input
-                            id="avatar"
-                            type="text"
-                            value={avatar}
-                            onChange={(e) =>
-                                setAvatar(e.target.value)
-                            }
-                            required
-                        />
+                        <div className={styles.avatarRow}>
+
+                            {(avatarPreview || avatar) ? (
+                                <img
+                                    src={avatarPreview || avatar}
+                                    alt="Foto de perfil"
+                                    className={styles.avatarPreview}
+                                />
+                            ) : (
+                                <div className={styles.avatarPlaceholder} />
+                            )}
+
+                            <input
+                                ref={fileInputRef}
+                                id="avatar"
+                                type="file"
+                                accept="image/*"
+                                className={styles.avatarInputHidden}
+                                onChange={handleAvatarChange}
+                            />
+
+                            <button
+                                type="button"
+                                className={styles.avatarBtn}
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploadingAvatar}
+                            >
+                                {uploadingAvatar
+                                    ? "Subiendo..."
+                                    : avatar
+                                        ? "Cambiar foto"
+                                        : "Elegir foto"}
+                            </button>
+
+                        </div>
+
+                        {avatarError && (
+                            <p className={styles.error}>
+                                {avatarError}
+                            </p>
+                        )}
 
                     </div>
 
@@ -550,7 +638,8 @@ export default function EditarPerfil() {
                             type="submit"
                             disabled={
                                 guardando ||
-                                !telefonoValido
+                                !telefonoValido ||
+                                uploadingAvatar
                             }
                         >
                             {guardando

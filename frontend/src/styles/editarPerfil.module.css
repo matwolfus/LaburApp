@@ -94,6 +94,57 @@
     line-height: 1.4;
 }
 
+/* ===== Foto de perfil ===== */
+
+.avatarRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.avatarPreview {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: #f0f1f6;
+}
+
+.avatarPlaceholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #f0f1f6;
+    border: 1px solid #e3e5ec;
+    flex-shrink: 0;
+}
+
+.avatarInputHidden {
+    display: none;
+}
+
+.avatarBtn {
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #d8dae3;
+    background-color: #ffffff;
+    color: #1a2560;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.avatarBtn:hover:not(:disabled) {
+    background-color: #f0f1f6;
+}
+
+.avatarBtn:disabled {
+    color: #9aa0c3;
+    cursor: not-allowed;
+}
+
 /* ===== Botones ===== */
 
 .buttons {
