@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Check, UserCheck, Eye } from "lucide-react";
 import { uploadFotos } from "../../services/api";
 import styles from "../../styles/editarPerfil.module.css";
 
@@ -43,8 +44,8 @@ export default function EditarPerfil() {
 
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
+    const [guardado, setGuardado] = useState(false);
     const [error, setError] = useState("");
-    const [mensaje, setMensaje] = useState("");
 
     // =====================================
     // VALIDACIÓN DEL TELÉFONO
@@ -117,19 +118,19 @@ export default function EditarPerfil() {
                 );
 
                 setBiografiaContratante(
-                    dataPerfil.biografia_contratante || ""
+                    dataPerfil.biografiaContratante || ""
                 );
 
                 setBiografiaTrabajador(
-                    dataPerfil.biografia_trabajador || ""
+                    dataPerfil.biografiaTrabajador || ""
                 );
 
                 setIdLocalidad(
-                    dataPerfil.id_localidad || ""
+                    dataPerfil.idLocalidad || ""
                 );
 
                 setAvatar(
-                    dataPerfil.url_avatar || ""
+                    dataPerfil.avatar || ""
                 );
 
                 // =====================================
@@ -229,7 +230,6 @@ export default function EditarPerfil() {
         event.preventDefault();
 
         setError("");
-        setMensaje("");
 
         // Validar teléfono antes de enviar
         if (!telefonoValido) {
@@ -315,16 +315,9 @@ export default function EditarPerfil() {
                 return;
             }
 
-            const data = await response.json();
+            await response.json();
 
-            console.log(
-                "Perfil actualizado exitosamente:",
-                data
-            );
-
-            setMensaje(
-                "Perfil actualizado correctamente."
-            );
+            setGuardado(true);
 
         } catch (err) {
 
@@ -360,6 +353,64 @@ export default function EditarPerfil() {
     }
 
     // =====================================
+    // PANTALLA DE CONFIRMACIÓN
+    // =====================================
+
+    if (guardado) {
+
+        return (
+            <main className={styles.container}>
+
+                <div className={styles.confirmWrapper}>
+
+                    <div className={styles.confirmIconOuter}>
+                        <div className={styles.confirmIconInner}>
+                            <Check size={32} color="white" strokeWidth={3} />
+                        </div>
+                    </div>
+
+                    <h1 className={styles.confirmTitle}>
+                        ¡Perfil actualizado!
+                    </h1>
+
+                    <p className={styles.confirmSubtitle}>
+                        Tus cambios ya están guardados
+                    </p>
+
+                    <div className={styles.confirmCard}>
+
+                        <div className={styles.confirmRow}>
+                            <UserCheck size={18} className={styles.confirmRowIcon} />
+                            <span>Tu información ya está al día</span>
+                        </div>
+
+                        <div className={styles.confirmDivider} />
+
+                        <div className={styles.confirmRow}>
+                            <Eye size={18} className={styles.confirmRowIcon} />
+                            <span>Los demás verán tu perfil actualizado</span>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        className={styles.confirmPrimaryBtn}
+                        onClick={() =>
+                            navigate("/perfil", { replace: true })
+                        }
+                    >
+                        Volver a mi perfil
+                    </button>
+
+                </div>
+
+            </main>
+        );
+
+    }
+
+    // =====================================
     // FORMULARIO
     // =====================================
 
@@ -376,12 +427,6 @@ export default function EditarPerfil() {
                 {error && (
                     <p className={styles.error}>
                         {error}
-                    </p>
-                )}
-
-                {mensaje && (
-                    <p className={styles.success}>
-                        {mensaje}
                     </p>
                 )}
 

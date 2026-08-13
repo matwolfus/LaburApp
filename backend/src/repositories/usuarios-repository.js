@@ -115,6 +115,7 @@ export default class UsuariosRepository {
                 u.nombre_completo,
                 u.telefono,
                 u.url_avatar,
+                u.id_localidad,
                 u.biografia_trabajador,
                 u.biografia_contratante,
                 u.verificado,
@@ -257,6 +258,7 @@ export default class UsuariosRepository {
             telefono: usuario.telefono,
             avatar: usuario.url_avatar,
             localidad: usuario.localidad,
+            idLocalidad: usuario.id_localidad,
             verificado: usuario.verificado,
 
             biografiaTrabajador: usuario.biografia_trabajador,
