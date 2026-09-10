@@ -94,6 +94,41 @@ export async function createTrabajo(data) {
   return res.json(); // { id }
 }
 
+// Cierra la sesión del usuario eliminando el JWT guardado.
+export function logout() {
+  localStorage.removeItem("token");
+}
+
+
+// GET /api/usuarios/:id/perfil
+export async function getPerfil(idUsuario) {
+
+  const res = await fetch(`${BASE_URL}/usuarios/${idUsuario}/perfil`, {
+    headers: {
+      ...authHeaders(),
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Error al traer el perfil");
+  }
+
+  return await res.json();
+
+}
+
+// GET /api/localidades
+export async function getLocalidades() {
+  const res = await fetch(`${BASE_URL}/localidades`);
+
+  if (!res.ok) {
+    throw new Error('Error al traer las localidades');
+  }
+
+  return res.json();
+}
+
 // PUT /api/trabajos/:id
 export async function updateTrabajo(jobId, data) {
   const res = await fetch(`${BASE_URL}/trabajos/${jobId}`, {
@@ -117,4 +152,3 @@ export async function buscarTrabajadoresPorCategoria(categoriaId) {
   }
   return res.json();
 }
-

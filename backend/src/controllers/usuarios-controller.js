@@ -39,16 +39,44 @@ router.get('/recomendados', async (req, res) => {
 // GET /api/usuarios/me -> el usuario logueado (identidad tomada del token, no de la URL).
 // Debe declararse ANTES de '/:id' para que no lo capture la ruta con parámetro.
 router.get('/me', authMiddleware, async (req, res) => {
-  try {
-    const user = await service.getUserById(req.userId);
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+    try {
+        const perfil = await service.getPerfil(req.userId);
+        if (!perfil) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+        res.json(perfil);
+    } catch (error) {
+        console.error('Error in GET /me:', error);
+        res.status(500).json({
+            error: 'Internal server error'
+        });
     }
-    res.json(user);
-  } catch (error) {
-    console.error('Error in GET /me:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
+});
+
+router.get('/:id/perfil', async (req, res) => {
+    try {
+
+        const perfil = await service.getPerfil(req.params.id);
+
+        if (!perfil) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        res.json(perfil);
+
+    } catch (error) {
+
+        console.error('Error in GET /:id/perfil:', error);
+
+        res.status(500).json({
+            error: 'Internal server error'
+        });
+
+    }
 });
 
 // PUT /api/usuarios/me/categorias -> reemplaza el set de categorías del usuario logueado.
@@ -91,6 +119,35 @@ router.get('/:id', async (req, res) => {
     console.error('Error in GET /:id:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+router.put('/me', authMiddleware, async (req, res) => {
+
+    try {
+
+        const perfilActualizado = await service.updatePerfil(
+            req.userId,
+            req.body
+        );
+
+        if (!perfilActualizado) {
+            return res.status(404).json({
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        res.json(perfilActualizado);
+
+    } catch (error) {
+
+        console.error('Error in PATCH /me:', error);
+
+        res.status(500).json({
+            error: 'Internal server error'
+        });
+
+    }
+
 });
 
 export default router;

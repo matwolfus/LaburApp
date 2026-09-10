@@ -14,6 +14,9 @@ import Register from '../pages/shared/Register';
 import Login from '../pages/shared/Login';
 import InicioContratador from '../pages/contratador/InicioContratador';
 import NuevoTrabajo from '../pages/contratador/NuevoTrabajo';
+import Perfil from '../pages/shared/Perfil';
+import EditarPerfil from '../pages/shared/editarPerfil';
+import VerPerfil from '../pages/shared/VerPerfil';
 import BuscarTrabajo from '../pages/contratador/BuscarTrabajo';
 
 
@@ -35,6 +38,7 @@ const router = createBrowserRouter([
       { path: '/ofertas/:jobId/detalle', element: <DetalleTrabajo /> },
       { path: '/ofertas/:jobId/editar', element: <NuevoTrabajo /> },
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
+      { path: '/perfil/editar', element: <EditarPerfil/>},
 
       // Con header/navbar
       {
@@ -42,7 +46,10 @@ const router = createBrowserRouter([
         children: [
           { path: '/ofertas', element: <Ofertas /> },
           { path: '/inicio', element: <InicioContratador /> },
-          { path: '/buscar', element: <BuscarTrabajo /> }
+          { path: '/perfil', element: <Perfil />},
+          { path: '/perfil/:id', element: <VerPerfil/>},
+          { path: '/buscar', element: <BuscarTrabajo /> },
+
           // acá inicio, chats, perfil...
         ],
       },

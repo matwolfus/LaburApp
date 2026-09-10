@@ -59,7 +59,8 @@ export default function Login() {
     setApiError(null)
   }
 
-  async function handleSubmit() {
+  async function handleSubmit(e) {
+    e.preventDefault()
     setLoading(true)
     setApiError(null)
 
@@ -103,6 +104,8 @@ export default function Login() {
       <h1 className={styles.title}>Bienvenido de nuevo</h1>
       <p className={styles.subtitle}>Iniciá sesión para continuar</p>
 
+      <form onSubmit={handleSubmit} className={styles.form}>
+
       <div className={styles.inputWrapper}>
         <span className={styles.inputIcon}>
           <IconEmail />
@@ -132,6 +135,7 @@ export default function Login() {
           autoComplete="new-password"
         />
         <button
+          type="button"
           className={styles.eyeBtn}
           onClick={() => setShowPassword(p => !p)}
           aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
@@ -141,7 +145,7 @@ export default function Login() {
       </div>
 
       <div className={styles.forgotWrapper}>
-        <button className={styles.forgotBtn}>¿Olvidaste tu contraseña?</button>
+        <button type="button" className={styles.forgotBtn}>¿Olvidaste tu contraseña?</button>
       </div>
 
       {apiError && (
@@ -149,16 +153,18 @@ export default function Login() {
       )}
 
       <button
+        type="submit"
         className={styles.submitBtn}
-        onClick={handleSubmit}
         disabled={loading || !allValid}
       >
         {loading ? "Iniciando sesión..." : "Iniciar sesión →"}
       </button>
 
+      </form>
+
       <p className={styles.registerText}>
         ¿No tenés cuenta?{" "}
-        <button className={styles.linkBtn} onClick={() => navigate("/registro")}>
+        <button type="button" className={styles.linkBtn} onClick={() => navigate("/registro")}>
           Registrarse
         </button>
       </p>

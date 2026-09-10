@@ -46,7 +46,10 @@ export default class UsuariosService {
         }
 
         const token = jwt.sign(
-            { userId: user.id, rol: user.rol },
+            {
+                userId: user.id,
+                rol: user.rol
+            },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -194,6 +197,22 @@ export default class UsuariosService {
         // Refuerzo del contrato: rating siempre number (el ::float ya lo asegura,
         // pero esto evita que una regresión en la query rompa rating.toFixed(1)).
         return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
+    }
+
+    async getPerfil(idUsuario) {
+        return await this.repository.getPerfil(idUsuario);
+    }
+
+    async updatePerfil(idUsuario, datos) {
+
+    const usuario = await this.repository.getById(idUsuario);
+
+    if (!usuario) {
+        return null;
+    }
+
+    return await this.repository.updatePerfil(idUsuario, datos);
+
     }
 
     // Reemplaza el set completo de categorías que ofrece el usuario autenticado.

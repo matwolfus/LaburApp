@@ -1,0 +1,312 @@
+.container {
+    min-height: 100vh;
+    background-color: #f5f6fa;
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 60px;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.formContainer {
+    width: 100%;
+    max-width: 480px;
+}
+
+.formContainer h1 {
+    color: #1a2560;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.loading {
+    text-align: center;
+    color: #6b7280;
+    padding: 40px 0;
+    font-size: 15px;
+}
+
+/* ===== Mensajes ===== */
+
+.error {
+    background-color: #fdecec;
+    color: #c0392b;
+    border: 1px solid #f5c2c0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.success {
+    background-color: #e9f9ee;
+    color: #1e7e42;
+    border: 1px solid #b9ecc9;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+/* ===== Campos del formulario ===== */
+
+.field {
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a2560;
+    margin-bottom: 6px;
+}
+
+.field input,
+.field textarea {
+    width: 100%;
+    border: 1px solid #e3e5ec;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #26263a;
+    background-color: #fafbfc;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input:focus,
+.field textarea:focus {
+    border-color: #1a2560;
+    box-shadow: 0 0 0 3px rgba(26, 37, 96, 0.12);
+    background-color: #ffffff;
+}
+
+.field textarea {
+    min-height: 90px;
+    resize: vertical;
+    line-height: 1.4;
+}
+
+/* ===== Pantalla de confirmación ===== */
+
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.4); }
+    65%  { opacity: 1; transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+@keyframes ringPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35); }
+    100% { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0); }
+}
+
+.confirmWrapper {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 48px;
+    gap: 10px;
+}
+
+.confirmIconOuter {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: rgba(34, 197, 94, 0.12);
+    display: grid;
+    place-items: center;
+    margin-bottom: 8px;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.confirmIconInner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: grid;
+    place-items: center;
+    animation: ringPulse 1s ease-out 0.35s both;
+}
+
+.confirmTitle {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a2560;
+    animation: fadeSlideUp 0.4s ease-out 0.2s both;
+}
+
+.confirmSubtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 12px;
+    animation: fadeSlideUp 0.4s ease-out 0.28s both;
+}
+
+.confirmCard {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 6px 18px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    animation: fadeSlideUp 0.4s ease-out 0.36s both;
+}
+
+.confirmRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    text-align: left;
+    font-size: 13px;
+    color: #333;
+}
+
+.confirmRowIcon {
+    flex-shrink: 0;
+    color: #1a2560;
+}
+
+.confirmDivider {
+    height: 1px;
+    background: #eef1f6;
+}
+
+.confirmPrimaryBtn {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    background-color: #1a2560;
+    color: #ffffff;
+    margin-top: 14px;
+    animation: fadeSlideUp 0.4s ease-out 0.52s both;
+}
+
+.confirmPrimaryBtn:hover {
+    background-color: #131b4a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confirmIconOuter,
+    .confirmIconInner,
+    .confirmTitle,
+    .confirmSubtitle,
+    .confirmCard,
+    .confirmPrimaryBtn {
+        animation: none;
+    }
+}
+
+/* ===== Foto de perfil ===== */
+
+.avatarRow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.avatarPreview {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: #f0f1f6;
+}
+
+.avatarPlaceholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #f0f1f6;
+    border: 1px solid #e3e5ec;
+    flex-shrink: 0;
+}
+
+.avatarInputHidden {
+    display: none;
+}
+
+.avatarBtn {
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #d8dae3;
+    background-color: #ffffff;
+    color: #1a2560;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.avatarBtn:hover:not(:disabled) {
+    background-color: #f0f1f6;
+}
+
+.avatarBtn:disabled {
+    color: #9aa0c3;
+    cursor: not-allowed;
+}
+
+/* ===== Botones ===== */
+
+.buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.buttons button {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.buttons button[type="button"] {
+    background-color: #ffffff;
+    color: #1a2560;
+    border: 1px solid #d8dae3;
+}
+
+.buttons button[type="button"]:hover {
+    background-color: #f0f1f6;
+}
+
+.buttons button[type="submit"] {
+    background-color: #1a2560;
+    color: #ffffff;
+}
+
+.buttons button[type="submit"]:hover {
+    background-color: #131b4a;
+}
+
+.buttons button[type="submit"]:disabled {
+    background-color: #9aa0c3;
+    cursor: not-allowed;
+}

@@ -57,7 +57,7 @@ export default function InicioContratador() {
       <main className={styles.content}>
         <section aria-label="Saludo">
           <h1 className={styles.greetingTitle}>
-            Hola, {user?.nombre_completo}!<br />
+            Hola, {user?.nombreCompleto}!<br />
             ¿Qué necesitas hoy?
           </h1>
         </section>
