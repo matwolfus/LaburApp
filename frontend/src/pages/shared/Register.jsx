@@ -1,5 +1,7 @@
 ﻿import { useState } from "react"
-import { useNavigate } from "react-router-dom" 
+import { useNavigate } from "react-router-dom"
+import { register } from "../../services/api"
+import { useAuth } from "../../context/useAuth"
 import Banner from "../../assets/Banner.png"
 import "../../styles/Register.css"
 
@@ -22,7 +24,6 @@ const ERROR_MESSAGES = {
   INVALID_PASSWORD: "La contraseña no cumple los requisitos.",
   INVALID_PHONE_LENGTH: "El teléfono debe tener 10 dígitos.",
   INVALID_ROL: "Elegí si sos contratador o trabajador.",
-  ROL_NO_SOPORTADO: "El inicio para trabajadores todavía no está disponible.",
 }
 
 const IconUser = () => (
@@ -69,6 +70,7 @@ const IconEyeOff = () => (
 
 export default function Register() {
   const navigate = useNavigate()
+  const { hydrateModo } = useAuth()
   const [form, setForm] = useState({
     nombre: "",
     apellido: "",
@@ -110,22 +112,13 @@ export default function Register() {
     setApiError(null)
 
     try {
-      const res = await fetch("/api/usuarios/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      })
-
-      const data = await res.json()
+      const data = await register(form)
 
       if (data.success) {
         localStorage.setItem("token", data.token)
         localStorage.setItem("userId", data.userId)
-        if (form.rol === "contratador") {
-          navigate("/inicio")
-        } else {
-          setApiError("ROL_NO_SOPORTADO")
-        }
+        hydrateModo(form.rol)
+        navigate(form.rol === "trabajador" ? "/trabajador/inicio" : "/inicio")
       } else {
         if (data.errorCode === "INVALID_PASSWORD" && data.passwordValidation) {
           setPwdValidation(data.passwordValidation)

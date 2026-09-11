@@ -1,0 +1,108 @@
+.wrapper {
+  background-color: var(--color-bg, #F4F6FB);
+  min-height: 100vh;
+  padding: 0 20px 32px;
+}
+
+.msg {
+  padding: 24px 20px;
+  font-size: 14px;
+  color: var(--color-muted, #64748B);
+  text-align: center;
+}
+
+.jobSummary {
+  background: var(--color-card, #FFFFFF);
+  border-radius: 16px;
+  padding: 18px;
+  margin: 16px 0;
+  border-left: 4px solid var(--color-orange, #F97316);
+  box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
+}
+
+.jobTitle {
+  margin: 0 0 8px;
+  color: var(--color-primary, #2D3B8E);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.jobDetail {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--color-muted, #64748B);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formLabel {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted, #64748B);
+  margin-top: 8px;
+}
+
+.option {
+  text-align: left;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1.5px solid #E2E8F0;
+  background: white;
+  color: var(--color-primary, #2D3B8E);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.optionActive {
+  background: var(--color-primary, #2D3B8E);
+  color: white;
+  border-color: var(--color-primary, #2D3B8E);
+}
+
+.priceInput {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1.5px solid #E2E8F0;
+  font-size: 14px;
+}
+
+.error {
+  color: #DC2626;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.submitBtn {
+  margin-top: 8px;
+  border: none;
+  background: var(--color-orange, #F97316);
+  color: white;
+  padding: 15px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  border: none;
+  background: transparent;
+  color: var(--color-muted, #64748B);
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+

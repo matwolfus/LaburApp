@@ -6,6 +6,18 @@ export default class UsuariosRepository {
         this.db = new Db();
     }
 
+    // Actualiza el "modo activo" del usuario (alternar contratador/trabajador
+    // desde el toggle de Perfil). No toca ninguna otra columna.
+    async updateUltimoRol(idUsuario, rol) {
+        const sql = `
+            UPDATE usuarios
+            SET ultimo_rol = $2, actualizado_en = NOW()
+            WHERE id = $1
+            RETURNING id, ultimo_rol AS rol
+        `;
+        return await this.db.queryOne(sql, [idUsuario, rol]);
+    }
+
     async getByEmail(email) {
         const sql = `
             SELECT id, email, contrasena, ultimo_rol AS rol

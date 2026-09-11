@@ -1,3 +1,4 @@
+import { MessageCircleMore } from "lucide-react";
 import styles from "./PerfilBio.module.css";
 
 export default function PerfilBio({ biografia }) {
@@ -6,6 +7,7 @@ export default function PerfilBio({ biografia }) {
         <section className={styles.card}>
 
             <h3 className={styles.title}>
+                <MessageCircleMore size={17} className={styles.icon} />
                 ¿Quién soy?
             </h3>
 

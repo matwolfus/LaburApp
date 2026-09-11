@@ -125,6 +125,32 @@
   color: #171d6e;
 }
 
+.badgeAceptada {
+  composes: badge;
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+.badgeRechazada {
+  composes: badge;
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+/* ── Precio propuesto ── */
+.price {
+  margin: 0;
+  font-size: 14px;
+  color: #464651;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.priceValue {
+  color: #2f3685;
+  font-weight: 700;
+}
+
 /* ── Actions ── */
 .actions {
   display: flex;
@@ -171,5 +197,28 @@
 }
 
 .chatBtn:hover {
+  opacity: 0.9;
+}
+
+.chatBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.acceptBtn {
+  border: none;
+  background: #16a34a;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.acceptBtn:hover {
   opacity: 0.9;
 }

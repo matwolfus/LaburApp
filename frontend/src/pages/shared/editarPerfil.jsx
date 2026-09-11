@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, UserCheck, Eye } from "lucide-react";
-import { uploadFotos } from "../../services/api";
+import { uploadFotos, BASE_URL } from "../../services/api";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -72,14 +72,14 @@ export default function EditarPerfil() {
 
                 const [resPerfil, resLocalidades] = await Promise.all([
 
-                    fetch("http://localhost:3000/api/usuarios/me", {
+                    fetch(`${BASE_URL}/usuarios/me`, {
                         method: "GET",
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     }),
 
-                    fetch("http://localhost:3000/api/localidades")
+                    fetch(`${BASE_URL}/localidades`)
 
                 ]);
 
@@ -248,7 +248,7 @@ export default function EditarPerfil() {
             const token = localStorage.getItem("token");
 
             const response = await fetch(
-                "http://localhost:3000/api/usuarios/me",
+                `${BASE_URL}/usuarios/me`,
                 {
                     method: "PUT",
 

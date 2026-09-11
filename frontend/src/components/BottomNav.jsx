@@ -1,14 +1,24 @@
 import { NavLink } from 'react-router-dom';
 import { Home, Search, Briefcase, MessageSquare, User } from 'lucide-react';
 
-export default function BottomNav() {
-  const items = [
-    { to: '/inicio', icon: Home,          label: 'Inicio'   },
-    { to: '/buscar',  icon: Search,        label: 'Buscar'   },
-    { to: '/ofertas', icon: Briefcase,     label: 'Trabajos' },
-    { to: '/chats',   icon: MessageSquare, label: 'Chat'     },
-    { to: '/perfil',  icon: User,          label: 'Perfil'   },
-  ];
+const ITEMS_CONTRATADOR = [
+  { to: '/inicio', icon: Home,          label: 'Inicio'   },
+  { to: '/buscar',  icon: Search,        label: 'Buscar'   },
+  { to: '/ofertas', icon: Briefcase,     label: 'Trabajos' },
+  { to: '/chats',   icon: MessageSquare, label: 'Chat'     },
+  { to: '/perfil',  icon: User,          label: 'Perfil'   },
+];
+
+const ITEMS_TRABAJADOR = [
+  { to: '/trabajador/inicio', icon: Home,          label: 'Inicio'       },
+  { to: '/trabajador/buscar', icon: Search,        label: 'Buscar'       },
+  { to: '/trabajador/estado', icon: Briefcase,     label: 'Postulaciones' },
+  { to: '/chats',             icon: MessageSquare, label: 'Chat'         },
+  { to: '/perfil',            icon: User,          label: 'Perfil'       },
+];
+
+export default function BottomNav({ modo }) {
+  const items = modo === 'trabajador' ? ITEMS_TRABAJADOR : ITEMS_CONTRATADOR;
 
   return (
     <nav className="bottom-nav">
@@ -16,7 +26,7 @@ export default function BottomNav() {
         <NavLink
           key={to}
           to={to}
-          end={to === '/'}
+          end={to === '/' || to === '/perfil'}
           className={({ isActive }) =>
             'bottom-nav__item' + (isActive ? ' bottom-nav__item--active' : '')
           }

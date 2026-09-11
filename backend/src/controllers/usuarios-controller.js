@@ -95,6 +95,22 @@ router.put('/me/categorias', authMiddleware, async (req, res) => {
   }
 });
 
+// PATCH /api/usuarios/me/rol -> cambia el modo activo (contratador/trabajador).
+// Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
+router.patch('/me/rol', authMiddleware, async (req, res) => {
+  try {
+    const { rol } = req.body;
+    const result = await service.updateUltimoRolAsync(req.userId, rol);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error in PATCH /me/rol:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/usuarios/buscar?categoria=<id> -> trabajadores que ofrecen esa categoría.
 // Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
 router.get('/buscar', async (req, res) => {

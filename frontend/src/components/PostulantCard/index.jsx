@@ -6,9 +6,17 @@ const BADGE_CONFIG = {
   trabajoConmigo: { label: '✓ Ya trabajó conmigo', className: styles.badgeTrabajo },
 };
 
-const PostulantCard = ({ postulant }) => {
-  const { name, location, rating, reviews, price, badges = [], avatar } = postulant;
+// Valores de `estado` restringidos por CHECK constraint en la tabla postulaciones:
+// 'pendiente' | 'aceptado' | 'rechazado' | 'retirado'.
+const ESTADO_CONFIG = {
+  aceptado:  { label: 'Aceptado',  className: styles.badgeAceptada },
+  rechazado: { label: 'Rechazado', className: styles.badgeRechazada },
+};
+
+const PostulantCard = ({ postulant, onAceptar }) => {
+  const { id, name, location, rating, reviews, price, badges = [], avatar, estado } = postulant;
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2);
+  const estadoBadge = ESTADO_CONFIG[estado];
 
   return (
     <div className={styles.card}>
@@ -34,9 +42,20 @@ const PostulantCard = ({ postulant }) => {
           })}
         </div>
       )}
+      {price != null && (
+        <p className={styles.price}>
+          Propuesta: <span className={styles.priceValue}>${Number(price).toLocaleString('es-AR')}</span>
+        </p>
+      )}
       <div className={styles.actions}>
         <button className={styles.profileBtn}>Ver perfil</button>
-        <button className={styles.chatBtn}>💬</button>
+        <button className={styles.chatBtn} disabled title="Disponible próximamente">💬</button>
+        {estado === 'pendiente' && (
+          <button className={styles.acceptBtn} onClick={() => onAceptar?.(id)} title="Aceptar postulante">
+            ✓ Aceptar
+          </button>
+        )}
+        {estadoBadge && <span className={estadoBadge.className}>{estadoBadge.label}</span>}
       </div>
     </div>
   );

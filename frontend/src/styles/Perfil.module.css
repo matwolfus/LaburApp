@@ -14,6 +14,36 @@
     gap: 24px;
 }
 
+.modoError {
+    margin: -12px 0 0;
+    padding: 10px 14px;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.estado {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 40px 24px;
+    text-align: center;
+    color: #6B7280;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.estado h2 {
+    margin: 0 0 8px;
+    color: #1A2560;
+    font-size: 17px;
+}
+
+.estado p {
+    margin: 0;
+    font-size: 14px;
+}
+
 @media (max-width: 600px) {
     .page {
         padding: 24px 16px;

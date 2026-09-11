@@ -140,6 +140,45 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 // ACÁ YA NO
 
+// PATCH /api/trabajos/:id/completar -> el contratador marca su trabajo
+// 'activa' como completado (cierra también el contrato asociado).
+router.patch('/:id/completar', authMiddleware, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const job = await service.getJobById(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Trabajo no encontrado' });
+    }
+
+    const owner = await service.getJobOwnerAsync(jobId);
+    if (Number(owner) !== req.userId) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    await service.completarTrabajoAsync(jobId, job.estado);
+
+    return res.status(200).json({ id: jobId });
+  } catch (error) {
+    console.error('Error in PATCH /trabajos/:id/completar:', error.message);
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// GET /api/trabajos/buscar?categoria=<id> -> trabajos abiertos, para que un
+// trabajador los descubra (Home / Buscar Trabajos). Sin auth: cualquiera
+// puede navegar changas abiertas sin loguearse, igual que el detalle público.
+// Debe declararse ANTES de '/:id' por el mismo motivo que el resto.
+router.get('/buscar', async (req, res) => {
+  try {
+    const jobs = await service.buscarAbiertosAsync(req.query.categoria);
+    res.json(jobs);
+  } catch (error) {
+    console.error('Error in GET /buscar:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/:id', async (req, res) => {
 
 

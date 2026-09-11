@@ -3,11 +3,11 @@ import { useParams } from "react-router-dom";
 
 import { getPerfil } from "../../services/api";
 
-import VerPerfilHeader from "../../components/VerPerfilHeader";
-import VerPerfilStats from "../../components/VerPerfilStats";
-import VerPerfilBio from "../../components/VerPerfilBio";
-import VerPerfilCategorias from "../../components/VerPerfilCategorias";
-import VerPerfilResenas from "../../components/VerPerfilResenas";
+import PerfilHeader from "../../components/PerfilHeader";
+import PerfilStats from "../../components/PerfilStats";
+import PerfilBio from "../../components/PerfilBio";
+import PerfilCategorias from "../../components/PerfilCategorias";
+import PerfilResenas from "../../components/PerfilResenas";
 
 import styles from "../../styles/Perfil.module.css";
 
@@ -17,6 +17,9 @@ export default function VerPerfil() {
     const { id } = useParams();
 
     const [perfil, setPerfil] = useState(null);
+    // Acá el modo es SOLO local (no pasa por useAuth/switchModo): es la vista
+    // de un perfil ajeno, tocar el toggle solo cambia qué se está mirando,
+    // nunca el modo activo propio.
     const [modo, setModo] = useState(null);
 
     const [loading, setLoading] = useState(true);
@@ -185,26 +188,27 @@ export default function VerPerfil() {
 
             <div className={styles.container}>
 
-                <VerPerfilHeader
+                <PerfilHeader
                     perfil={perfil}
                     modo={modo}
-                    setModo={setModo}
+                    own={false}
                 />
 
-                <VerPerfilStats
+                <PerfilStats
                     datos={datos}
                     miembroDesde={perfil.miembroDesde}
                 />
 
-                <VerPerfilBio
+                <PerfilBio
                     biografia={datos.biografia}
                 />
 
-                <VerPerfilCategorias
+                <PerfilCategorias
                     categorias={datos.categorias}
+                    own={false}
                 />
 
-                <VerPerfilResenas
+                <PerfilResenas
                     resenas={datos.resenas}
                     cantidad={datos.cantidadResenas}
                 />

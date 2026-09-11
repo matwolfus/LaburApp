@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getMiUsuario, logout } from "../../services/api";
+import { useAuth } from "../../context/useAuth";
 import styles from '../../styles/Perfil.module.css'
 
 import PerfilHeader from "../../components/PerfilHeader";
@@ -8,11 +10,22 @@ import PerfilBio from "../../components/PerfilBio";
 import PerfilCategorias from "../../components/PerfilCategorias";
 import PerfilResenas from "../../components/PerfilResenas";
 import PerfilActions from "../../components/PerfilActions";
+import ConfirmModal from "../../components/ConfirmModal";
+import LoadingOverlay from "../../components/LoadingOverlay";
+
+const MIN_SWITCH_DELAY_MS = 1400;
 
 export default function PerfilPage() {
 
+    const navigate = useNavigate();
     const [perfil, setPerfil] = useState(null);
-    const [modo, setModo] = useState(null);
+    const { modo, hydrateModo, switchModo, modoError } = useAuth();
+
+    // Reconfirmación + pantalla de carga al cambiar de rol: roleSwitchTarget
+    // es el modo que se está por confirmar (null = no hay diálogo abierto),
+    // switching es la pantalla de carga que se ve mientras se aplica.
+    const [roleSwitchTarget, setRoleSwitchTarget] = useState(null);
+    const [switching, setSwitching] = useState(false);
 
     useEffect(() => {
 
@@ -23,7 +36,16 @@ export default function PerfilPage() {
                 const perfilCompleto = await getMiUsuario();
 
                 setPerfil(perfilCompleto);
-                setModo(perfilCompleto.ultimoRol);
+
+                // Solo hidrata si todavía no hay modo activo (sesión recién
+                // iniciada / primer login post-feature). Nunca pisa un modo
+                // que el usuario ya eligió a mano vía el toggle — eso sería
+                // un PATCH "actualizar a lo mismo" en cada visita a Perfil,
+                // y acá ni siquiera pega al backend porque es hidratación,
+                // no una decisión del usuario.
+                if (!modo) {
+                    hydrateModo(perfilCompleto.ultimoRol);
+                }
 
             } catch (error) {
 
@@ -77,6 +99,36 @@ export default function PerfilPage() {
 
     }, [perfil, modo]);
 
+    // Pide confirmación antes de tocar el modo activo (a diferencia de
+    // hidratar, esto SÍ es una decisión del usuario). Si confirma, se
+    // muestra la pantalla de carga durante al menos MIN_SWITCH_DELAY_MS
+    // (aunque el PATCH sea instantáneo) para que se sienta como "está
+    // trayendo la info del otro rol", y al terminar navega al home de ese rol.
+    const handleRequestModoChange = (nuevoModo) => {
+        if (nuevoModo === modo) return;
+        setRoleSwitchTarget(nuevoModo);
+    };
+
+    const handleConfirmModoChange = async () => {
+        const nuevoModo = roleSwitchTarget;
+        setRoleSwitchTarget(null);
+        setSwitching(true);
+
+        const start = Date.now();
+        await switchModo(nuevoModo);
+        const restante = MIN_SWITCH_DELAY_MS - (Date.now() - start);
+        if (restante > 0) {
+            await new Promise((resolve) => setTimeout(resolve, restante));
+        }
+
+        setSwitching(false);
+        navigate(nuevoModo === "trabajador" ? "/trabajador/inicio" : "/inicio");
+    };
+
+    if (switching) {
+        return <LoadingOverlay message="Cargando información..." />;
+    }
+
     if (!perfil || !datos) {
         return <div>Cargando...</div>;
     }
@@ -88,8 +140,12 @@ export default function PerfilPage() {
             <PerfilHeader
                 perfil={perfil}
                 modo={modo}
-                setModo={setModo}
+                setModo={handleRequestModoChange}
             />
+
+            {modoError && (
+                <p className={styles.modoError}>{modoError}</p>
+            )}
 
             <PerfilStats
                 datos={datos}
@@ -114,7 +170,17 @@ export default function PerfilPage() {
             />
 
         </div>
+
+        <ConfirmModal
+            open={roleSwitchTarget != null}
+            title={`¿Cambiar a modo ${roleSwitchTarget === "trabajador" ? "Trabajador" : "Contratador"}?`}
+            message="Vas a ver la app desde esa perspectiva. Podés volver a cambiar cuando quieras."
+            confirmLabel="Sí, cambiar"
+            cancelLabel="Cancelar"
+            onConfirm={handleConfirmModoChange}
+            onCancel={() => setRoleSwitchTarget(null)}
+        />
     </div>
 );
 
-}   
+}

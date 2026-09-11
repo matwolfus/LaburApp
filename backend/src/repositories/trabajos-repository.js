@@ -94,7 +94,45 @@ async getJobsByEmployerAndStatus(employerId, status) {
   }
   // ACÁ YA NO
 
-   // Detalle completo de un trabajo (pantalla "Detalle" del contratador).
+   // Trabajos abiertos para que un trabajador los descubra (Home / Buscar).
+  // Sin auth -> NO joinea usuarios (no exponer datos del contratante a
+  // cualquiera sin loguearse). idCategoria es opcional: sin filtro trae
+  // todos los abiertos (feed "Changas disponibles" del Home).
+  async buscarAbiertos(idCategoria) {
+    const values = [];
+    let filtroCategoria = '';
+
+    if (idCategoria) {
+      values.push(idCategoria);
+      filtroCategoria = `AND t.id_categoria = $${values.length}`;
+    }
+
+    const sql = `
+      SELECT
+        t.id,
+        t.titulo          AS title,
+        t.descripcion     AS description,
+        t.presupuesto     AS budget,
+        t.programado_para AS scheduled_at,
+        t.direccion       AS address,
+        t.id_categoria,
+        c.nombre          AS category,
+        l.nombre          AS localidad,
+        pr.nombre         AS provincia,
+        (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url
+      FROM trabajos t
+      LEFT JOIN categorias c ON c.id = t.id_categoria
+      LEFT JOIN localidades l ON l.id = t.id_localidad
+      LEFT JOIN provincias pr ON pr.id = l.id_provincia
+      WHERE t.estado = 'abierto'
+      ${filtroCategoria}
+      ORDER BY t.creado_en DESC
+    `;
+
+    return await this.db.queryAll(sql, values);
+  }
+
+  // Detalle completo de un trabajo (pantalla "Detalle" del contratador).
    async getJobById(jobId) {
 
     const sql = `
@@ -111,9 +149,18 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.lat,
         t.lng,
         t.id_categoria,
+        t.id_contratante,
         c.nombre           AS category,
         l.nombre           AS localidad,
         pr.nombre          AS provincia,
+
+        emp.nombre_completo         AS employer_name,
+        emp.url_avatar              AS employer_avatar,
+        emp.verificado              AS employer_verificado,
+        emp.prom_calif_contratante  AS employer_rating,
+
+        (SELECT COUNT(*) FROM trabajos t2 WHERE t2.id_contratante = t.id_contratante) AS employer_jobs_count,
+        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
 
         COALESCE(
           json_agg(
@@ -140,9 +187,12 @@ async getJobsByEmployerAndStatus(employerId, status) {
       LEFT JOIN imagenes_trabajo i
         ON i.id_trabajo = t.id
 
+      LEFT JOIN usuarios emp
+        ON emp.id = t.id_contratante
+
       WHERE t.id = $1
 
-      GROUP BY t.id, c.nombre, l.nombre, pr.nombre
+      GROUP BY t.id, c.nombre, l.nombre, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado, emp.prom_calif_contratante
     `;
 
     return await this.db.queryOne(sql, [jobId]);
@@ -154,6 +204,33 @@ async getJobsByEmployerAndStatus(employerId, status) {
     const sql = `SELECT id_contratante FROM trabajos WHERE id = $1`;
     const row = await this.db.queryOne(sql, [jobId]);
     return row ? row.id_contratante : null;
+  }
+
+  // Marca un trabajo 'activa' como 'finalizado' y cierra su contrato
+  // ('activo' -> 'completado'). Ambas escrituras en una sola transacción:
+  // sin esto, un contrato podría quedar 'activo' para siempre aunque el
+  // trabajo ya esté finalizado, y las stats del perfil (que cuentan
+  // contratos 'completado') seguirían mostrando 0.
+  async completarTrabajo(jobId) {
+    return await this.db.withTransaction(async (txDb) => {
+
+      const updated = await txDb.queryOne(
+        `UPDATE trabajos SET estado = 'finalizado', actualizado_en = NOW()
+         WHERE id = $1
+         RETURNING id`,
+        [jobId]
+      );
+
+      if (!updated) return null;
+
+      await txDb.queryAll(
+        `UPDATE contratos SET estado = 'completado', completado_en = NOW()
+         WHERE id_trabajo = $1 AND estado = 'activo'`,
+        [jobId]
+      );
+
+      return updated.id;
+    });
   }
 
   // ACÁ AGREGUÉ

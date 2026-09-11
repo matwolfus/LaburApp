@@ -15,7 +15,7 @@ const RecommendedCard = ({ person }) => {
       <p className={styles.description}>{description}</p>
       <button
         className={styles.profileBtn}
-        onClick={() => navigate(`/trabajadores/${id}`)}
+        onClick={() => navigate(`/perfil/${id}`)}
       >
         Ver perfil
       </button>

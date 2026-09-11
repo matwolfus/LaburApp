@@ -18,6 +18,14 @@ import Perfil from '../pages/shared/Perfil';
 import EditarPerfil from '../pages/shared/editarPerfil';
 import VerPerfil from '../pages/shared/VerPerfil';
 import BuscarTrabajo from '../pages/contratador/BuscarTrabajo';
+import Notificaciones from '../pages/shared/Notificaciones';
+import ChatHistorial from '../pages/shared/ChatHistorial';
+
+import HomeTrabajador from '../pages/trabajador/Home';
+import BuscarTrabajos from '../pages/trabajador/BuscarTrabajos';
+import DetalleTrabajoTrabajador from '../pages/trabajador/DetalleTrabajo';
+import Postularme from '../pages/trabajador/Postularme';
+import EstadoTrabajos from '../pages/trabajador/EstadoTrabajos';
 
 
 const router = createBrowserRouter([
@@ -39,6 +47,8 @@ const router = createBrowserRouter([
       { path: '/ofertas/:jobId/editar', element: <NuevoTrabajo /> },
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
       { path: '/perfil/editar', element: <EditarPerfil/>},
+      { path: '/trabajador/trabajos/:jobId', element: <DetalleTrabajoTrabajador /> },
+      { path: '/trabajador/postularme/:jobId', element: <Postularme /> },
 
       // Con header/navbar
       {
@@ -49,8 +59,11 @@ const router = createBrowserRouter([
           { path: '/perfil', element: <Perfil />},
           { path: '/perfil/:id', element: <VerPerfil/>},
           { path: '/buscar', element: <BuscarTrabajo /> },
-
-          // acá inicio, chats, perfil...
+          { path: '/notificaciones', element: <Notificaciones /> },
+          { path: '/chats', element: <ChatHistorial /> },
+          { path: '/trabajador/inicio', element: <HomeTrabajador /> },
+          { path: '/trabajador/buscar', element: <BuscarTrabajos /> },
+          { path: '/trabajador/estado', element: <EstadoTrabajos /> },
         ],
       },
     ],

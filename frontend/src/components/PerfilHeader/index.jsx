@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./PerfilHeader.module.css";
 
 function getIniciales(nombre = "") {
@@ -9,16 +10,19 @@ function getIniciales(nombre = "") {
         .join("");
 }
 
-export default function PerfilHeader({ perfil, modo, setModo }) {
+export default function PerfilHeader({ perfil, modo, setModo, own = true }) {
+
+    const [avatarError, setAvatarError] = useState(false);
 
     return (
         <div className={styles.header}>
 
-            {perfil.avatar ? (
+            {perfil.avatar && !avatarError ? (
                 <img
                     src={perfil.avatar}
                     alt={perfil.nombreCompleto}
                     className={styles.avatar}
+                    onError={() => setAvatarError(true)}
                 />
             ) : (
                 <div className={styles.avatarPlaceholder}>
@@ -45,33 +49,46 @@ export default function PerfilHeader({ perfil, modo, setModo }) {
                 </p>
             )}
 
-            <div className={styles.switch}>
+            {own ? (
+                <div className={styles.switch}>
 
-                <button
-                    type="button"
-                    className={
-                        modo === "trabajador"
-                            ? `${styles.switchBtn} ${styles.activo}`
-                            : styles.switchBtn
-                    }
-                    onClick={() => setModo("trabajador")}
-                >
-                    Trabajador
-                </button>
+                    <button
+                        type="button"
+                        className={
+                            modo === "trabajador"
+                                ? `${styles.switchBtn} ${styles.activo}`
+                                : styles.switchBtn
+                        }
+                        onClick={() => setModo("trabajador")}
+                    >
+                        Trabajador
+                    </button>
 
-                <button
-                    type="button"
-                    className={
-                        modo === "contratador"
-                            ? `${styles.switchBtn} ${styles.activo}`
-                            : styles.switchBtn
-                    }
-                    onClick={() => setModo("contratador")}
-                >
-                    Contratador
-                </button>
+                    <button
+                        type="button"
+                        className={
+                            modo === "contratador"
+                                ? `${styles.switchBtn} ${styles.activo}`
+                                : styles.switchBtn
+                        }
+                        onClick={() => setModo("contratador")}
+                    >
+                        Contratador
+                    </button>
 
-            </div>
+                </div>
+            ) : (
+                // Perfil ajeno: solo indica qué rol se está mostrando, no es
+                // una acción para "cambiarle el rol" a la otra persona.
+                <div className={`${styles.switch} ${styles.switchReadOnly}`}>
+                    <span className={modo === "trabajador" ? `${styles.switchBtn} ${styles.activo}` : styles.switchBtn}>
+                        Trabajador
+                    </span>
+                    <span className={modo === "contratador" ? `${styles.switchBtn} ${styles.activo}` : styles.switchBtn}>
+                        Contratador
+                    </span>
+                </div>
+            )}
 
         </div>
     );

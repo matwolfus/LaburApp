@@ -1,189 +1,207 @@
-﻿// TODO: postulaciones repository
-import { pool } from './../configs/db-config.js';
+// TODO: postulaciones repository
+import Db from './db-pg.js';
 
 export default class PostulacionesRepository {
 
-    getByTrabajoIdAsync = async (idTrabajo) => {
-
-        let returnArray = null;
-
-        try {
-
-            const sql = `
-                SELECT
-
-                    p.id,
-                    p.id_trabajo,
-                    p.id_trabajador,
-                    p.precio_propuesto,
-                    p.estado,
-                    p.postulado_en,
-
-                    u.nombre_completo,
-                    u.url_avatar,
-                    u.biografia_trabajador AS biografia,
-                    u.prom_calif_trabajador,
-
-                    l.nombre AS localidad,
-                    pr.nombre AS provincia,
-
-                    COUNT(r.id) AS count_resenas
-
-                FROM postulaciones p
-
-                INNER JOIN usuarios u
-                    ON p.id_trabajador = u.id
-
-                LEFT JOIN localidades l
-                    ON u.id_localidad = l.id
-
-                LEFT JOIN provincias pr
-                    ON l.id_provincia = pr.id
-
-                LEFT JOIN resenas r
-                    ON r.id_receptor = u.id
-
-                WHERE p.id_trabajo = $1
-
-                GROUP BY
-                    p.id,
-                    u.id,
-                    l.nombre,
-                    pr.nombre
-
-                ORDER BY p.postulado_en DESC
-            `;
-
-            const values = [idTrabajo];
-
-            const result = await pool.query(sql, values);
-
-            returnArray = result.rows;
-
-        } catch (error) {
-
-            console.log(error);
-        }
-
-        return returnArray;
+    constructor() {
+        this.db = new Db();
     }
 
-    // Trae una postulación por su id (para chequear de quién es antes de borrarla).
+    getByTrabajoIdAsync = async (idTrabajo) => {
+
+        const sql = `
+            SELECT
+
+                p.id,
+                p.id_trabajo,
+                p.id_trabajador,
+                p.precio_propuesto,
+                p.estado,
+                p.postulado_en,
+
+                u.nombre_completo,
+                u.url_avatar,
+                u.biografia_trabajador AS biografia,
+                u.prom_calif_trabajador,
+
+                l.nombre AS localidad,
+                pr.nombre AS provincia,
+
+                COUNT(r.id) AS count_resenas
+
+            FROM postulaciones p
+
+            INNER JOIN usuarios u
+                ON p.id_trabajador = u.id
+
+            LEFT JOIN localidades l
+                ON u.id_localidad = l.id
+
+            LEFT JOIN provincias pr
+                ON l.id_provincia = pr.id
+
+            LEFT JOIN resenas r
+                ON r.id_receptor = u.id
+
+            WHERE p.id_trabajo = $1
+
+            GROUP BY
+                p.id,
+                u.id,
+                l.nombre,
+                pr.nombre
+
+            ORDER BY p.postulado_en DESC
+        `;
+
+        return await this.db.queryAll(sql, [idTrabajo]);
+    }
+
+    // Postulaciones propias de un trabajador (pantalla "Mis postulaciones" /
+    // "Estado de trabajos"). Mismo estilo que getByTrabajoIdAsync, pero el
+    // JOIN es contra trabajos (para traer título/categoría de la changa) en
+    // vez de contra usuarios.
+    getByTrabajadorIdAsync = async (idTrabajador) => {
+
+        const sql = `
+            SELECT
+
+                p.id,
+                p.id_trabajo,
+                p.id_trabajador,
+                p.precio_propuesto,
+                p.estado,
+                p.postulado_en,
+
+                t.titulo AS titulo_trabajo,
+                t.estado AS estado_trabajo,
+                t.programado_para,
+                t.direccion,
+
+                c.nombre AS categoria,
+
+                (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url
+
+            FROM postulaciones p
+
+            INNER JOIN trabajos t
+                ON p.id_trabajo = t.id
+
+            LEFT JOIN categorias c
+                ON c.id = t.id_categoria
+
+            WHERE p.id_trabajador = $1
+
+            ORDER BY p.postulado_en DESC
+        `;
+
+        return await this.db.queryAll(sql, [idTrabajador]);
+    }
+
+    // Trae una postulación por su id (para chequear de quién es antes de
+    // borrarla/aceptarla). precio_propuesto se usa al aceptar, para armar
+    // el contrato (ver acceptAsync).
     getByIdAsync = async (id) => {
 
-        let returnEntity = null;
+        const sql = `
+            SELECT id, id_trabajo, id_trabajador, precio_propuesto
+            FROM postulaciones
+            WHERE id = $1
+        `;
 
-        try {
-
-            const sql = `
-                SELECT id, id_trabajo, id_trabajador
-                FROM postulaciones
-                WHERE id = $1
-            `;
-
-            const result = await pool.query(sql, [id]);
-
-            returnEntity = result.rows[0] ?? null;
-
-        } catch (error) {
-
-            console.log(error);
-        }
-
-        return returnEntity;
+        return await this.db.queryOne(sql, [id]);
     }
 
     getCountByTrabajoIdAsync = async (idTrabajo) => {
 
-        let returnEntity = null;
+        const sql = `
+            SELECT COUNT(*) AS total
+            FROM postulaciones
+            WHERE id_trabajo = $1
+        `;
 
-        try {
-
-            const sql = `
-                SELECT COUNT(*) AS total
-                FROM postulaciones
-                WHERE id_trabajo = $1
-            `;
-
-            const values = [idTrabajo];
-
-            const result = await pool.query(sql, values);
-
-            returnEntity = result.rows[0];
-
-        } catch (error) {
-
-            console.log(error);
-        }
-
-        return returnEntity;
+        return await this.db.queryOne(sql, [idTrabajo]);
     }
 
     createAsync = async (entity) => {
 
-        let newId = 0;
+        const sql = `
+            INSERT INTO postulaciones (
+                id_trabajo,
+                id_trabajador,
+                precio_propuesto,
+                estado,
+                postulado_en
+            )
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                NOW()
+            )
+            RETURNING id
+        `;
 
-        try {
+        const values = [
+            entity?.id_trabajo ?? 0,
+            entity?.id_trabajador ?? 0,
+            entity?.precio_propuesto ?? null,
+            entity?.estado ?? 'pendiente'
+        ];
 
-            const sql = `
-                INSERT INTO postulaciones (
-                    id_trabajo,
-                    id_trabajador,
-                    precio_propuesto,
-                    estado,
-                    postulado_en
-                )
-                VALUES (
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    NOW()
-                )
-                RETURNING id
-            `;
-
-            const values = [
-                entity?.id_trabajo ?? 0,
-                entity?.id_trabajador ?? 0,
-                entity?.precio_propuesto ?? null,
-                entity?.estado ?? 'pendiente'
-            ];
-
-            const result = await pool.query(sql, values);
-
-            newId = result.rows[0].id;
-
-        } catch (error) {
-
-            console.log(error);
-        }
-
-        return newId;
+        return await this.db.queryReturnId(sql, values);
     }
 
     deleteByIdAsync = async (id) => {
 
-        let rowsAffected = 0;
+        const sql = `
+            DELETE FROM postulaciones
+            WHERE id = $1
+            RETURNING id
+        `;
 
-        try {
+        const deletedId = await this.db.queryReturnId(sql, [id]);
 
-            const sql = `
-                DELETE FROM postulaciones
-                WHERE id = $1
-            `;
+        return deletedId != null ? 1 : 0;
+    }
 
-            const values = [id];
+    // Acepta una postulación: la marca 'aceptado', rechaza al resto de
+    // postulaciones pendientes de esa misma changa, pasa el trabajo a
+    // 'activa' y crea el contrato correspondiente. Las 4 actualizaciones
+    // van en una sola transacción para que no quede un estado intermedio
+    // inconsistente si algo falla a mitad de camino.
+    acceptAsync = async (idPostulacion, idTrabajo, idContratante, idTrabajador, precioAcordado) => {
 
-            const result = await pool.query(sql, values);
+        return await this.db.withTransaction(async (txDb) => {
 
-            rowsAffected = result.rowCount;
+            await txDb.queryAll(
+                `UPDATE postulaciones SET estado = 'aceptado' WHERE id = $1`,
+                [idPostulacion]
+            );
 
-        } catch (error) {
+            // RETURNING id_trabajador: el controller necesita saber a quién
+            // avisar (notificación 'postulacion_rechazada'), sin otra query.
+            const rechazados = await txDb.queryAll(
+                `UPDATE postulaciones
+                 SET estado = 'rechazado'
+                 WHERE id_trabajo = $1 AND id <> $2 AND estado = 'pendiente'
+                 RETURNING id_trabajador`,
+                [idTrabajo, idPostulacion]
+            );
 
-            console.log(error);
-        }
+            await txDb.queryAll(
+                `UPDATE trabajos SET estado = 'activa' WHERE id = $1`,
+                [idTrabajo]
+            );
 
-        return rowsAffected;
+            await txDb.queryAll(
+                `INSERT INTO contratos (id_trabajo, id_postulacion, id_contratante, id_trabajador, precio_acordado, estado, iniciado_en)
+                 VALUES ($1, $2, $3, $4, $5, 'activo', NOW())`,
+                [idTrabajo, idPostulacion, idContratante, idTrabajador, precioAcordado]
+            );
+
+            return rechazados.map((row) => row.id_trabajador);
+        });
     }
 }

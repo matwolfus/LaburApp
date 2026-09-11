@@ -16,6 +16,11 @@ export default class PostulacionesService {
         return postulaciones;
     }
 
+    getByTrabajadorIdAsync = async (idTrabajador) => {
+
+        return await this.repository.getByTrabajadorIdAsync(idTrabajador);
+    }
+
     getByIdAsync = async (id) => {
 
         return await this.repository.getByIdAsync(id);
@@ -51,5 +56,34 @@ export default class PostulacionesService {
             await this.repository.deleteByIdAsync(id);
 
         return rowsAffected;
+    }
+
+    // Acepta una postulación: rechaza al resto de pendientes de la misma
+    // changa, pasa el trabajo a 'activa' y crea el contrato (ver
+    // PostulacionesRepository.acceptAsync). Misma firma que el repository,
+    // pass-through sin reordenar nada.
+    acceptAsync = async (idPostulacion, idTrabajo, idContratante, idTrabajador, precioAcordado) => {
+
+        if (!idPostulacion) {
+            throw new Error('idPostulacion es requerido');
+        }
+
+        if (!idTrabajo) {
+            throw new Error('idTrabajo es requerido');
+        }
+
+        if (!idContratante) {
+            throw new Error('idContratante es requerido');
+        }
+
+        if (!idTrabajador) {
+            throw new Error('idTrabajador es requerido');
+        }
+
+        if (precioAcordado == null) {
+            throw new Error('precioAcordado es requerido');
+        }
+
+        return await this.repository.acceptAsync(idPostulacion, idTrabajo, idContratante, idTrabajador, precioAcordado);
     }
 }

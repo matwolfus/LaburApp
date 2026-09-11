@@ -1,13 +1,13 @@
 // backend/src/controllers/uploads-controller.js
 import { Router } from 'express';
-import { uploadFotos, buildPublicUrl } from '../middlewares/upload-middleware.js';
+import { uploadFotos, uploadToStorage } from '../middlewares/upload-middleware.js';
 
 const router = Router();
 
 // POST /api/uploads (multipart/form-data, campo "fotos", hasta 2 archivos)
-router.post('/', uploadFotos.array('fotos', 2), (req, res) => {
+router.post('/', uploadFotos.array('fotos', 2), async (req, res) => {
   try {
-    const urls = (req.files ?? []).map((file) => buildPublicUrl(file.filename));
+    const urls = await Promise.all((req.files ?? []).map(uploadToStorage));
     res.status(201).json({ urls });
   } catch (error) {
     console.error('Error in POST /uploads:', error.message);

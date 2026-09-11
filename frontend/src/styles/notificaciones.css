@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+.notif-page {
+  background-color: var(--color-bg, #F4F6FB);
+  min-height: 100vh;
+  padding: 24px 16px 24px;
+  font-family: 'Nunito', sans-serif;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+
+@media (min-width: 600px) {
+  .notif-page { padding: 36px 24px 120px; }
+}
+
+.notif-page__header { margin-bottom: 12px; }
+
+.notif-page__title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-primary, #2D3B8E);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.notif-loading,
+.notif-error,
+.notif-empty {
+  font-size: 14px;
+  color: var(--color-muted, #64748B);
+  text-align: center;
+  padding: 24px 0;
+}
+.notif-error { color: #EF4444; }
+
+.notif-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 8px; }
+
+.notif-card {
+  background: var(--color-card, #FFFFFF);
+  border-radius: var(--radius-card, 16px);
+  border: 0.5px solid #E8ECF3;
+  box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.notif-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(45, 59, 142, 0.08);
+  color: var(--color-primary, #2D3B8E);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-card__body { flex: 1; min-width: 0; }
+
+.notif-card__titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 4px;
+  line-height: 1.4;
+}
+
+.notif-card__cuerpo {
+  font-size: 13px;
+  color: var(--color-muted, #64748B);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.notif-card__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.notif-card__btn {
+  border: 1.5px solid var(--color-primary, #2D3B8E);
+  background: var(--color-primary, #2D3B8E);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  min-height: 36px;
+}
+.notif-card__btn:hover { opacity: 0.9; }
+
+.notif-card__btn--outline {
+  background: transparent;
+  color: var(--color-muted, #64748B);
+  border-color: #D1D5DB;
+}
+.notif-card__btn--outline:hover {
+  background: #F3F4F6;
+  opacity: 1;
+}
+
+.notif-footnote {
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-muted, #64748B);
+  margin-top: 24px;
+}
+
+@media (max-width: 360px) {
+  .notif-page  { padding: 16px 12px 90px; }
+  .notif-card  { padding: 12px; }
+}

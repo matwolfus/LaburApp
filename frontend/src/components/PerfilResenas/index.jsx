@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 import ReviewCard from "../ReviewCard";
 import styles from "./PerfilResenas.module.css";
 
@@ -12,6 +13,7 @@ export default function PerfilResenas({
             <div className={styles.header}>
 
                 <h2 className={styles.title}>
+                    <Star size={17} className={styles.icon} />
                     Reseñas
                 </h2>
 

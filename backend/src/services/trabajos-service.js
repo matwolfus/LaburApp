@@ -44,6 +44,21 @@ export default class TrabajosService {
     return await this.repository.getJobById(jobId);
   }
 
+  // Trabajos abiertos para que un trabajador los descubra (idCategoria opcional).
+  async buscarAbiertosAsync(idCategoria) {
+    return await this.repository.buscarAbiertos(idCategoria);
+  }
+
+  // Marca un trabajo 'activa' como completado (cierra también su contrato).
+  // Valida el estado acá, no en el repository, mismo criterio que el resto
+  // de las validaciones de negocio de este service.
+  async completarTrabajoAsync(jobId, currentEstado) {
+    if (currentEstado !== 'activa') {
+      throw new Error("Solo se puede completar un trabajo en estado 'activa'");
+    }
+    return await this.repository.completarTrabajo(jobId);
+  }
+
   // Devuelve el id del contratador dueño del trabajo (o null si el trabajo no existe).
   async getJobOwnerAsync(jobId) {
     return await this.repository.getOwnerId(jobId);

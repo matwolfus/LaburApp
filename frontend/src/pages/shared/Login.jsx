@@ -1,11 +1,12 @@
 ﻿import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { login } from "../../services/api"
+import { useAuth } from "../../context/useAuth"
 import styles from "../../styles/Login.module.css"
 
 const ERROR_MESSAGES = {
   EMAIL_NOT_FOUND: "No existe ninguna cuenta con ese email.",
   INVALID_PASSWORD: "La contraseña es incorrecta.",
-  ROL_NO_SOPORTADO: "El inicio de sesión para trabajadores todavía no está disponible.",
   UNKNOWN: "Ocurrió un error. Intentá de nuevo.",
 }
 
@@ -47,6 +48,7 @@ const IconEye = () => (
 
 export default function Login() {
   const navigate = useNavigate()
+  const { hydrateModo } = useAuth()
 
   const [form, setForm] = useState({ email: "", contrasena: "" })
   const [showPassword, setShowPassword] = useState(false)
@@ -65,22 +67,13 @@ export default function Login() {
     setApiError(null)
 
     try {
-      const res = await fetch("/api/usuarios/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      })
-
-      const data = await res.json()
+      const data = await login(form.email, form.contrasena)
 
       if (data.success) {
         localStorage.setItem("token", data.token)
         localStorage.setItem("userId", data.userId)
-        if (data.rol === "contratador") {
-          navigate("/inicio")
-        } else {
-          setApiError("ROL_NO_SOPORTADO")
-        }
+        hydrateModo(data.rol)
+        navigate(data.rol === "trabajador" ? "/trabajador/inicio" : "/inicio")
       } else {
         setApiError(data.errorCode ?? "UNKNOWN")
       }

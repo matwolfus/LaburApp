@@ -192,6 +192,21 @@ export default class UsuariosService {
         return await this.repository.getById(id);
     }
 
+    // Cambia el modo activo (contratador/trabajador) del usuario autenticado.
+    async updateUltimoRolAsync(idUsuario, rol) {
+        if (rol !== 'contratador' && rol !== 'trabajador') {
+            return { success: false, errorCode: 'INVALID_ROL' };
+        }
+
+        const usuario = await this.repository.updateUltimoRol(idUsuario, rol);
+
+        if (!usuario) {
+            return { success: false, errorCode: 'USER_NOT_FOUND' };
+        }
+
+        return { success: true, rol: usuario.rol };
+    }
+
     async getRecommendedWorkersAsync() {
         const workers = await this.repository.getRecommendedWorkers();
         // Refuerzo del contrato: rating siempre number (el ::float ya lo asegura,

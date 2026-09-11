@@ -1,6 +1,9 @@
+import { useState } from "react";
 import styles from "./ReviewCard.module.css";
 
 export default function ReviewCard({ review }) {
+
+    const [avatarError, setAvatarError] = useState(false);
 
     const calificacion = Math.max(
         0,
@@ -15,12 +18,13 @@ export default function ReviewCard({ review }) {
 
             <div className={styles.reviewTop}>
 
-                {review?.autor?.avatar ? (
+                {review?.autor?.avatar && !avatarError ? (
 
                     <img
                         src={review.autor.avatar}
                         alt={`Foto de ${review.autor.nombre}`}
                         className={styles.avatar}
+                        onError={() => setAvatarError(true)}
                     />
 
                 ) : (
