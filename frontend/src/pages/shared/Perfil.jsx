@@ -156,8 +156,22 @@ export default function PerfilPage() {
                 biografia={datos.biografia}
             />
 
+            {modo === "trabajador" && (
+                <PerfilCategorias
+                    categorias={(perfil.categoriasOfrecidas || []).map((c) => c.nombre)}
+                    titulo="Categorías que ofrecés"
+                    vacioOwn="Todavía no elegiste categorías. Agregalas desde 'Editar perfil'."
+                />
+            )}
+
             <PerfilCategorias
                 categorias={datos.categorias}
+                titulo={modo === "trabajador" ? "Trabajos en los que participaste" : "Categorías que contrataste"}
+                vacioOwn={
+                    modo === "trabajador"
+                        ? "Todavía no trabajaste en ninguna categoría."
+                        : "Todavía no contrataste en ninguna categoría."
+                }
             />
 
             <PerfilResenas

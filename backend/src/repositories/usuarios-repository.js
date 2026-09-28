@@ -182,6 +182,18 @@ export default class UsuariosRepository {
         `, [idUsuario]);
 
         // ========= CATEGORÍAS =========
+
+        // Categorías que el propio usuario eligió ofrecer (editable desde
+        // "Editar perfil"), separado del historial de en qué trabajó/contrató
+        // abajo (categoriasTrabaja/categoriasContrata, que es de solo lectura).
+        const categoriasOfrecidas = await this.db.queryAll(`
+            SELECT c.id, c.nombre
+            FROM usuario_categoria uc
+            INNER JOIN categorias c ON c.id = uc.id_categoria
+            WHERE uc.id_usuario = $1
+            ORDER BY c.nombre;
+        `, [idUsuario]);
+
                 const categoriasTrabaja = await this.db.queryAll(`
             SELECT DISTINCT
                 c.nombre
@@ -289,6 +301,7 @@ export default class UsuariosRepository {
             cantidadResenasTrabajador: cantidadResenas.trabajador,
             cantidadResenasContratante: cantidadResenas.contratante,
 
+            categoriasOfrecidas: categoriasOfrecidas.map(c => ({ id: c.id, nombre: c.nombre })),
             categoriasTrabaja: categoriasTrabaja.map(c => c.nombre),
             categoriasContrata: categoriasContrata.map(c => c.nombre),
                         resenasTrabajador: resenasTrabajador.map(r => ({

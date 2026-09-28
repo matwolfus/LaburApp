@@ -241,6 +241,20 @@ export async function actualizarRolActivo(rol) {
   return res.json();
 }
 
+// PUT /api/usuarios/me/categorias -> reemplaza el set de categorías que ofrece el usuario
+export async function actualizarMisCategorias(categoriaIds) {
+  const res = await fetch(`${BASE_URL}/usuarios/me/categorias`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ categoriaIds }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al guardar las categorías');
+  }
+  return res.json();
+}
+
 // GET /api/trabajos/buscar?categoria=<id> -> trabajos abiertos (categoria opcional)
 export async function buscarTrabajosPorCategoria(categoriaId) {
   const query = categoriaId ? `?categoria=${categoriaId}` : '';

@@ -78,6 +78,8 @@ export default function VerPerfil() {
 
         return {
 
+            esTrabajador,
+
             rating: esTrabajador
                 ? perfil.ratingTrabajador
                 : perfil.ratingContratante,
@@ -203,9 +205,24 @@ export default function VerPerfil() {
                     biografia={datos.biografia}
                 />
 
+                {datos.esTrabajador && (
+                    <PerfilCategorias
+                        categorias={(perfil.categoriasOfrecidas || []).map((c) => c.nombre)}
+                        own={false}
+                        titulo="Categorías que ofrece"
+                        vacioOther="Este usuario todavía no eligió categorías."
+                    />
+                )}
+
                 <PerfilCategorias
                     categorias={datos.categorias}
                     own={false}
+                    titulo={datos.esTrabajador ? "Trabajos en los que participó" : "Categorías que contrató"}
+                    vacioOther={
+                        datos.esTrabajador
+                            ? "Todavía no trabajó en ninguna categoría."
+                            : "Todavía no contrató en ninguna categoría."
+                    }
                 />
 
                 <PerfilResenas

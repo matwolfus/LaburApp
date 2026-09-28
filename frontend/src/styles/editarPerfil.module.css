@@ -217,6 +217,42 @@
     }
 }
 
+/* ===== Categorías que ofrece ===== */
+
+.categoriasHint {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0 0 10px;
+}
+
+.categoriasGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.categoriaChip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #d8dae3;
+    background-color: #fafbfc;
+    color: #4a4d5c;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.categoriaChip:hover {
+    border-color: #1a2560;
+}
+
+.categoriaChipActive {
+    background-color: #1a2560;
+    border-color: #1a2560;
+    color: #ffffff;
+}
+
 /* ===== Foto de perfil ===== */
 
 .avatarRow {

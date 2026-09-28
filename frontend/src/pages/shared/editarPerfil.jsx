@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, UserCheck, Eye } from "lucide-react";
-import { uploadFotos, BASE_URL } from "../../services/api";
+import { uploadFotos, actualizarMisCategorias, getCategorias, BASE_URL } from "../../services/api";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -39,6 +39,13 @@ export default function EditarPerfil() {
     const [localidades, setLocalidades] = useState([]);
 
     // =====================================
+    // ESTADO CATEGORÍAS QUE OFRECE
+    // =====================================
+
+    const [categorias, setCategorias] = useState([]);
+    const [categoriaIdsSeleccionadas, setCategoriaIdsSeleccionadas] = useState([]);
+
+    // =====================================
     // ESTADOS UI
     // =====================================
 
@@ -70,7 +77,7 @@ export default function EditarPerfil() {
                     return;
                 }
 
-                const [resPerfil, resLocalidades] = await Promise.all([
+                const [resPerfil, resLocalidades, dataCategorias] = await Promise.all([
 
                     fetch(`${BASE_URL}/usuarios/me`, {
                         method: "GET",
@@ -79,9 +86,16 @@ export default function EditarPerfil() {
                         }
                     }),
 
-                    fetch(`${BASE_URL}/localidades`)
+                    fetch(`${BASE_URL}/localidades`),
+
+                    getCategorias().catch((err) => {
+                        console.error("No se pudieron cargar las categorías:", err);
+                        return [];
+                    })
 
                 ]);
+
+                setCategorias(dataCategorias);
 
                 // =====================================
                 // PERFIL
@@ -131,6 +145,10 @@ export default function EditarPerfil() {
 
                 setAvatar(
                     dataPerfil.avatar || ""
+                );
+
+                setCategoriaIdsSeleccionadas(
+                    (dataPerfil.categoriasOfrecidas || []).map((c) => c.id)
                 );
 
                 // =====================================
@@ -219,6 +237,18 @@ export default function EditarPerfil() {
 
         }
 
+    }
+
+    // =====================================
+    // CATEGORÍAS QUE OFRECE
+    // =====================================
+
+    function toggleCategoria(idCategoria) {
+        setCategoriaIdsSeleccionadas((prev) =>
+            prev.includes(idCategoria)
+                ? prev.filter((id) => id !== idCategoria)
+                : [...prev, idCategoria]
+        );
     }
 
     // =====================================
@@ -316,6 +346,16 @@ export default function EditarPerfil() {
             }
 
             await response.json();
+
+            try {
+                await actualizarMisCategorias(categoriaIdsSeleccionadas);
+            } catch (err) {
+                console.error("Error al guardar categorías:", err);
+                setError(
+                    "Se guardó el perfil, pero no se pudieron guardar las categorías. Probá de nuevo."
+                );
+                return;
+            }
 
             setGuardado(true);
 
@@ -605,6 +645,50 @@ export default function EditarPerfil() {
                             ))}
 
                         </select>
+
+                    </div>
+
+
+                    {/* ========================= */}
+                    {/* CATEGORÍAS QUE OFRECE */}
+                    {/* ========================= */}
+
+                    <div className={styles.field}>
+
+                        <label>
+                            Categorías que ofrecés como trabajador
+                        </label>
+
+                        <p className={styles.categoriasHint}>
+                            Elegí en qué categorías querés que te encuentren. Podés cambiarlas cuando quieras.
+                        </p>
+
+                        {categorias.length === 0 ? (
+                            <p className={styles.categoriasHint}>
+                                No hay categorías disponibles.
+                            </p>
+                        ) : (
+                            <div className={styles.categoriasGrid}>
+                                {categorias.map((cat) => {
+                                    const activa = categoriaIdsSeleccionadas.includes(cat.id);
+                                    return (
+                                        <button
+                                            key={cat.id}
+                                            type="button"
+                                            className={
+                                                activa
+                                                    ? `${styles.categoriaChip} ${styles.categoriaChipActive}`
+                                                    : styles.categoriaChip
+                                            }
+                                            aria-pressed={activa}
+                                            onClick={() => toggleCategoria(cat.id)}
+                                        >
+                                            {cat.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
 
                     </div>
 
