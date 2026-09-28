@@ -20,6 +20,7 @@ import VerPerfil from '../pages/shared/VerPerfil';
 import BuscarTrabajo from '../pages/contratador/BuscarTrabajo';
 import Notificaciones from '../pages/shared/Notificaciones';
 import ChatHistorial from '../pages/shared/ChatHistorial';
+import ChatIndividual from '../pages/shared/ChatIndividual';
 import Ajustes from '../pages/shared/Ajustes';
 
 import HomeTrabajador from '../pages/trabajador/Home';
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
       { path: '/perfil/editar', element: <EditarPerfil/>},
       { path: '/trabajador/trabajos/:jobId', element: <DetalleTrabajoTrabajador /> },
       { path: '/trabajador/postularme/:jobId', element: <Postularme /> },
+      { path: '/chats/:idContrato', element: <ChatIndividual /> },
 
       // Con header/navbar
       {

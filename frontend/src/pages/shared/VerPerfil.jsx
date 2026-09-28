@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { MessageSquare } from "lucide-react";
 
-import { getPerfil } from "../../services/api";
+import { getPerfil, getConversaciones } from "../../services/api";
 
 import PerfilHeader from "../../components/PerfilHeader";
 import PerfilStats from "../../components/PerfilStats";
@@ -15,8 +16,15 @@ import styles from "../../styles/Perfil.module.css";
 export default function VerPerfil() {
 
     const { id } = useParams();
+    const navigate = useNavigate();
 
     const [perfil, setPerfil] = useState(null);
+    // Solo se puede chatear si ya existe un contrato entre el usuario
+    // logueado y este perfil (mensajes.id_contrato es NOT NULL: el chat
+    // vive atado a un contrato, no a un par de usuarios en general). Si
+    // nunca trabajaron juntos, no hay a dónde llevar el chat, así que el
+    // botón "Contactar" directamente no se muestra.
+    const [idContratoConEstePerfil, setIdContratoConEstePerfil] = useState(null);
     // Acá el modo es SOLO local (no pasa por useAuth/switchModo): es la vista
     // de un perfil ajeno, tocar el toggle solo cambia qué se está mirando,
     // nunca el modo activo propio.
@@ -64,6 +72,18 @@ export default function VerPerfil() {
         if (id) {
             cargarPerfil();
         }
+
+    }, [id]);
+
+    useEffect(() => {
+        if (!id) return;
+
+        getConversaciones()
+            .then((conversaciones) => {
+                const conv = conversaciones.find((c) => String(c.otro_id) === String(id));
+                setIdContratoConEstePerfil(conv?.id_contrato ?? null);
+            })
+            .catch((err) => console.error("Error al consultar conversaciones:", err));
 
     }, [id]);
 
@@ -195,6 +215,16 @@ export default function VerPerfil() {
                     modo={modo}
                     own={false}
                 />
+
+                {idContratoConEstePerfil && (
+                    <button
+                        className={styles.contactarBtn}
+                        onClick={() => navigate(`/chats/${idContratoConEstePerfil}`)}
+                    >
+                        <MessageSquare size={16} />
+                        Contactar
+                    </button>
+                )}
 
                 <PerfilStats
                     datos={datos}

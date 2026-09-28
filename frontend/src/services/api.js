@@ -222,6 +222,40 @@ export async function crearResena({ id_trabajo, calificacion, comentario }) {
   return res.json();
 }
 
+// GET /api/mensajes/conversaciones (protegida: las del usuario logueado)
+export async function getConversaciones() {
+  const res = await fetch(`${BASE_URL}/mensajes/conversaciones`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error('Error al traer las conversaciones');
+  return res.json();
+}
+
+// GET /api/mensajes/contrato/:idContrato (protegida). desdeId es opcional:
+// sin él trae todo el historial, con él solo los mensajes posteriores a ese id.
+export async function getMensajes(idContrato, desdeId) {
+  const query = desdeId ? `?desde=${desdeId}` : '';
+  const res = await fetch(`${BASE_URL}/mensajes/contrato/${idContrato}${query}`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error('Error al traer los mensajes');
+  return res.json();
+}
+
+// POST /api/mensajes (protegida)
+export async function enviarMensaje(idContrato, cuerpo) {
+  const res = await fetch(`${BASE_URL}/mensajes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ id_contrato: idContrato, cuerpo }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al enviar el mensaje');
+  }
+  return res.json();
+}
+
 // GET /api/notificaciones (protegida: las del usuario logueado)
 export async function getNotificaciones() {
   const res = await fetch(`${BASE_URL}/notificaciones`, {

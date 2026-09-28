@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2, MessageSquare } from 'lucide-react';
 import BackButton from '../BackButton';
 import MapPreview from '../MapPreview';
 import CancelarPostulacionModal from '../CancelarPostulacionModal';
@@ -382,6 +382,13 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             </span>
           )}
         </div>
+
+        {job.id_contrato && (
+          <button className={styles.postulantesBtn} onClick={() => navigate(`/chats/${job.id_contrato}`)}>
+            <MessageSquare size={16} />
+            Chat
+          </button>
+        )}
 
         {job.estado === 'finalizado' && elegibilidadResena?.puedeResenar && (
           <button className={styles.completarBtn} onClick={() => setShowResenaModal(true)}>

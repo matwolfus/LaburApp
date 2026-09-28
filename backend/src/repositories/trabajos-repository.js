@@ -204,6 +204,14 @@ async getJobsByEmployerAndStatus(employerId, status) {
           WHERE mp.id_trabajo = t.id AND mp.id_trabajador = $2 AND mp.estado = 'pendiente'
           LIMIT 1) AS my_proposed_price,
 
+        -- ORDER BY obligatorio: hoy un trabajo debería tener un solo
+        -- contrato (cancelar cierra todo, no hay reapertura), pero sin
+        -- orden un LIMIT 1 es no determinístico si alguna vez hay más de
+        -- una fila, y el botón "Chat" del frontend podría apuntar al
+        -- contrato equivocado.
+        (SELECT co2.id FROM contratos co2
+          WHERE co2.id_trabajo = t.id ORDER BY co2.creado_en DESC LIMIT 1) AS id_contrato,
+
         COALESCE(
           json_agg(
             DISTINCT jsonb_build_object(
