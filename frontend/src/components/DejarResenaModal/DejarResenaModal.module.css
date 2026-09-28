@@ -1,0 +1,99 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px 24px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 19px;
+  font-weight: 800;
+  color: #1F2937;
+}
+
+.subtitle {
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  color: #6B7280;
+}
+
+.stars {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.starBtn {
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.starFilled {
+  color: #F59E0B;
+}
+
+.starEmpty {
+  color: #D1D5DB;
+}
+
+.fieldLabel {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6B7280;
+  margin-bottom: 6px;
+}
+
+.textarea {
+  width: 100%;
+  background: #F5F6FA;
+  border: 1px solid #E8ECF3;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+}
+
+.error {
+  color: #DC2626;
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+.confirmBtn {
+  width: 100%;
+  border: none;
+  background: #2F3685;
+  color: white;
+  padding: 15px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmBtn:hover:not(:disabled) { opacity: 0.9; }
+
+.volverBtn {
+  margin-top: 12px;
+  border: none;
+  background: transparent;
+  color: #2F3685;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}

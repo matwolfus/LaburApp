@@ -199,6 +199,29 @@ export async function cancelarTrabajo(jobId) {
   return res.json();
 }
 
+// GET /api/resenas/elegibilidad/:idTrabajo (protegida: la del usuario logueado)
+export async function getElegibilidadResena(jobId) {
+  const res = await fetch(`${BASE_URL}/resenas/elegibilidad/${jobId}`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error('Error al consultar la reseña');
+  return res.json();
+}
+
+// POST /api/resenas (protegida)
+export async function crearResena({ id_trabajo, calificacion, comentario }) {
+  const res = await fetch(`${BASE_URL}/resenas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ id_trabajo, calificacion, comentario }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al enviar la reseña');
+  }
+  return res.json();
+}
+
 // GET /api/notificaciones (protegida: las del usuario logueado)
 export async function getNotificaciones() {
   const res = await fetch(`${BASE_URL}/notificaciones`, {

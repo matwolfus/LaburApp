@@ -131,8 +131,6 @@ export default class UsuariosRepository {
                 u.biografia_trabajador,
                 u.biografia_contratante,
                 u.verificado,
-                u.prom_calif_trabajador,
-                u.prom_calif_contratante,
                 u.creado_en,
                 u.ultimo_rol,
                 l.nombre AS localidad
@@ -165,7 +163,11 @@ export default class UsuariosRepository {
             FROM contratos;
         `, [idUsuario]);
 
-        const cantidadResenas = await this.db.queryOne(`
+        // Se calcula en vivo con AVG en vez de leer prom_calif_trabajador/
+        // prom_calif_contratante de la tabla usuarios: esas columnas existen
+        // pero nunca se escriben (no hay trigger ni servicio que las
+        // mantenga), así que quedarían siempre en su valor default/viejo.
+        const resenasStats = await this.db.queryOne(`
             SELECT
 
                 COUNT(*) FILTER (
@@ -174,7 +176,15 @@ export default class UsuariosRepository {
 
                 COUNT(*) FILTER (
                     WHERE es_contratante = true
-                )::int AS contratante
+                )::int AS contratante,
+
+                AVG(calificacion) FILTER (
+                    WHERE es_contratante = false
+                )::float AS prom_trabajador,
+
+                AVG(calificacion) FILTER (
+                    WHERE es_contratante = true
+                )::float AS prom_contratante
 
             FROM resenas
 
@@ -292,14 +302,14 @@ export default class UsuariosRepository {
 
             ultimoRol: usuario.ultimo_rol,
 
-            ratingTrabajador: usuario.prom_calif_trabajador,
-            ratingContratante: usuario.prom_calif_contratante,
+            ratingTrabajador: resenasStats.prom_trabajador,
+            ratingContratante: resenasStats.prom_contratante,
 
             trabajosRealizados: contratos.trabajos_realizados,
             trabajosPublicados: contratos.trabajos_publicados,
 
-            cantidadResenasTrabajador: cantidadResenas.trabajador,
-            cantidadResenasContratante: cantidadResenas.contratante,
+            cantidadResenasTrabajador: resenasStats.trabajador,
+            cantidadResenasContratante: resenasStats.contratante,
 
             categoriasOfrecidas: categoriasOfrecidas.map(c => ({ id: c.id, nombre: c.nombre })),
             categoriasTrabaja: categoriasTrabaja.map(c => c.nombre),

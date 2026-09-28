@@ -10,6 +10,7 @@ import usuariosRouter from './controllers/usuarios-controller.js';
 import localidadesRouter from './controllers/localidades-controller.js';
 import uploadsRouter from './controllers/uploads-controller.js';
 import notificacionesRouter from './controllers/notificaciones-controller.js';
+import resenasRouter from './controllers/resenas-controller.js';
 import { UPLOADS_DIR } from './middlewares/upload-middleware.js';
 
 const app  = express();
@@ -33,5 +34,7 @@ app.use('/api/localidades', localidadesRouter);
 app.use('/api/uploads', uploadsRouter);
 
 app.use('/api/notificaciones', notificacionesRouter);
+
+app.use('/api/resenas', resenasRouter);
 
 app.listen(port, () => console.log(`LaburApp backend running at http://localhost:${port}`));

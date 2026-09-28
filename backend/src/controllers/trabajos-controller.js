@@ -158,7 +158,32 @@ router.patch('/:id/completar', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'No autorizado' });
     }
 
-    await service.completarTrabajoAsync(jobId, job.estado);
+    const resultado = await service.completarTrabajoAsync(jobId, job.estado);
+
+    // Notificación DESPUÉS del commit, en su propio try/catch (mismo
+    // criterio que cancelar/aceptar): avisa a ambas partes que ya pueden
+    // dejarse una reseña mutuamente.
+    try {
+      await notificacionesService.crearAsync({
+        id_usuario: owner,
+        tipo: 'trabajo_completado',
+        titulo: `Marcaste "${job.title}" como completado. ¡Dejá tu reseña!`,
+        cuerpo: null,
+        id_referencia: jobId,
+      });
+
+      if (resultado?.idTrabajador) {
+        await notificacionesService.crearAsync({
+          id_usuario: resultado.idTrabajador,
+          tipo: 'trabajo_completado',
+          titulo: `"${job.title}" se completó. ¡Dejá tu reseña!`,
+          cuerpo: null,
+          id_referencia: jobId,
+        });
+      }
+    } catch (notifError) {
+      console.error('Error notificando trabajo completado:', notifError);
+    }
 
     return res.status(200).json({ id: jobId });
   } catch (error) {

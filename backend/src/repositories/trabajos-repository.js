@@ -265,13 +265,14 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       if (!updated) return null;
 
-      await txDb.queryAll(
+      const contrato = await txDb.queryOne(
         `UPDATE contratos SET estado = 'completado', completado_en = NOW()
-         WHERE id_trabajo = $1 AND estado = 'activo'`,
+         WHERE id_trabajo = $1 AND estado = 'activo'
+         RETURNING id_trabajador`,
         [jobId]
       );
 
-      return updated.id;
+      return { id: updated.id, idTrabajador: contrato?.id_trabajador ?? null };
     });
   }
 

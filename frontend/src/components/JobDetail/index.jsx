@@ -4,7 +4,8 @@ import { MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2 } f
 import BackButton from '../BackButton';
 import MapPreview from '../MapPreview';
 import CancelarPostulacionModal from '../CancelarPostulacionModal';
-import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo } from '../../services/api';
+import DejarResenaModal from '../DejarResenaModal';
+import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena } from '../../services/api';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import styles from './JobDetail.module.css';
 
@@ -72,6 +73,11 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const [actionError, setActionError] = useState(null);
   const [employerAvatarError, setEmployerAvatarError] = useState(false);
 
+  // Elegibilidad para dejar reseña: solo aplica una vez que el trabajo está
+  // finalizado, para cualquiera de los dos lados (contratador o trabajador).
+  const [elegibilidadResena, setElegibilidadResena] = useState(null);
+  const [showResenaModal, setShowResenaModal] = useState(false);
+
   const cargarJob = useCallback(() => {
     return getTrabajoById(jobId)
       .then(setJob)
@@ -94,6 +100,17 @@ const JobDetail = ({ jobId, isOwner = true }) => {
       .catch((err) => console.error('Error al traer tus postulaciones:', err))
       .finally(() => setPostulacionesLoaded(true));
   }, [jobId, isOwner]);
+
+  const cargarElegibilidadResena = useCallback(() => {
+    return getElegibilidadResena(jobId)
+      .then(setElegibilidadResena)
+      .catch((err) => console.error('Error al consultar elegibilidad de reseña:', err));
+  }, [jobId]);
+
+  useEffect(() => {
+    if (job?.estado !== 'finalizado') return;
+    cargarElegibilidadResena();
+  }, [job?.estado, cargarElegibilidadResena]);
 
   const handleCompletar = async () => {
     if (!window.confirm('¿Marcar este trabajo como completado?')) return;
@@ -365,6 +382,17 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             </span>
           )}
         </div>
+
+        {job.estado === 'finalizado' && elegibilidadResena?.puedeResenar && (
+          <button className={styles.completarBtn} onClick={() => setShowResenaModal(true)}>
+            <Star size={16} />
+            Dejar reseña
+          </button>
+        )}
+
+        {job.estado === 'finalizado' && elegibilidadResena?.yaReseño && (
+          <p className={styles.msg}>Ya dejaste tu reseña para este trabajo.</p>
+        )}
       </div>
 
       <CancelarPostulacionModal
@@ -372,6 +400,14 @@ const JobDetail = ({ jobId, isOwner = true }) => {
         postulacionId={miPostulacion?.id}
         onClose={() => setShowCancelModal(false)}
         onCancelled={() => setMiPostulacion(null)}
+      />
+
+      <DejarResenaModal
+        open={showResenaModal}
+        jobId={jobId}
+        onClose={() => setShowResenaModal(false)}
+        onSubmitted={cargarElegibilidadResena}
+        onDone={() => navigate(isOwner ? '/inicio' : '/trabajador/inicio')}
       />
     </div>
   );
