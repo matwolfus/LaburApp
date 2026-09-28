@@ -117,9 +117,12 @@ export async function createTrabajo(data) {
   return res.json(); // { id }
 }
 
-// Cierra la sesión del usuario eliminando el JWT guardado.
+// Cierra la sesión del usuario eliminando el JWT y el userId guardados
+// (Login.jsx guarda ambos al iniciar sesión; antes acá solo se borraba el
+// token y el userId quedaba pegado en localStorage entre sesiones).
 export function logout() {
   localStorage.removeItem("token");
+  localStorage.removeItem("userId");
 }
 
 
