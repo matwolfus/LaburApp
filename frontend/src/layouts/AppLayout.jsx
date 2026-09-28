@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import BottomNav from '../components/BottomNav';
+import Sidebar from '../components/Sidebar';
 import { getMiUsuario } from '../services/api';
 import { useAuth } from '../context/useAuth';
 import '../layouts/layout.css';
@@ -12,6 +13,7 @@ const DEFAULT_AVATAR = 'https://placehold.co/40x40/CBD5E1/FFFFFF?text=R';
 export default function AppLayout() {
   const navigate = useNavigate();
   const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { modo, hydrateModo } = useAuth();
 
   useEffect(() => {
@@ -28,7 +30,13 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
-      <Header logoSrc={logo} avatarSrc={avatar} onBellClick={() => navigate('/notificaciones')} />
+      <Header
+        logoSrc={logo}
+        avatarSrc={avatar}
+        onBellClick={() => navigate('/notificaciones')}
+        onMenuClick={() => setSidebarOpen(true)}
+      />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="app-shell__content">
         <Outlet />
       </main>

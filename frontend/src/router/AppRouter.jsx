@@ -20,6 +20,7 @@ import VerPerfil from '../pages/shared/VerPerfil';
 import BuscarTrabajo from '../pages/contratador/BuscarTrabajo';
 import Notificaciones from '../pages/shared/Notificaciones';
 import ChatHistorial from '../pages/shared/ChatHistorial';
+import Ajustes from '../pages/shared/Ajustes';
 
 import HomeTrabajador from '../pages/trabajador/Home';
 import BuscarTrabajos from '../pages/trabajador/BuscarTrabajos';
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
           { path: '/buscar', element: <BuscarTrabajo /> },
           { path: '/notificaciones', element: <Notificaciones /> },
           { path: '/chats', element: <ChatHistorial /> },
+          { path: '/ajustes', element: <Ajustes /> },
           { path: '/trabajador/inicio', element: <HomeTrabajador /> },
           { path: '/trabajador/buscar', element: <BuscarTrabajos /> },
           { path: '/trabajador/estado', element: <EstadoTrabajos /> },
