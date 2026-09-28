@@ -40,8 +40,8 @@ export default class TrabajosService {
   async getActiveJobsAsync(employerId) {
     return await this.repository.getJobsByEmployerAndStatus(employerId, 'activa');
   }
-   async getJobById(jobId) {
-    return await this.repository.getJobById(jobId);
+   async getJobById(jobId, viewerUserId = null) {
+    return await this.repository.getJobById(jobId, viewerUserId);
   }
 
   // Trabajos abiertos para que un trabajador los descubra (idCategoria opcional).
@@ -57,6 +57,14 @@ export default class TrabajosService {
       throw new Error("Solo se puede completar un trabajo en estado 'activa'");
     }
     return await this.repository.completarTrabajo(jobId);
+  }
+
+  // Un trabajo ya 'finalizado' o 'cancelado' no se puede volver a cancelar.
+  async cancelarTrabajoAsync(jobId, currentEstado) {
+    if (currentEstado === 'finalizado' || currentEstado === 'cancelado') {
+      throw new Error(`No se puede cancelar un trabajo en estado '${currentEstado}'`);
+    }
+    return await this.repository.cancelarTrabajo(jobId);
   }
 
   // Devuelve el id del contratador dueño del trabajo (o null si el trabajo no existe).

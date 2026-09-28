@@ -20,7 +20,7 @@ const SeePostulants = ({ JobID }) => {
     <div className={styles.wrapper}>
       <BackButton />
       {!loading && <JobSelected job={job} />}
-      <PostulantsArray jobId={JobID} />
+      <PostulantsArray jobId={JobID} jobBudget={job?.budget} jobEstado={job?.estado} />
     </div>
   );
 };

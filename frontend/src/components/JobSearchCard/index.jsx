@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { getCategoryIcon } from '../../utils/categoryIcons';
 import styles from './JobSearchCard.module.css';
 
 // Tarjeta de un trabajo abierto en las pantallas de trabajador (Home /
@@ -8,6 +9,7 @@ import styles from './JobSearchCard.module.css';
 const JobSearchCard = ({ id, title, description, budget, address, category, localidad, provincia, image_url }) => {
   const navigate = useNavigate();
   const ubicacion = [localidad, provincia].filter(Boolean).join(', ') || address;
+  const CategoryIcon = getCategoryIcon(category);
 
   return (
     <article className={styles.card}>
@@ -16,7 +18,9 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
         {image_url ? (
           <img src={image_url} alt="" className={styles.image} />
         ) : (
-          <div className={styles.imageFallback}>🧰</div>
+          <div className={styles.imageFallback} aria-hidden="true">
+            <CategoryIcon size={24} strokeWidth={2} />
+          </div>
         )}
 
         <div className={styles.info}>

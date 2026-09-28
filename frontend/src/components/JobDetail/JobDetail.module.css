@@ -219,6 +219,14 @@
   color: var(--color-primary);
 }
 
+.precioOriginal {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-muted);
+  text-decoration: line-through;
+  margin-left: 4px;
+}
+
 /* ── Gallery ──────────────────────────────────────── */
 .gallery {
   display: grid;

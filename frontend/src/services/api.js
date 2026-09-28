@@ -30,9 +30,13 @@ export async function register(payload) {
   return res.json();
 }
 
-// GET /api/trabajos/:id
+// GET /api/trabajos/:id (pública: funciona sin sesión, pero si hay token lo
+// manda para que el backend pueda incluir el precio propuesto propio si
+// corresponde)
 export async function getTrabajoById(jobId) {
-  const res = await fetch(`${BASE_URL}/trabajos/${jobId}`);
+  const res = await fetch(`${BASE_URL}/trabajos/${jobId}`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error('Error al traer el trabajo');
   return res.json();
 }
@@ -178,6 +182,19 @@ export async function completarTrabajo(jobId) {
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || 'Error al marcar el trabajo como completado');
+  }
+  return res.json();
+}
+
+// PATCH /api/trabajos/:id/cancelar (protegida: solo el dueño del trabajo)
+export async function cancelarTrabajo(jobId) {
+  const res = await fetch(`${BASE_URL}/trabajos/${jobId}/cancelar`, {
+    method: 'PATCH',
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al cancelar el trabajo');
   }
   return res.json();
 }

@@ -8,6 +8,8 @@ export default class TrabajosRepository {
 
 // Devuelve todos los trabajos de un empleador determinado filtrados por estado
 async getJobsByEmployerAndStatus(employerId, status) {
+    await this.expirarVencidos();
+
     // Usamos subconsultas (en vez de JOIN + GROUP BY) para: (a) no inflar el COUNT
     // por el cruce con imagenes_trabajo, y (b) sumar los avatares de los primeros
     // 3 postulantes para mostrarlos en la tarjeta.
@@ -16,6 +18,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.id,
         t.titulo          AS title,
         t.programado_para AS scheduled_at,
+        c.nombre          AS category,
         (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
         (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
         COALESCE((
@@ -30,6 +33,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
           ) sub
         ), '[]') AS applicant_avatars
       FROM trabajos t
+      LEFT JOIN categorias c ON c.id = t.id_categoria
       WHERE t.id_contratante = $1
         AND t.estado         = $2
       ORDER BY t.programado_para ASC
@@ -45,12 +49,15 @@ async getJobsByEmployerAndStatus(employerId, status) {
   // Misma forma que getJobsByEmployerAndStatus (la necesita JobCard), pero sin filtrar por
   // estado, e incluyendo 'estado' para que el frontend agrupe en Próximas/Activas.
   async getAllJobsByEmployer(employerId) {
+    await this.expirarVencidos();
+
     const sql = `
       SELECT
         t.id,
         t.titulo          AS title,
         t.estado,
         t.programado_para AS scheduled_at,
+        c.nombre          AS category,
         (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
         (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
         COALESCE((
@@ -65,6 +72,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
           ) sub
         ), '[]') AS applicant_avatars
       FROM trabajos t
+      LEFT JOIN categorias c ON c.id = t.id_categoria
       WHERE t.id_contratante = $1
       ORDER BY t.programado_para ASC
     `;
@@ -74,7 +82,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
   // ACÁ AGREGUÉ
   // Trabajos de un contratante para la home ("Tus Trabajos").
-  // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado }.
+  // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado, category }.
   // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
   async getJobsByEmployer(employerId) {
     const sql = `
@@ -83,22 +91,43 @@ async getJobsByEmployerAndStatus(employerId, status) {
         MIN(i.url_imagen) AS image_url,
         t.titulo          AS title,
         t.descripcion     AS description,
-        t.estado
+        t.estado,
+        c.nombre          AS category
       FROM trabajos t
       LEFT JOIN imagenes_trabajo i ON i.id_trabajo = t.id
+      LEFT JOIN categorias c ON c.id = t.id_categoria
       WHERE t.id_contratante = $1
-      GROUP BY t.id
+      GROUP BY t.id, c.nombre
       ORDER BY t.programado_para DESC
     `;
     return await this.db.queryAll(sql, [employerId]);
   }
   // ACÁ YA NO
 
+  // Caducidad: un trabajo 'abierto'/'proxima' cuya fecha programada ya pasó
+  // sin haberse activado nunca (aceptar una postulación pasa el estado a
+  // 'activa' en la misma transacción que crea el contrato, así que un
+  // trabajo en 'abierto'/'proxima' nunca tiene contrato) se marca 'vencido'.
+  // No hay cron en el proyecto: se resuelve con un UPDATE liviano antes de
+  // cada lectura de trabajos abiertos, mismo patrón "chequeo al leer" que ya
+  // usa el resto del código en vez de sumar una dependencia nueva.
+  async expirarVencidos() {
+    await this.db.queryAll(`
+      UPDATE trabajos
+      SET estado = 'vencido', actualizado_en = NOW()
+      WHERE estado IN ('abierto', 'proxima')
+        AND programado_para IS NOT NULL
+        AND programado_para < NOW()
+    `);
+  }
+
    // Trabajos abiertos para que un trabajador los descubra (Home / Buscar).
   // Sin auth -> NO joinea usuarios (no exponer datos del contratante a
   // cualquiera sin loguearse). idCategoria es opcional: sin filtro trae
   // todos los abiertos (feed "Changas disponibles" del Home).
   async buscarAbiertos(idCategoria) {
+    await this.expirarVencidos();
+
     const values = [];
     let filtroCategoria = '';
 
@@ -133,7 +162,13 @@ async getJobsByEmployerAndStatus(employerId, status) {
   }
 
   // Detalle completo de un trabajo (pantalla "Detalle" del contratador).
-   async getJobById(jobId) {
+  // viewerUserId es opcional (la ruta es pública): si viene, permite traer
+  // el precio propuesto por ESE usuario si tiene una postulación propia
+  // pendiente. contract_price siempre se calcula (no depende de quién mira):
+  // es el precio ya acordado del contrato activo, si existe. Precedencia en
+  // el frontend: contract_price > my_proposed_price > budget (ver JobDetail).
+   async getJobById(jobId, viewerUserId = null) {
+    await this.expirarVencidos();
 
     const sql = `
       SELECT
@@ -161,6 +196,13 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
         (SELECT COUNT(*) FROM trabajos t2 WHERE t2.id_contratante = t.id_contratante) AS employer_jobs_count,
         (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+
+        (SELECT co.precio_acordado FROM contratos co
+          WHERE co.id_trabajo = t.id AND co.estado = 'activo' LIMIT 1) AS contract_price,
+
+        (SELECT mp.precio_propuesto FROM postulaciones mp
+          WHERE mp.id_trabajo = t.id AND mp.id_trabajador = $2 AND mp.estado = 'pendiente'
+          LIMIT 1) AS my_proposed_price,
 
         COALESCE(
           json_agg(
@@ -195,7 +237,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
       GROUP BY t.id, c.nombre, l.nombre, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado, emp.prom_calif_contratante
     `;
 
-    return await this.db.queryOne(sql, [jobId]);
+    return await this.db.queryOne(sql, [jobId, viewerUserId]);
   }
 
   // Devuelve el id del contratador dueño del trabajo (o null si no existe).
@@ -230,6 +272,49 @@ async getJobsByEmployerAndStatus(employerId, status) {
       );
 
       return updated.id;
+    });
+  }
+
+  // Cancela un trabajo (lo puede hacer el contratador mientras no esté
+  // 'finalizado'): pasa trabajos.estado a 'cancelado', rechaza las
+  // postulaciones pendientes y cierra el contrato activo si había uno (por
+  // ejemplo si ya había un trabajador aceptado cuando se cancela). Todo en
+  // una transacción, mismo criterio que completarTrabajo. Devuelve los ids
+  // de trabajador a notificar (postulantes rechazados + el contratado, si
+  // corresponde) para que el controller notifique después del commit.
+  async cancelarTrabajo(jobId) {
+    return await this.db.withTransaction(async (txDb) => {
+
+      const updated = await txDb.queryOne(
+        `UPDATE trabajos SET estado = 'cancelado', actualizado_en = NOW()
+         WHERE id = $1
+         RETURNING id`,
+        [jobId]
+      );
+
+      if (!updated) return null;
+
+      const rechazados = await txDb.queryAll(
+        `UPDATE postulaciones
+         SET estado = 'rechazado'
+         WHERE id_trabajo = $1 AND estado = 'pendiente'
+         RETURNING id_trabajador`,
+        [jobId]
+      );
+
+      const contratosCancelados = await txDb.queryAll(
+        `UPDATE contratos SET estado = 'cancelado'
+         WHERE id_trabajo = $1 AND estado = 'activo'
+         RETURNING id_trabajador`,
+        [jobId]
+      );
+
+      const idsANotificar = [
+        ...rechazados.map((r) => r.id_trabajador),
+        ...contratosCancelados.map((c) => c.id_trabajador),
+      ];
+
+      return { id: updated.id, idsANotificar };
     });
   }
 

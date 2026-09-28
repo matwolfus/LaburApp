@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase } from 'lucide-react';
+import { getCategoryIcon } from '../utils/categoryIcons';
 
 //El componente recibe un objeto job con todos los datos de un trabajo.
 export default function JobCard({ job }) {
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
 
-  const { id, title, scheduled_at, image_url, applicants_count, applicant_avatars } = job; //extrae de JOB en lugar de hacer const title = job.title ...
+  const { id, title, category, scheduled_at, image_url, applicants_count, applicant_avatars } = job; //extrae de JOB en lugar de hacer const title = job.title ...
+  const CategoryIcon = getCategoryIcon(category);
 
   // Mostramos la foto solo si hay URL y no falló al cargar; si no, va un placeholder.
   const showImage = image_url && !imgError;
@@ -43,7 +44,7 @@ export default function JobCard({ job }) {
           />
         ) : (
           <div className="job-card__image job-card__image--placeholder" aria-hidden="true">
-            <Briefcase size={28} strokeWidth={2} />
+            <CategoryIcon size={28} strokeWidth={2} />
           </div>
         )}
         <div className="job-card__info">

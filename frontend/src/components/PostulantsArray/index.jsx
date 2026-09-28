@@ -16,7 +16,11 @@ const mapPostulante = (p) => ({
   badges: ['verificado'],
 });
 
-const PostulantsArray = ({ jobId }) => {
+const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
+  // Si el trabajo ya venció, se canceló, se activó o se completó, no se
+  // puede aceptar ningún postulante nuevo (el backend igual lo valida, esto
+  // solo evita el intento fallido desde la UI).
+  const puedeAceptar = jobEstado === 'abierto' || jobEstado === 'proxima';
   const [postulantes, setPostulantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +39,23 @@ const PostulantsArray = ({ jobId }) => {
 
   const handleAceptar = async (id) => {
     setError(null);
+
+    // Si propuso un precio distinto al publicado, se confirma explícitamente
+    // antes de aceptar (el precio propuesto es el que queda acordado en el
+    // contrato, no el publicado originalmente).
+    const postulante = postulantes.find((p) => p.id === id);
+    const precioDistinto =
+      postulante?.price != null &&
+      jobBudget != null &&
+      Number(postulante.price) !== Number(jobBudget);
+
+    if (precioDistinto) {
+      const confirmado = window.confirm(
+        `${postulante.name} propuso $${Number(postulante.price).toLocaleString('es-AR')}, distinto al precio publicado ($${Number(jobBudget).toLocaleString('es-AR')}). ¿Aceptar de todos modos por el precio propuesto?`
+      );
+      if (!confirmado) return;
+    }
+
     try {
       await aceptarPostulacion(id);
       // Refetch: el aceptado pasa a 'aceptado' y el resto de pendientes de
@@ -65,7 +86,7 @@ const PostulantsArray = ({ jobId }) => {
       {loading && <p className={styles.msg}>Cargando...</p>}
       {error && <p className={styles.msg}>{error}</p>}
       {postulantes.map(p => (
-        <PostulantCard key={p.id} postulant={p} onAceptar={handleAceptar} />
+        <PostulantCard key={p.id} postulant={p} onAceptar={handleAceptar} puedeAceptar={puedeAceptar} />
       ))}
     </div>
   );

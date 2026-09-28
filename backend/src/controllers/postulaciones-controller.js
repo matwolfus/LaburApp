@@ -263,12 +263,36 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
             return res.status(403).json({ message: 'No autorizado' });
         }
 
+        if (postulacion.estado !== 'pendiente') {
+            return res.status(400).json({ message: 'Esta postulación ya no está pendiente' });
+        }
+
         // Se pide ANTES de aceptar por dos motivos: (1) precioAcordado
         // necesita el presupuesto del trabajo como fallback cuando el
         // trabajador se postuló "al precio publicado" (precio_propuesto
         // null), y (2) reusa este mismo fetch para el título de las
-        // notificaciones de más abajo, sin pedirlo dos veces.
+        // notificaciones de más abajo, sin pedirlo dos veces. De paso,
+        // getJobById corre expirarVencidos() antes de leer el trabajo, así
+        // que trabajo.estado ya viene actualizado si la fecha programada
+        // ya pasó (antes esto no se chequeaba acá: se podía aceptar un
+        // postulante de un trabajo vencido/cancelado/ya finalizado).
         const trabajo = await trabajosService.getJobById(postulacion.id_trabajo);
+
+        if (!trabajo) {
+            return res.status(404).json({ message: 'Trabajo no encontrado' });
+        }
+
+        if (trabajo.estado !== 'abierto' && trabajo.estado !== 'proxima') {
+            const motivo = {
+                vencido: 'venció',
+                cancelado: 'fue cancelado',
+                activa: 'ya tiene un trabajador aceptado',
+                finalizado: 'ya fue completado',
+            }[trabajo.estado] ?? `está en estado '${trabajo.estado}'`;
+
+            return res.status(400).json({ message: `No se puede aceptar: el trabajo ${motivo}` });
+        }
+
         const tituloTrabajo = trabajo?.title ?? 'tu changa';
         const precioAcordado = postulacion.precio_propuesto ?? trabajo?.budget;
 

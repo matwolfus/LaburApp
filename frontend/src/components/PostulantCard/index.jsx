@@ -13,7 +13,7 @@ const ESTADO_CONFIG = {
   rechazado: { label: 'Rechazado', className: styles.badgeRechazada },
 };
 
-const PostulantCard = ({ postulant, onAceptar }) => {
+const PostulantCard = ({ postulant, onAceptar, puedeAceptar = true }) => {
   const { id, name, location, rating, reviews, price, badges = [], avatar, estado } = postulant;
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2);
   const estadoBadge = ESTADO_CONFIG[estado];
@@ -50,10 +50,15 @@ const PostulantCard = ({ postulant, onAceptar }) => {
       <div className={styles.actions}>
         <button className={styles.profileBtn}>Ver perfil</button>
         <button className={styles.chatBtn} disabled title="Disponible próximamente">💬</button>
-        {estado === 'pendiente' && (
+        {estado === 'pendiente' && puedeAceptar && (
           <button className={styles.acceptBtn} onClick={() => onAceptar?.(id)} title="Aceptar postulante">
             ✓ Aceptar
           </button>
+        )}
+        {estado === 'pendiente' && !puedeAceptar && (
+          <span className={styles.location} title="El trabajo ya no está disponible para aceptar postulantes">
+            Trabajo no disponible
+          </span>
         )}
         {estadoBadge && <span className={estadoBadge.className}>{estadoBadge.label}</span>}
       </div>

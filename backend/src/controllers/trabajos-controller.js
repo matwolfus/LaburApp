@@ -3,10 +3,12 @@
 import { Router } from 'express';
 import TrabajosService from '../services/trabajos-service.js';
 import Trabajo from '../entities/trabajo.js';
-import authMiddleware from '../middlewares/auth-middleware.js';
+import authMiddleware, { optionalAuthMiddleware } from '../middlewares/auth-middleware.js';
+import NotificacionesService from '../services/notificaciones-service.js';
 
 const router = Router();
 const service = new TrabajosService();
+const notificacionesService = new NotificacionesService();
 
 // router.get('/proximas'): Recibe el request, saca el employer_id de la URL, si no viene devuelve error 400, 
 // si viene llama al service para traer próximos, devuelve la lista, si algo explota devuelve error 500.
@@ -165,6 +167,49 @@ router.patch('/:id/completar', authMiddleware, async (req, res) => {
   }
 });
 
+// PATCH /api/trabajos/:id/cancelar -> el contratador cancela su propio
+// trabajo (mientras no esté ya 'finalizado' o 'cancelado').
+router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const job = await service.getJobById(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Trabajo no encontrado' });
+    }
+
+    const owner = await service.getJobOwnerAsync(jobId);
+    if (Number(owner) !== req.userId) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    const resultado = await service.cancelarTrabajoAsync(jobId, job.estado);
+
+    // Notificaciones DESPUÉS del commit, en su propio try/catch (mismo
+    // criterio que 'postulacion_aceptada'/'postulacion_rechazada' en
+    // postulaciones-controller.js): un fallo acá no debe deshacer ni
+    // reportar como error una cancelación que ya quedó guardada.
+    try {
+      for (const idTrabajador of resultado.idsANotificar) {
+        await notificacionesService.crearAsync({
+          id_usuario: idTrabajador,
+          tipo: 'trabajo_cancelado',
+          titulo: `El trabajo "${job.title}" fue cancelado por el contratador`,
+          cuerpo: null,
+          id_referencia: jobId,
+        });
+      }
+    } catch (notifError) {
+      console.error('Error notificando cancelación:', notifError);
+    }
+
+    return res.status(200).json({ id: jobId });
+  } catch (error) {
+    console.error('Error in PATCH /trabajos/:id/cancelar:', error.message);
+    return res.status(400).json({ error: error.message });
+  }
+});
+
 // GET /api/trabajos/buscar?categoria=<id> -> trabajos abiertos, para que un
 // trabajador los descubra (Home / Buscar Trabajos). Sin auth: cualquiera
 // puede navegar changas abiertas sin loguearse, igual que el detalle público.
@@ -179,14 +224,14 @@ router.get('/buscar', async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuthMiddleware, async (req, res) => {
 
 
   const jobId = req.params.id;
 
 
   const job =
-    await service.getJobById(jobId);
+    await service.getJobById(jobId, req.userId ?? null);
 
 
   if (!job) {

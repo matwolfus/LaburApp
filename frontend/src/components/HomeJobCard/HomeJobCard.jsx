@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { getCategoryIcon } from "../../utils/categoryIcons";
 import styles from "./HomeJobCard.module.css";
 
 const TRUNCATE_AT = 60;
@@ -8,7 +8,8 @@ const TRUNCATE_AT = 60;
 const HomeJobCard = ({ job }) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
-  const { id, title, description, status } = job;
+  const { id, title, description, status, category } = job;
+  const CategoryIcon = getCategoryIcon(category);
 
   const desc = description ?? "";
   const isLong = desc.length > TRUNCATE_AT;
@@ -30,7 +31,7 @@ const HomeJobCard = ({ job }) => {
       }}
     >
       <div className={styles.iconWrap}>
-        <Zap className={styles.icon} aria-hidden="true" />
+        <CategoryIcon className={styles.icon} aria-hidden="true" />
       </div>
 
       <div className={styles.info}>

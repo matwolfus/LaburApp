@@ -1,16 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2 } from 'lucide-react';
 import BackButton from '../BackButton';
 import MapPreview from '../MapPreview';
 import CancelarPostulacionModal from '../CancelarPostulacionModal';
-import { getTrabajoById, getMisPostulaciones, completarTrabajo } from '../../services/api';
+import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo } from '../../services/api';
+import { getCategoryIcon } from '../../utils/categoryIcons';
 import styles from './JobDetail.module.css';
 
 const ESTADO_LABELS = {
   abierto: 'Buscando trabajador',
   proxima: 'Buscando trabajador',
   activa: 'En curso',
+  finalizado: 'Finalizado',
+  cancelado: 'Cancelado',
+  vencido: 'Vencido',
 };
 
 function estadoLabel(estado) {
@@ -49,6 +53,11 @@ function formatPresupuesto(budget) {
 const JobDetail = ({ jobId, isOwner = true }) => {
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
+  // El prop isOwner depende de la ruta (contratador/trabajador), no de quién
+  // sos realmente: si cambiaste a modo trabajador y entrás a tu propio
+  // trabajo, isOwner viene en false igual. Esto detecta ese caso puntual
+  // para no ofrecer "Postularme" a tu propia publicación.
+  const esPropioTrabajo = job != null && String(job.id_contratante) === String(localStorage.getItem('userId'));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imgError, setImgError] = useState(false);
@@ -59,6 +68,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const [postulacionesLoaded, setPostulacionesLoaded] = useState(isOwner);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [completando, setCompletando] = useState(false);
+  const [cancelando, setCancelando] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [employerAvatarError, setEmployerAvatarError] = useState(false);
 
@@ -99,6 +109,20 @@ const JobDetail = ({ jobId, isOwner = true }) => {
     }
   };
 
+  const handleCancelar = async () => {
+    if (!window.confirm('¿Cancelar este trabajo? Los postulantes pendientes y el contrato activo (si hay) se cierran.')) return;
+    setCancelando(true);
+    setActionError(null);
+    try {
+      await cancelarTrabajo(jobId);
+      await cargarJob();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setCancelando(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.wrapper}>
@@ -119,9 +143,17 @@ const JobDetail = ({ jobId, isOwner = true }) => {
 
   const mainImage = job.images?.[0]?.url;
   const showImage = mainImage && !imgError;
+  const CategoryIcon = getCategoryIcon(job.category);
   const fecha = formatFecha(job.scheduled_at);
   const duracion = formatDuracion(job.duration);
-  const presupuesto = formatPresupuesto(job.budget);
+  // Precedencia: precio ya acordado (contrato activo) > precio que el propio
+  // trabajador propuso (postulación pendiente) > presupuesto publicado.
+  // Sin esto, el detalle siempre mostraba el presupuesto original aunque el
+  // trabajador se hubiera postulado o lo hubieran contratado por otro monto.
+  const precioEfectivo = job.contract_price ?? job.my_proposed_price ?? job.budget;
+  const precioDistintoAlPublicado = precioEfectivo != null && job.budget != null && Number(precioEfectivo) !== Number(job.budget);
+  const presupuesto = formatPresupuesto(precioEfectivo);
+  const presupuestoPublicadoOriginal = precioDistintoAlPublicado ? formatPresupuesto(job.budget) : null;
   const applicantsCount = Number(job.applicants_count) || 0;
   const employerJobsCount = Number(job.employer_jobs_count) || 0;
 
@@ -142,7 +174,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             />
           ) : (
             <div className={styles.heroPlaceholder} aria-hidden="true">
-              <Briefcase size={40} strokeWidth={2} />
+              <CategoryIcon size={40} strokeWidth={2} />
             </div>
           )}
           <div className={styles.heroOverlay}>
@@ -219,7 +251,14 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           {presupuesto && (
             <div className={styles.infoItem}>
               <DollarSign size={16} className={styles.infoIcon} />
-              <span>{presupuesto}</span>
+              <span>
+                {presupuesto}
+                {presupuestoPublicadoOriginal && (
+                  <span className={styles.precioOriginal} title="Precio publicado originalmente">
+                    {presupuestoPublicadoOriginal}
+                  </span>
+                )}
+              </span>
             </div>
           )}
         </div>
@@ -295,9 +334,18 @@ const JobDetail = ({ jobId, isOwner = true }) => {
                   {completando ? 'Marcando...' : 'Marcar como completado'}
                 </button>
               )}
+              {job.estado !== 'finalizado' && job.estado !== 'cancelado' && (
+                <button className={styles.cancelarBtn} onClick={handleCancelar} disabled={cancelando}>
+                  {cancelando ? 'Cancelando...' : 'Cancelar trabajo'}
+                </button>
+              )}
             </>
           ) : !postulacionesLoaded ? (
             <p className={styles.msg}>Cargando...</p>
+          ) : esPropioTrabajo ? (
+            <p className={styles.msg}>Este es un trabajo que publicaste vos.</p>
+          ) : !miPostulacion && job.estado === 'vencido' ? (
+            <p className={styles.msg}>Este trabajo venció, ya no se puede postular.</p>
           ) : !miPostulacion ? (
             <button className={styles.postulantesBtn} onClick={() => navigate(`/trabajador/postularme/${jobId}`)}>
               Postularme
