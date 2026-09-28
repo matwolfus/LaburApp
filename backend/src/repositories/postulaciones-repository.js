@@ -104,7 +104,7 @@ export default class PostulacionesRepository {
     getByIdAsync = async (id) => {
 
         const sql = `
-            SELECT id, id_trabajo, id_trabajador, precio_propuesto
+            SELECT id, id_trabajo, id_trabajador, precio_propuesto, estado
             FROM postulaciones
             WHERE id = $1
         `;
