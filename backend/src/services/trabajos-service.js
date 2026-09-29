@@ -121,13 +121,9 @@ export default class TrabajosService {
     this.#validateJobFields(entity, imagenes);
 
     // Un trabajo nuevo en el pasado quedaría 'vencido' al instante (ver
-    // expirarVencidos) y nunca se listaría. programado_para es hora Argentina sin offset.
-    if (entity.programado_para != null) {
-      const ahoraAR = new Date().toLocaleString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' }).replace(' ', 'T');
-      const [fecha, hora] = String(entity.programado_para).split('T');
-      const sinHorario = !hora || hora.startsWith('00:00');
-      const vencido = sinHorario ? fecha < ahoraAR.slice(0, 10) : entity.programado_para < ahoraAR;
-      if (vencido) throw new Error('La fecha y hora del trabajo ya pasaron');
+    // expirarVencidos) y nunca se listaría.
+    if (this.#esFechaPasada(entity.programado_para)) {
+      throw new Error('La fecha y hora del trabajo ya pasaron');
     }
 
     const newId = await this.repository.createJob(entity);
@@ -147,7 +143,35 @@ export default class TrabajosService {
   async updateJobAsync(jobId, entity, imagenes = []) {
     this.#validateJobFields(entity, imagenes);
 
-    return await this.repository.updateJobWithImages(jobId, entity, imagenes ?? []);
+    // La fecha solo se revalida si cambió: así se puede editar un trabajo vencido
+    // (otros campos) sin que lo bloquee, pero no ponerle otra fecha pasada.
+    const actual = await this.repository.getSchedule(jobId);
+    const cambioFecha = this.#normalizarFecha(actual?.programado_para) !== this.#normalizarFecha(entity.programado_para);
+    const fechaPasada = this.#esFechaPasada(entity.programado_para);
+    if (cambioFecha && fechaPasada) {
+      throw new Error('La fecha y hora del trabajo ya pasaron');
+    }
+
+    // Vencido + fecha nueva no pasada -> vuelve a 'abierto' (ver repository).
+    const reabrir = cambioFecha && !fechaPasada;
+
+    return await this.repository.updateJobWithImages(jobId, entity, imagenes ?? [], reabrir);
+  }
+
+  // 'YYYY-MM-DDTHH:MM' (sin segundos ni offset) para comparar fechas del form contra la base.
+  #normalizarFecha(valor) {
+    if (valor == null) return null;
+    return String(valor).replace(' ', 'T').slice(0, 16);
+  }
+
+  // programado_para es hora Argentina sin offset. Sin horario (00:00) vence recién al pasar el día,
+  // igual que expirarVencidos() en el repository.
+  #esFechaPasada(programadoPara) {
+    if (programadoPara == null) return false;
+    const ahoraAR = new Date().toLocaleString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' }).replace(' ', 'T');
+    const [fecha, hora] = String(programadoPara).split('T');
+    const sinHorario = !hora || hora.startsWith('00:00');
+    return sinHorario ? fecha < ahoraAR.slice(0, 10) : String(programadoPara) < ahoraAR;
   }
   // ACÁ YA NO
 

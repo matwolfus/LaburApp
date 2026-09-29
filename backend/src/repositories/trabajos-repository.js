@@ -263,6 +263,14 @@ async getJobsByEmployerAndStatus(employerId, status) {
     return row ? row.id_contratante : null;
   }
 
+  // Fecha programada y estado actuales, para validar una edición.
+  async getSchedule(jobId) {
+    return await this.db.queryOne(
+      `SELECT programado_para, estado FROM trabajos WHERE id = $1`,
+      [jobId]
+    );
+  }
+
   // Marca un trabajo 'activa' como 'finalizado' y cierra su contrato
   // ('activo' -> 'completado'). Ambas escrituras en una sola transacción:
   // sin esto, un contrato podría quedar 'activo' para siempre aunque el
@@ -401,7 +409,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
   // Actualiza los datos de un trabajo y reemplaza sus fotos, todo en una sola transacción:
   // si el reemplazo de fotos falla, el UPDATE de los datos también se revierte (no queda
   // el trabajo con los datos nuevos pero las fotos borradas a mitad de camino).
-  async updateJobWithImages(jobId, entity, urls) {
+  async updateJobWithImages(jobId, entity, urls, reabrirSiVencido = false) {
     return await this.db.withTransaction(async (txDb) => {
       const updateSql = `
         UPDATE trabajos
@@ -418,6 +426,8 @@ async getJobsByEmployerAndStatus(employerId, status) {
           lng             = $11,
           -- Si el form no manda localidad, se conserva la que ya tenía.
           id_localidad    = COALESCE($12, id_localidad),
+          -- Un trabajo vencido vuelve a 'abierto' si la nueva fecha ya no está en el pasado.
+          estado          = CASE WHEN estado = 'vencido' AND $13::boolean THEN 'abierto' ELSE estado END,
           actualizado_en  = NOW()
         WHERE id = $1
         RETURNING id
@@ -436,6 +446,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         entity.lat ?? null,
         entity.lng ?? null,
         entity.id_localidad ?? null,
+        reabrirSiVencido,
       ];
 
       const updated = await txDb.queryOne(updateSql, updateValues);
