@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getMiUsuario, logout } from "../../services/api";
 import { useAuth } from "../../context/useAuth";
+import { useRoleSwitch } from "../../hooks/useRoleSwitch";
 import styles from '../../styles/Perfil.module.css'
 
 import PerfilHeader from "../../components/PerfilHeader";
@@ -13,19 +13,15 @@ import PerfilActions from "../../components/PerfilActions";
 import ConfirmModal from "../../components/ConfirmModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
-const MIN_SWITCH_DELAY_MS = 1400;
-
 export default function PerfilPage() {
 
-    const navigate = useNavigate();
     const [perfil, setPerfil] = useState(null);
-    const { modo, hydrateModo, switchModo, modoError } = useAuth();
+    const { modo, hydrateModo, modoError } = useAuth();
+    const { switching, changeModo } = useRoleSwitch();
 
-    // Reconfirmación + pantalla de carga al cambiar de rol: roleSwitchTarget
-    // es el modo que se está por confirmar (null = no hay diálogo abierto),
-    // switching es la pantalla de carga que se ve mientras se aplica.
+    // Reconfirmación al cambiar de rol: roleSwitchTarget es el modo que se
+    // está por confirmar (null = no hay diálogo abierto).
     const [roleSwitchTarget, setRoleSwitchTarget] = useState(null);
-    const [switching, setSwitching] = useState(false);
 
     useEffect(() => {
 
@@ -109,20 +105,10 @@ export default function PerfilPage() {
         setRoleSwitchTarget(nuevoModo);
     };
 
-    const handleConfirmModoChange = async () => {
+    const handleConfirmModoChange = () => {
         const nuevoModo = roleSwitchTarget;
         setRoleSwitchTarget(null);
-        setSwitching(true);
-
-        const start = Date.now();
-        await switchModo(nuevoModo);
-        const restante = MIN_SWITCH_DELAY_MS - (Date.now() - start);
-        if (restante > 0) {
-            await new Promise((resolve) => setTimeout(resolve, restante));
-        }
-
-        setSwitching(false);
-        navigate(nuevoModo === "trabajador" ? "/trabajador/inicio" : "/inicio");
+        changeModo(nuevoModo);
     };
 
     if (switching) {

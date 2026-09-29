@@ -5,6 +5,7 @@ import BottomNav from '../components/BottomNav';
 import Sidebar from '../components/Sidebar';
 import { getMiUsuario } from '../services/api';
 import { useAuth } from '../context/useAuth';
+import { homeDeModo } from '../hooks/useRoleSwitch';
 import '../layouts/layout.css';
 import logo from '../assets/logo.png';
 
@@ -33,6 +34,8 @@ export default function AppLayout() {
       <Header
         logoSrc={logo}
         avatarSrc={avatar}
+        onLogoClick={() => navigate(homeDeModo(modo ?? localStorage.getItem('modoActivo')))}
+        onAvatarClick={() => navigate('/perfil')}
         onBellClick={() => navigate('/notificaciones')}
         onMenuClick={() => setSidebarOpen(true)}
       />

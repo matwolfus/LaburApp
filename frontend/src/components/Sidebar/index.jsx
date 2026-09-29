@@ -1,13 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { X, Settings, UserCog, UserPen, LogOut } from 'lucide-react';
 import { logout } from '../../services/api';
+import { useRoleSwitch } from '../../hooks/useRoleSwitch';
+import LoadingOverlay from '../LoadingOverlay';
 import styles from './Sidebar.module.css';
 
-// Drawer lateral global. El cambio de rol no se reimplementa acá: ya vive
-// completo (con modal de confirmación + loading overlay) en Perfil.jsx, así
-// que ese ítem navega ahí en vez de duplicar esa lógica.
+// Drawer lateral global. El cambio de rol usa el mismo flujo que Perfil
+// (useRoleSwitch): pantalla de carga y aterrizaje en el home del otro rol.
 export default function Sidebar({ open, onClose }) {
   const navigate = useNavigate();
+  const { modo, otroModo, switching, changeModo } = useRoleSwitch();
 
   const goTo = (path) => {
     onClose();
@@ -20,8 +22,15 @@ export default function Sidebar({ open, onClose }) {
     navigate('/login');
   };
 
+  const handleSwitch = () => {
+    onClose();
+    changeModo(otroModo);
+  };
+
   return (
     <>
+      {switching && <LoadingOverlay message="Cargando información..." />}
+
       <div
         className={open ? `${styles.backdrop} ${styles.backdropOpen}` : styles.backdrop}
         onClick={onClose}
@@ -42,10 +51,12 @@ export default function Sidebar({ open, onClose }) {
             Editar perfil
           </button>
 
-          <button className={styles.item} onClick={() => goTo('/perfil')}>
-            <UserCog size={19} strokeWidth={2} />
-            Cambio de rol
-          </button>
+          {modo && (
+            <button className={styles.item} onClick={handleSwitch}>
+              <UserCog size={19} strokeWidth={2} />
+              Cambiar a modo {otroModo === 'trabajador' ? 'Trabajador' : 'Contratador'}
+            </button>
+          )}
 
           <button className={styles.item} onClick={() => goTo('/ajustes')}>
             <Settings size={19} strokeWidth={2} />

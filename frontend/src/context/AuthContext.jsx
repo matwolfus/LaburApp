@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
 
     try {
       await actualizarRolActivo(nuevoModo);
+      return true;
     } catch (err) {
       console.error('Error al cambiar de modo:', err);
       if (modoAnterior) {
@@ -35,6 +36,7 @@ export function AuthProvider({ children }) {
       }
       setModoState(modoAnterior);
       setModoError('No se pudo cambiar de modo, intentá de nuevo.');
+      return false;
     }
   }, [modo]);
 
