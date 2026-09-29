@@ -215,6 +215,16 @@ export default function EditarPerfil() {
         }
 
         setAvatarError("");
+
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            setAvatarError("Solo se permiten imágenes JPG, PNG o WebP.");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setAvatarError("La imagen supera los 5 MB.");
+            return;
+        }
+
         const previewUrl = URL.createObjectURL(file);
         setAvatarPreview(previewUrl);
         setUploadingAvatar(true);
@@ -719,7 +729,7 @@ export default function EditarPerfil() {
                                 ref={fileInputRef}
                                 id="avatar"
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp"
                                 className={styles.avatarInputHidden}
                                 onChange={handleAvatarChange}
                             />
