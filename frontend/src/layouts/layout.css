@@ -39,11 +39,25 @@
   box-shadow: 0 2px 12px rgba(45, 59, 142, 0.06);
 }
 
+/* logo.png es 1366x768 con el ícono chico en el centro (x 520-845, y 213-553).
+   Se recorta a una caja de 40x40 con el ícono ajustado a los bordes, así queda
+   alineado al margen del header igual que el avatar y el menú del otro lado.
+   Escala: 40px / 340px (alto del ícono) = 0.1176. */
+.app-header__logo-crop {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+}
+
 .app-header__logo {
-  height: 80px;
-  width: 80px;           /* ← ancho fijo */
-  object-fit: cover;     /* ← recorta el espacio sobrante */
-  object-position: center; /* ajustá a 'left' si el ícono queda cortado */
+  position: absolute;
+  top: -25px;
+  left: -60px;
+  width: 160.7px;
+  max-width: none;
+  height: auto;
   mix-blend-mode: multiply;
 }
 .app-header__actions {

@@ -4,7 +4,9 @@ export default function Header({ logoSrc, avatarSrc, onLogoClick, onAvatarClick,
   return (
     <header className="app-header">
       <button className="app-header__icon-btn" onClick={onLogoClick} aria-label="Ir al inicio">
-        <img className="app-header__logo" src={logoSrc} alt="LaburApp" />
+        <span className="app-header__logo-crop">
+          <img className="app-header__logo" src={logoSrc} alt="LaburApp" />
+        </span>
       </button>
 
       <div className="app-header__actions">
