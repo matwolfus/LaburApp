@@ -1,9 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./ReviewCard.module.css";
 
 export default function ReviewCard({ review }) {
 
+    const navigate = useNavigate();
     const [avatarError, setAvatarError] = useState(false);
+
+    const autorId = review?.autor?.id;
+    const abrirPerfilAutor = () => {
+        if (!autorId) return;
+        const esPropio = String(autorId) === String(localStorage.getItem("userId"));
+        navigate(esPropio ? "/perfil" : `/perfil/${autorId}`);
+    };
 
     const calificacion = Math.max(
         0,
@@ -16,7 +25,14 @@ export default function ReviewCard({ review }) {
     return (
         <article className={styles.card}>
 
-            <div className={styles.reviewTop}>
+            <div
+                className={styles.reviewTop}
+                onClick={abrirPerfilAutor}
+                onKeyDown={(e) => { if (e.key === "Enter") abrirPerfilAutor(); }}
+                role={autorId ? "button" : undefined}
+                tabIndex={autorId ? 0 : undefined}
+                style={autorId ? { cursor: "pointer" } : undefined}
+            >
 
                 {review?.autor?.avatar && !avatarError ? (
 

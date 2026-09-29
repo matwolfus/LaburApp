@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './WorkerSearchCard.module.css';
 
 const WorkerSearchCard = ({
@@ -7,7 +8,9 @@ const WorkerSearchCard = ({
   photo_url,
   description,
   rating = 0,
+  idContrato = null,
 }) => {
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
 
   return (
@@ -65,18 +68,18 @@ const WorkerSearchCard = ({
         </div>
       )}
 
-      {/* CONTACTAR */}
-      <div className={styles.details}>
-        <span className={styles.detailLabel}>Disponible próximamente</span>
-        <button
-          type="button"
-          className={styles.contactBtn}
-          disabled
-          title="Disponible próximamente"
-        >
-          Contactar
-        </button>
-      </div>
+      {/* CONTACTAR: el chat vive atado a un contrato, sin contrato no hay chat */}
+      {idContrato && (
+        <div className={styles.details}>
+          <button
+            type="button"
+            className={styles.contactBtn}
+            onClick={() => navigate(`/chats/${idContrato}`)}
+          >
+            Contactar
+          </button>
+        </div>
+      )}
 
     </article>
   );

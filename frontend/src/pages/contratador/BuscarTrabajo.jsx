@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   getCategorias,
   buscarTrabajadoresPorCategoria,
+  getConversaciones,
 } from '../../services/api';
 
 import WorkerSearchCard from '../../components/WorkerSearchCard/WorkerSearchCard.jsx';
@@ -16,6 +17,8 @@ export default function BuscarTrabajo() {
     return fromUrl && !Number.isNaN(parsed) ? parsed : null;
   });
   const [workers, setWorkers] = useState([]);
+  // otro_id -> id_contrato, para habilitar "Contactar" solo con quien ya hay contrato.
+  const [contratosPorUsuario, setContratosPorUsuario] = useState({});
 
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,6 +44,16 @@ export default function BuscarTrabajo() {
       }
     };
     cargarCategorias();
+  }, []);
+
+  useEffect(() => {
+    getConversaciones()
+      .then((convs) => {
+        setContratosPorUsuario(
+          Object.fromEntries(convs.map((c) => [String(c.otro_id), c.id_contrato]))
+        );
+      })
+      .catch((err) => console.error('Error cargando conversaciones:', err));
   }, []);
 
   useEffect(() => {
@@ -149,7 +162,11 @@ export default function BuscarTrabajo() {
     return (
       <div className="buscar-workers-list">
         {filteredWorkers.map((worker) => (
-          <WorkerSearchCard key={worker.id} {...worker} />
+          <WorkerSearchCard
+            key={worker.id}
+            {...worker}
+            idContrato={contratosPorUsuario[String(worker.id)] ?? null}
+          />
         ))}
       </div>
     );
