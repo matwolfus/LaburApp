@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, UserCheck, Eye } from "lucide-react";
 import { uploadFotos, actualizarMisCategorias, getCategorias, BASE_URL } from "../../services/api";
+import { resizeImage } from "../../utils/resizeImage";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -224,10 +225,6 @@ export default function EditarPerfil() {
             setAvatarError("Solo se permiten imágenes JPG, PNG o WebP.");
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            setAvatarError("La imagen supera los 5 MB.");
-            return;
-        }
 
         const previewUrl = URL.createObjectURL(file);
         setAvatarPreview(previewUrl);
@@ -235,7 +232,10 @@ export default function EditarPerfil() {
 
         try {
 
-            const { urls } = await uploadFotos([file]);
+            // Se achica a 800px / JPEG 0.8 antes de subir: una foto de celular
+            // pesa varios MB y el backend rechaza más de 5 MB.
+            const reducida = await resizeImage(file);
+            const { urls } = await uploadFotos([reducida]);
             setAvatar(urls[0]);
 
         } catch (err) {
