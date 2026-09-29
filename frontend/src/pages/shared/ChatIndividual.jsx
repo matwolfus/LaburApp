@@ -49,7 +49,7 @@ export default function ChatIndividual() {
         }
         const conv = conversaciones.find((c) => String(c.id_contrato) === String(idContrato));
         if (conv) {
-          setOtro({ nombre: conv.otro_nombre, avatar: conv.otro_avatar, tituloTrabajo: conv.titulo_trabajo });
+          setOtro({ id: conv.otro_id, nombre: conv.otro_nombre, avatar: conv.otro_avatar, tituloTrabajo: conv.titulo_trabajo });
         }
       })
       .catch((err) => setError(err.message))
@@ -104,15 +104,23 @@ export default function ChatIndividual() {
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={() => navigate(-1)}>←</button>
-        {otro?.avatar ? (
-          <img src={otro.avatar} alt={otro.nombre} className={styles.headerAvatar} />
-        ) : (
-          <div className={styles.headerAvatarFallback}>{otro?.nombre?.charAt(0)?.toUpperCase() || '?'}</div>
-        )}
-        <div className={styles.headerInfo}>
-          <span className={styles.headerNombre}>{otro?.nombre || 'Chat'}</span>
-          {otro?.tituloTrabajo && <span className={styles.headerTrabajo}>{otro.tituloTrabajo}</span>}
-        </div>
+        <button
+          type="button"
+          className={styles.perfilLink}
+          onClick={() => otro?.id && navigate(`/perfil/${otro.id}`)}
+          disabled={!otro?.id}
+          aria-label={otro?.nombre ? `Ver perfil de ${otro.nombre}` : 'Ver perfil'}
+        >
+          {otro?.avatar ? (
+            <img src={otro.avatar} alt={otro.nombre} className={styles.headerAvatar} />
+          ) : (
+            <div className={styles.headerAvatarFallback}>{otro?.nombre?.charAt(0)?.toUpperCase() || '?'}</div>
+          )}
+          <div className={styles.headerInfo}>
+            <span className={styles.headerNombre}>{otro?.nombre || 'Chat'}</span>
+            {otro?.tituloTrabajo && <span className={styles.headerTrabajo}>{otro.tituloTrabajo}</span>}
+          </div>
+        </button>
       </div>
 
       <div className={styles.lista} ref={listRef}>

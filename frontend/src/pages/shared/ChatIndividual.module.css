@@ -168,3 +168,26 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Foto + nombre del encabezado: botón que abre el perfil de la otra persona. */
+.perfilLink {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.perfilLink:disabled {
+  cursor: default;
+}
+
+.perfilLink:hover:not(:disabled) .headerNombre {
+  text-decoration: underline;
+}
