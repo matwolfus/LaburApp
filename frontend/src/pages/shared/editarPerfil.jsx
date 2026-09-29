@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, UserCheck, Eye } from "lucide-react";
+import { Check, UserCheck, Eye, ArrowLeft, Camera, User, Phone, MapPin, Award, Briefcase } from "lucide-react";
 import { uploadFotos, actualizarMisCategorias, getCategorias, BASE_URL } from "../../services/api";
 import { resizeImage } from "../../utils/resizeImage";
 import styles from "../../styles/editarPerfil.module.css";
@@ -474,12 +474,23 @@ export default function EditarPerfil() {
 
             <section className={styles.formContainer}>
 
-                <h1>
-                    Editar perfil
-                </h1>
+                <header className={styles.pageHeader}>
+                    <button
+                        type="button"
+                        className={styles.backBtn}
+                        onClick={() => navigate("/perfil")}
+                        aria-label="Volver al perfil"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1>Editar perfil</h1>
+                        <p className={styles.subtitle}>Mantené tu información al día</p>
+                    </div>
+                </header>
 
                 {error && (
-                    <p className={styles.error}>
+                    <p className={styles.error} role="alert">
                         {error}
                     </p>
                 )}
@@ -487,178 +498,228 @@ export default function EditarPerfil() {
                 <form onSubmit={guardarPerfil}>
 
                     {/* ========================= */}
-                    {/* NOMBRE */}
+                    {/* AVATAR */}
                     {/* ========================= */}
 
-                    <div className={styles.field}>
+                    <div className={styles.avatarSection}>
 
-                        <label htmlFor="nombre">
-                            Nombre completo
-                        </label>
+                        <button
+                            type="button"
+                            className={styles.avatarButton}
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploadingAvatar}
+                            aria-label={avatar ? "Cambiar foto de perfil" : "Elegir foto de perfil"}
+                        >
+                            {(avatarPreview || avatar) ? (
+                                <img
+                                    src={avatarPreview || avatar}
+                                    alt="Foto de perfil"
+                                    className={styles.avatarPreview}
+                                />
+                            ) : (
+                                <span className={styles.avatarPlaceholder}>
+                                    {nombreCompleto?.charAt(0)?.toUpperCase() || <User size={40} />}
+                                </span>
+                            )}
+                            <span className={styles.avatarBadge}>
+                                <Camera size={16} />
+                            </span>
+                        </button>
 
                         <input
-                            id="nombre"
-                            type="text"
-                            value={nombreCompleto}
-                            onChange={(e) =>
-                                setNombreCompleto(e.target.value)
-                            }
-                            required
+                            ref={fileInputRef}
+                            id="avatar"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            className={styles.avatarInputHidden}
+                            onChange={handleAvatarChange}
                         />
 
-                    </div>
+                        <p className={styles.avatarHint}>
+                            {uploadingAvatar
+                                ? "Subiendo foto..."
+                                : avatar
+                                    ? "Tocá la foto para cambiarla"
+                                    : "Tocá para elegir una foto"}
+                        </p>
 
-
-                    {/* ========================= */}
-                    {/* TELEFONO */}
-                    {/* ========================= */}
-
-                    <div className={styles.field}>
-
-                        <label htmlFor="telefono">
-                            Teléfono
-                        </label>
-
-                        <input
-                            id="telefono"
-                            type="tel"
-                            value={telefono}
-                            onChange={(e) => {
-
-                                const valor =
-                                    e.target.value;
-
-                                // Solo números
-                                // Máximo 10 dígitos
-                                if (/^\d{0,10}$/.test(valor)) {
-
-                                    setTelefono(valor);
-
-                                }
-
-                            }}
-                            maxLength={10}
-                            required
-                        />
-
-                        {/* Validación en tiempo real */}
-
-                        {telefono.length > 0 && (
-
-                            <ul
-                                className={
-                                    styles.passwordRequirements
-                                }
-                            >
-
-                                <li
-                                    className={
-                                        telefonoValido
-                                            ? styles.ok
-                                            : styles.fail
-                                    }
-                                >
-
-                                    {telefonoValido
-                                        ? "✓"
-                                        : "✗"}
-
-                                    {" "}10 dígitos
-
-                                </li>
-
-                            </ul>
-
+                        {avatarError && (
+                            <p className={styles.avatarError} role="alert">
+                                {avatarError}
+                            </p>
                         )}
 
                     </div>
 
 
                     {/* ========================= */}
-                    {/* BIOGRAFIA CONTRATANTE */}
+                    {/* DATOS PERSONALES */}
                     {/* ========================= */}
 
-                    <div className={styles.field}>
+                    <div className={styles.card}>
 
-                        <label htmlFor="biografiaContratante">
-                            Biografía como contratante
-                        </label>
+                        <h2 className={styles.cardTitle}>Datos personales</h2>
 
-                        <textarea
-                            id="biografiaContratante"
-                            value={biografiaContratante}
-                            onChange={(e) =>
-                                setBiografiaContratante(
-                                    e.target.value
-                                )
-                            }
-                            required
-                        />
+                        <div className={styles.field}>
 
-                    </div>
+                            <label htmlFor="nombre">
+                                Nombre completo
+                            </label>
 
+                            <div className={styles.inputWrap}>
+                                <User size={18} className={styles.inputIcon} />
+                                <input
+                                    id="nombre"
+                                    type="text"
+                                    value={nombreCompleto}
+                                    onChange={(e) =>
+                                        setNombreCompleto(e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
 
-                    {/* ========================= */}
-                    {/* BIOGRAFIA TRABAJADOR */}
-                    {/* ========================= */}
+                        </div>
 
-                    <div className={styles.field}>
+                        <div className={styles.field}>
 
-                        <label htmlFor="biografiaTrabajador">
-                            Biografía como trabajador
-                        </label>
+                            <label htmlFor="telefono">
+                                Teléfono
+                            </label>
 
-                        <textarea
-                            id="biografiaTrabajador"
-                            value={biografiaTrabajador}
-                            onChange={(e) =>
-                                setBiografiaTrabajador(
-                                    e.target.value
-                                )
-                            }
-                            required
-                        />
+                            <div className={styles.inputWrap}>
+                                <Phone size={18} className={styles.inputIcon} />
+                                <input
+                                    id="telefono"
+                                    type="tel"
+                                    inputMode="numeric"
+                                    value={telefono}
+                                    onChange={(e) => {
 
-                    </div>
+                                        const valor =
+                                            e.target.value;
 
+                                        // Solo números
+                                        // Máximo 10 dígitos
+                                        if (/^\d{0,10}$/.test(valor)) {
 
-                    {/* ========================= */}
-                    {/* LOCALIDAD */}
-                    {/* ========================= */}
+                                            setTelefono(valor);
 
-                    <div className={styles.field}>
+                                        }
 
-                        <label htmlFor="localidad">
-                            Localidad
-                        </label>
+                                    }}
+                                    maxLength={10}
+                                    required
+                                />
+                            </div>
 
-                        <select
-                            id="localidad"
-                            value={idLocalidad}
-                            onChange={(e) =>
-                                setIdLocalidad(
-                                    e.target.value
-                                )
-                            }
-                            required
-                        >
+                            {/* Validación en tiempo real */}
 
-                            <option value="">
-                                Selecciona una localidad
-                            </option>
+                            {telefono.length > 0 && (
 
-                            {localidades.map((loc) => (
-
-                                <option
-                                    key={loc.id}
-                                    value={loc.id}
+                                <p
+                                    className={
+                                        telefonoValido
+                                            ? `${styles.hint} ${styles.ok}`
+                                            : `${styles.hint} ${styles.fail}`
+                                    }
                                 >
-                                    {loc.nombre} — {loc.provincia}
-                                </option>
+                                    {telefonoValido ? "✓" : "✗"} 10 dígitos
+                                </p>
 
-                            ))}
+                            )}
 
-                        </select>
+                        </div>
+
+                        <div className={styles.field}>
+
+                            <label htmlFor="localidad">
+                                Localidad
+                            </label>
+
+                            <div className={styles.inputWrap}>
+                                <MapPin size={18} className={styles.inputIcon} />
+                                <select
+                                    id="localidad"
+                                    value={idLocalidad}
+                                    onChange={(e) =>
+                                        setIdLocalidad(
+                                            e.target.value
+                                        )
+                                    }
+                                    required
+                                >
+
+                                    <option value="">
+                                        Seleccioná una localidad
+                                    </option>
+
+                                    {localidades.map((loc) => (
+
+                                        <option
+                                            key={loc.id}
+                                            value={loc.id}
+                                        >
+                                            {loc.nombre} — {loc.provincia}
+                                        </option>
+
+                                    ))}
+
+                                </select>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* ========================= */}
+                    {/* SOBRE VOS */}
+                    {/* ========================= */}
+
+                    <div className={styles.card}>
+
+                        <h2 className={styles.cardTitle}>Sobre vos</h2>
+
+                        <div className={styles.field}>
+
+                            <label htmlFor="biografiaContratante">
+                                Como contratante
+                            </label>
+
+                            <textarea
+                                id="biografiaContratante"
+                                placeholder="Contá qué tipo de trabajos solés publicar..."
+                                value={biografiaContratante}
+                                onChange={(e) =>
+                                    setBiografiaContratante(
+                                        e.target.value
+                                    )
+                                }
+                                required
+                            />
+
+                        </div>
+
+                        <div className={styles.field}>
+
+                            <label htmlFor="biografiaTrabajador">
+                                Como trabajador
+                            </label>
+
+                            <textarea
+                                id="biografiaTrabajador"
+                                placeholder="Contá tu experiencia y en qué sos bueno..."
+                                value={biografiaTrabajador}
+                                onChange={(e) =>
+                                    setBiografiaTrabajador(
+                                        e.target.value
+                                    )
+                                }
+                                required
+                            />
+
+                        </div>
 
                     </div>
 
@@ -667,18 +728,19 @@ export default function EditarPerfil() {
                     {/* INSIGNIAS (solo lectura) */}
                     {/* ========================= */}
 
-                    <div className={styles.field}>
+                    <div className={styles.card}>
 
-                        <label>
+                        <h2 className={styles.cardTitle}>
+                            <Award size={18} className={styles.cardTitleIcon} />
                             Insignias
-                        </label>
+                        </h2>
 
                         <p className={styles.categoriasHint}>
                             Categorías en las que completaste trabajos.
                         </p>
 
                         {insignias.length === 0 ? (
-                            <p className={styles.categoriasHint}>
+                            <p className={styles.emptyState}>
                                 Todavía no completaste trabajos.
                             </p>
                         ) : (
@@ -701,18 +763,19 @@ export default function EditarPerfil() {
                     {/* TRABAJOS QUE ESTÁ DISPUESTO A HACER */}
                     {/* ========================= */}
 
-                    <div className={styles.field}>
+                    <div className={styles.card}>
 
-                        <label>
+                        <h2 className={styles.cardTitle}>
+                            <Briefcase size={18} className={styles.cardTitleIcon} />
                             Trabajos que estás dispuesto a hacer
-                        </label>
+                        </h2>
 
                         <p className={styles.categoriasHint}>
                             Elegí en qué categorías querés que te encuentren. Podés cambiarlas cuando quieras.
                         </p>
 
                         {categorias.length === 0 ? (
-                            <p className={styles.categoriasHint}>
+                            <p className={styles.emptyState}>
                                 No hay categorías disponibles.
                             </p>
                         ) : (
@@ -731,6 +794,7 @@ export default function EditarPerfil() {
                                             aria-pressed={activa}
                                             onClick={() => toggleCategoria(cat.id)}
                                         >
+                                            {activa && <Check size={14} strokeWidth={3} />}
                                             {cat.name}
                                         </button>
                                     );
@@ -742,62 +806,7 @@ export default function EditarPerfil() {
 
 
                     {/* ========================= */}
-                    {/* AVATAR */}
-                    {/* ========================= */}
-
-                    <div className={styles.field}>
-
-                        <label htmlFor="avatar">
-                            Foto de perfil
-                        </label>
-
-                        <div className={styles.avatarRow}>
-
-                            {(avatarPreview || avatar) ? (
-                                <img
-                                    src={avatarPreview || avatar}
-                                    alt="Foto de perfil"
-                                    className={styles.avatarPreview}
-                                />
-                            ) : (
-                                <div className={styles.avatarPlaceholder} />
-                            )}
-
-                            <input
-                                ref={fileInputRef}
-                                id="avatar"
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                className={styles.avatarInputHidden}
-                                onChange={handleAvatarChange}
-                            />
-
-                            <button
-                                type="button"
-                                className={styles.avatarBtn}
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={uploadingAvatar}
-                            >
-                                {uploadingAvatar
-                                    ? "Subiendo..."
-                                    : avatar
-                                        ? "Cambiar foto"
-                                        : "Elegir foto"}
-                            </button>
-
-                        </div>
-
-                        {avatarError && (
-                            <p className={styles.error}>
-                                {avatarError}
-                            </p>
-                        )}
-
-                    </div>
-
-
-                    {/* ========================= */}
-                    {/* BOTONES */}
+                    {/* BOTONES (barra fija abajo) */}
                     {/* ========================= */}
 
                     <div className={styles.buttons}>
