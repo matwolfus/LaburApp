@@ -35,6 +35,12 @@ function budgetToInputValue(budget) {
   return formatPresupuesto(raw);
 }
 
+// Fecha de hoy (YYYY-MM-DD) en hora local del navegador, no en UTC.
+const hoyLocal = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
   const { jobId } = useParams();
@@ -182,6 +188,15 @@ export default function NuevoTrabajo() {
     if (!fecha) {
       setError("Seleccioná una fecha.");
       return;
+    }
+    if (!isEdit) {
+      const ahora = new Date();
+      const hoy = hoyLocal();
+      const hhmm = `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`;
+      if (fecha < hoy || (fecha === hoy && hora && hora < hhmm)) {
+        setError("La fecha y hora ya pasaron. Elegí una fecha futura.");
+        return;
+      }
     }
     const presupuestoNum = parsePresupuesto(presupuesto);
     if (!presupuesto || isNaN(presupuestoNum) || presupuestoNum <= 0) {
@@ -343,7 +358,7 @@ export default function NuevoTrabajo() {
           />
         </div>
 
-        <DateTimePicker fecha={fecha} hora={hora} onFechaChange={setFecha} onHoraChange={setHora} />
+        <DateTimePicker fecha={fecha} hora={hora} minFecha={isEdit ? undefined : hoyLocal()} onFechaChange={setFecha} onHoraChange={setHora} />
 
         <PrioritySelector value={prioridad} onChange={setPrioridad} />
 

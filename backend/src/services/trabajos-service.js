@@ -120,6 +120,16 @@ export default class TrabajosService {
   async createJobAsync(entity, imagenes = []) {
     this.#validateJobFields(entity, imagenes);
 
+    // Un trabajo nuevo en el pasado quedaría 'vencido' al instante (ver
+    // expirarVencidos) y nunca se listaría. programado_para es hora Argentina sin offset.
+    if (entity.programado_para != null) {
+      const ahoraAR = new Date().toLocaleString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' }).replace(' ', 'T');
+      const [fecha, hora] = String(entity.programado_para).split('T');
+      const sinHorario = !hora || hora.startsWith('00:00');
+      const vencido = sinHorario ? fecha < ahoraAR.slice(0, 10) : entity.programado_para < ahoraAR;
+      if (vencido) throw new Error('La fecha y hora del trabajo ya pasaron');
+    }
+
     const newId = await this.repository.createJob(entity);
 
     if (Array.isArray(imagenes) && imagenes.length > 0) {

@@ -5,6 +5,7 @@ const DateTimePicker = ({
   hora,
   onFechaChange,
   onHoraChange,
+  minFecha,
 }) => {
   return (
     <div className={styles.container}>
@@ -16,6 +17,7 @@ const DateTimePicker = ({
         <input
           type="date"
           value={fecha}
+          min={minFecha}
           onChange={(e) => onFechaChange(e.target.value)}
           className={styles.input}
         />

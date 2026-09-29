@@ -117,7 +117,13 @@ async getJobsByEmployerAndStatus(employerId, status) {
       SET estado = 'vencido', actualizado_en = NOW()
       WHERE estado IN ('abierto', 'proxima')
         AND programado_para IS NOT NULL
-        AND programado_para < NOW()
+        AND (
+          -- Sin horario elegido se guarda 00:00: vence recién cuando pasa el día.
+          CASE WHEN programado_para::time = '00:00'
+            THEN programado_para::date < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')::date
+            ELSE programado_para < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')
+          END
+        )
     `);
   }
 
