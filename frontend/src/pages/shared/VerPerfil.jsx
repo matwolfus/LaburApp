@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 
 import { getPerfil, getConversaciones } from "../../services/api";
 
@@ -11,6 +11,7 @@ import PerfilCategorias from "../../components/PerfilCategorias";
 import PerfilResenas from "../../components/PerfilResenas";
 
 import styles from "../../styles/Perfil.module.css";
+import verPerfilStyles from "../../styles/VerPerfil.module.css";
 
 
 export default function VerPerfil() {
@@ -209,6 +210,15 @@ export default function VerPerfil() {
         <main className={styles.page}>
 
             <div className={styles.container}>
+
+                <button
+                    type="button"
+                    className={verPerfilStyles.volverBtn}
+                    onClick={() => navigate(-1)}
+                >
+                    <ArrowLeft size={16} />
+                    Volver
+                </button>
 
                 <PerfilHeader
                     perfil={perfil}

@@ -1,0 +1,23 @@
+/* Botón "Volver" arriba de un perfil ajeno (se llega desde el chat, un trabajo, etc.). */
+.volverBtn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 16px;
+    padding: 8px 14px 8px 10px;
+    border: none;
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--color-primary, #2d3b8e);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(45, 59, 142, 0.1);
+    transition: background-color 0.15s ease;
+}
+
+.volverBtn:hover {
+    background: #eef1fb;
+}
