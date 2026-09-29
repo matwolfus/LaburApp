@@ -10,10 +10,6 @@
   text-align: left;
 }
 
-@media (min-width: 600px) {
-  .notif-page { padding: 36px 24px 120px; }
-}
-
 .notif-page__header { margin-bottom: 12px; }
 
 .notif-page__title {

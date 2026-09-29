@@ -465,7 +465,3 @@
   padding: 14px;
   border-radius: 16px;
 }
-
-@media (min-width: 600px) {
-  .content { padding: 0 24px 32px; }
-}

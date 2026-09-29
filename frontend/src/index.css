@@ -10,6 +10,9 @@
     --color-avatar:   #9CA3AF;
     --color-divider:  #EEF1F6;
 
+    /* Ancho de la columna "celular": la app se ve igual en desktop y en el teléfono. */
+    --app-max-width:  430px;
+
     font-family: 'Nunito', sans-serif;
     line-height: 1.5;
     font-weight: 400;
@@ -22,14 +25,22 @@
 
   body {
     margin: 0;
-    background: var(--laburapp-bg);
+    /* Fondo a los costados de la columna en pantallas anchas */
+    background: #E5E7EB;
     font-family: 'Nunito', sans-serif;
   }
 
+  /* Columna centrada tipo celular. Sin transform a propósito: los
+     position:fixed (Sidebar, modales, navs) se centran por su cuenta con
+     left/width usando --app-max-width. */
   #root {
     width: 100%;
-    margin: 0;
-    /* SIN text-align: center y SIN ancho fijo de 1126px */
+    max-width: var(--app-max-width);
+    min-height: 100vh;
+    margin: 0 auto;
+    background: var(--color-bg);
+    box-shadow: 0 0 40px rgba(15, 23, 42, 0.12);
+    position: relative;
   }
 
   h1, h2, h3 {
@@ -105,7 +116,6 @@
 
 .buscar-content {
   width: 100%;
-  max-width: 900px;
   margin: 0 auto;
   padding: 32px 20px;
 }
@@ -354,8 +364,8 @@
 
 .buscar-bottom-navigation {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: max(0px, calc(50% - var(--app-max-width) / 2));
+  width: min(100%, var(--app-max-width));
   bottom: 0;
 
   height: 68px;
@@ -577,16 +587,6 @@
 /* =========================================
    RESPONSIVE
    ========================================= */
-
-@media (min-width: 768px) {
-  .buscar-content {
-    padding: 40px 28px;
-  }
-
-  .buscar-hero h1 {
-    font-size: 36px;
-  }
-}
 
 @media (max-width: 600px) {
   .worker-search-card {

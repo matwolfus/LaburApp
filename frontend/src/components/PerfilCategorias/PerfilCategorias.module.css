@@ -59,12 +59,9 @@
 }
 
 
-@media (max-width: 600px) {
-
-    .card {
-        margin: 0 16px;
-        padding: 16px;
-    }
+.card {
+    margin: 0 16px;
+    padding: 16px;
 }
 
 /* Insignias: categorías con trabajos completados. */

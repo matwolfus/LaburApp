@@ -53,23 +53,20 @@
     color: #9AA0B4;
 }
 
-@media (max-width: 600px) {
+.stats {
+    padding: 0 16px;
 
-    .stats {
-        padding: 0 16px;
+    gap: 8px;
+}
 
-        gap: 8px;
-    }
+.stat {
+    padding: 14px 6px;
+}
 
-    .stat {
-        padding: 14px 6px;
-    }
+.stat h2 {
+    font-size: 18px;
+}
 
-    .stat h2 {
-        font-size: 18px;
-    }
-
-    .stat span {
-        font-size: 10px;
-    }
+.stat span {
+    font-size: 10px;
 }

@@ -1,12 +1,10 @@
 .page {
     background: #F5F7FA;
     min-height: 100vh;
-    padding: 32px;
 }
 
 .container {
     width: 100%;
-    max-width: 900px;
     margin: 0 auto;
 
     display: flex;
@@ -66,12 +64,7 @@
     font-size: 14px;
 }
 
-@media (max-width: 600px) {
-    .page {
-        padding: 24px 16px;
-    }
-
-    .container {
-        width: 100%;
-    }
+/* La app es siempre una columna de celular: estos estilos ya no dependen del viewport. */
+.page {
+    padding: 24px 16px;
 }

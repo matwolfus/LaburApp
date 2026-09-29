@@ -169,34 +169,32 @@
     color: #FFFFFF;
 }
 
-@media (max-width: 600px) {
+/* Estilos de celular, siempre activos (la app es una columna de celular). */
+.header {
+    border-radius: 0;
+    padding: 56px 16px 20px;
+}
 
-    .header {
-        border-radius: 0;
-        padding: 56px 16px 20px;
-    }
+.header::before {
+    height: 72px;
+}
 
-    .header::before {
-        height: 72px;
-    }
+.avatar,
+.avatarPlaceholder {
+    width: 92px;
+    height: 92px;
+}
 
-    .avatar,
-    .avatarPlaceholder {
-        width: 92px;
-        height: 92px;
-    }
+.avatarPlaceholder {
+    font-size: 26px;
+}
 
-    .avatarPlaceholder {
-        font-size: 26px;
-    }
+.nombre {
+    font-size: 21px;
+}
 
-    .nombre {
-        font-size: 21px;
-    }
-
-    .switchBtn {
-        padding: 8px 16px;
-    }
+.switchBtn {
+    padding: 8px 16px;
 }
 
 /* Botón "Editar perfil" sobre el banner azul (solo perfil propio). */

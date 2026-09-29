@@ -10,14 +10,8 @@
   min-height: 100vh;
   background: var(--color-bg);
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
   position: relative;
   overflow-x: clip;
-}
-
-@media (min-width: 600px) {
-  .app-shell { max-width: 560px; }
 }
 
 .app-shell__content {
@@ -88,10 +82,8 @@
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
+  left: max(0px, calc(50% - var(--app-max-width) / 2));
+  width: min(100%, var(--app-max-width));
   height: var(--nav-height);
   display: flex;
   justify-content: space-around;
@@ -103,10 +95,6 @@
   box-shadow: 0 -2px 12px rgba(45, 59, 142, 0.06);
   padding-bottom: env(safe-area-inset-bottom, 0);
   z-index: 50;
-}
-
-@media (min-width: 600px) {
-  .bottom-nav { max-width: 560px; }
 }
 
 .bottom-nav__item {

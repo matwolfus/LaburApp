@@ -1,6 +1,9 @@
 .overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: max(0px, calc(50% - var(--app-max-width) / 2));
+  width: min(100%, var(--app-max-width));
   z-index: 1100;
   background: #F5F7FA;
   display: flex;

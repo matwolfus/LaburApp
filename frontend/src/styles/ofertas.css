@@ -27,12 +27,6 @@
   text-align: left;
 }
 
-@media (min-width: 600px) {
-  .ofertas-page {
-    padding: 36px 24px 120px;
-  }
-}
-
 /* ── Header ───────────────────────────────────────── */
 .ofertas-page__header  { margin-bottom: 28px; }
 

@@ -342,27 +342,3 @@
 .contactBtn:active {
   transform: translateY(0);
 }
-
-@media (min-width: 768px) {
-  .card {
-    padding: 18px;
-  }
-
-  .avatar,
-  .avatarFallback {
-    width: 60px;
-    height: 60px;
-  }
-
-  .name {
-    font-size: 15px;
-  }
-
-  .description {
-    font-size: 10px;
-  }
-
-  .price {
-    font-size: 13px;
-  }
-}
