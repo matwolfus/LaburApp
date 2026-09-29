@@ -58,7 +58,7 @@ export default class MensajesRepository {
       JOIN usuarios u ON u.id = m.id_remitente
       WHERE m.id_contrato = $1
       ${filtroDesde}
-      ORDER BY m.enviado_en ASC
+      ORDER BY m.id ASC
     `;
     return await this.db.queryAll(sql, values);
   }

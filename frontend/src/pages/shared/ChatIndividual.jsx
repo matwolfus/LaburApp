@@ -10,6 +10,14 @@ function formatHora(fecha) {
   return new Date(fecha).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 }
 
+// El mensaje enviado puede llegar dos veces (respuesta del POST y polling en
+// vuelo): se agrega solo si su id todavía no está en la lista.
+const mergeUnicos = (prev, nuevos) => {
+  const ids = new Set(prev.map((m) => m.id));
+  const extra = nuevos.filter((m) => !ids.has(m.id));
+  return extra.length ? [...prev, ...extra] : prev;
+};
+
 export default function ChatIndividual() {
   const { idContrato } = useParams();
   const navigate = useNavigate();
@@ -59,8 +67,8 @@ export default function ChatIndividual() {
       getMensajes(idContrato, ultimoIdRef.current ?? undefined)
         .then((nuevos) => {
           if (nuevos.length === 0) return;
-          ultimoIdRef.current = nuevos[nuevos.length - 1].id;
-          setMensajes((prev) => [...prev, ...nuevos]);
+          ultimoIdRef.current = Math.max(ultimoIdRef.current ?? 0, nuevos[nuevos.length - 1].id);
+          setMensajes((prev) => mergeUnicos(prev, nuevos));
         })
         .catch((err) => console.error('Error en polling de mensajes:', err));
     }, POLL_INTERVAL_MS);
@@ -82,8 +90,8 @@ export default function ChatIndividual() {
     try {
       const nuevo = await enviarMensaje(idContrato, cuerpo);
       const mensaje = { id: nuevo.id, id_remitente: myUserId, cuerpo, enviado_en: nuevo.enviado_en, leido_en: null };
-      setMensajes((prev) => [...prev, mensaje]);
-      ultimoIdRef.current = nuevo.id;
+      setMensajes((prev) => mergeUnicos(prev, [mensaje]));
+      ultimoIdRef.current = Math.max(ultimoIdRef.current ?? 0, nuevo.id);
       setTexto('');
     } catch (err) {
       setError(err.message);
