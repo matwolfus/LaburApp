@@ -47,7 +47,7 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
           <span className={styles.price}>${Number(budget).toLocaleString('es-AR')}</span>
         )}
         <button type="button" className={styles.applyBtn}>
-          Ver detalle
+          Postularme
         </button>
       </div>
 

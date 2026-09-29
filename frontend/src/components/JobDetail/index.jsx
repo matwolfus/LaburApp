@@ -372,7 +372,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           ) : !miPostulacion && job.estado === 'vencido' ? (
             <p className={styles.msg}>Este trabajo venció, ya no se puede postular.</p>
           ) : !miPostulacion ? (
-            <button className={styles.postulantesBtn} onClick={() => setShowPostularModal(true)}>
+            <button className={styles.postularmeBtn} onClick={() => setShowPostularModal(true)}>
               Postularme
             </button>
           ) : miPostulacion.estado === 'pendiente' ? (

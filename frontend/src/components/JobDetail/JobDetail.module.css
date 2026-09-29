@@ -367,6 +367,26 @@
 .postulantesBtn:hover { opacity: 0.9; }
 .postulantesBtn:active { opacity: 0.85; }
 
+/* Botón "Postularme" del trabajador: naranja (CTA), a diferencia de los azules. */
+.postularmeBtn {
+  flex: 1;
+  min-width: 140px;
+  border: none;
+  background: var(--color-orange, #F97316);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  min-height: 44px;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
+  transition: opacity 0.15s;
+}
+
+.postularmeBtn:hover { opacity: 0.9; }
+.postularmeBtn:active { opacity: 0.85; }
+
 .editBtn {
   flex: 1;
   min-width: 120px;
