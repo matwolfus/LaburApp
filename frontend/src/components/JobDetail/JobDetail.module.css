@@ -297,6 +297,13 @@
   color: var(--color-muted);
 }
 
+.employerLink {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-orange, #F97316);
+}
+
 .starIcon {
   color: #E1810D;
   fill: #E1810D;

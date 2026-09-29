@@ -86,7 +86,7 @@ export default function BuscarTrabajos() {
       return (
         <div className="buscar-state-container">
           <div className="buscar-spinner" />
-          <h3>Buscando changas...</h3>
+          <h3>Buscando trabajos...</h3>
           <p>Estamos buscando trabajos disponibles.</p>
         </div>
       );
@@ -117,7 +117,7 @@ export default function BuscarTrabajos() {
       return (
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
-          <h3>Todavía no hay changas</h3>
+          <h3>Todavía no hay trabajos</h3>
           <p>No hay trabajos abiertos en esta categoría todavía.</p>
         </div>
       );
@@ -202,7 +202,7 @@ export default function BuscarTrabajos() {
             <span>
               {loading
                 ? 'Buscando...'
-                : `${filteredJobs.length} changas disponibles`}
+                : `${filteredJobs.length} trabajos disponibles`}
             </span>
           </div>
           {renderContent()}

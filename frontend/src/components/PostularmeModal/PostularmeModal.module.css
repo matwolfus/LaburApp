@@ -1,0 +1,95 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px 24px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 19px;
+  font-weight: 800;
+  color: #1F2937;
+}
+
+.jobTitle {
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  color: #6B7280;
+}
+
+.priceLabel {
+  align-self: center;
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6B7280;
+}
+
+.price {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-primary, #2D3B8E);
+}
+
+.priceInput {
+  width: 100%;
+  padding: 13px 16px;
+  margin: 4px 0 6px;
+  border-radius: 14px;
+  border: 1.5px solid #E2E8F0;
+  font-size: 15px;
+  font-family: inherit;
+  text-align: center;
+}
+
+.linkBtn {
+  border: none;
+  background: transparent;
+  color: var(--color-primary, #2D3B8E);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
+  margin-bottom: 14px;
+}
+
+.error {
+  color: #DC2626;
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+.confirmBtn {
+  width: 100%;
+  border: none;
+  background: var(--color-orange, #F97316);
+  color: white;
+  padding: 15px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirmBtn:hover:not(:disabled) { opacity: 0.9; }
+
+.cancelBtn {
+  margin-top: 8px;
+  border: none;
+  background: transparent;
+  color: #6B7280;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px;
+}

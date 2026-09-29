@@ -101,11 +101,11 @@ export default function HomeTrabajador() {
 
         <section aria-labelledby="jobs-heading">
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle} id="jobs-heading">Changas disponibles</h2>
+            <h2 className={styles.sectionTitle} id="jobs-heading">Trabajos disponibles</h2>
             <button className={styles.linkBtn} onClick={() => navigate("/trabajador/buscar")}>Ver todas</button>
           </div>
           {jobs.length === 0 ? (
-            <p className={styles.emptyText}>No hay changas abiertas por el momento.</p>
+            <p className={styles.emptyText}>No hay trabajos abiertos por el momento.</p>
           ) : (
             <div className={styles.jobsList}>
               {jobs.slice(0, 5).map((job) => (

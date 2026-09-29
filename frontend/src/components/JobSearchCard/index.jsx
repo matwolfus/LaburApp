@@ -10,9 +10,17 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
   const navigate = useNavigate();
   const ubicacion = [localidad, provincia].filter(Boolean).join(', ') || address;
   const CategoryIcon = getCategoryIcon(category);
+  const irAlDetalle = () => navigate(`/trabajador/trabajos/${id}`);
 
   return (
-    <article className={styles.card}>
+    <article
+      className={styles.card}
+      onClick={irAlDetalle}
+      onKeyDown={(e) => { if (e.key === 'Enter') irAlDetalle(); }}
+      role="link"
+      tabIndex={0}
+      aria-label={`Ver detalle de ${title}`}
+    >
 
       <div className={styles.top}>
         {image_url ? (
@@ -38,12 +46,8 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
         {budget != null && (
           <span className={styles.price}>${Number(budget).toLocaleString('es-AR')}</span>
         )}
-        <button
-          type="button"
-          className={styles.applyBtn}
-          onClick={() => navigate(`/trabajador/postularme/${id}`)}
-        >
-          Postularme
+        <button type="button" className={styles.applyBtn}>
+          Ver detalle
         </button>
       </div>
 

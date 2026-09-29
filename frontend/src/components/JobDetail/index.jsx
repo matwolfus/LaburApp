@@ -4,6 +4,7 @@ import { MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2, Me
 import BackButton from '../BackButton';
 import MapPreview from '../MapPreview';
 import CancelarPostulacionModal from '../CancelarPostulacionModal';
+import PostularmeModal from '../PostularmeModal';
 import DejarResenaModal from '../DejarResenaModal';
 import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena } from '../../services/api';
 import { getCategoryIcon } from '../../utils/categoryIcons';
@@ -68,6 +69,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const [miPostulacion, setMiPostulacion] = useState(null);
   const [postulacionesLoaded, setPostulacionesLoaded] = useState(isOwner);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showPostularModal, setShowPostularModal] = useState(false);
   const [completando, setCompletando] = useState(false);
   const [cancelando, setCancelando] = useState(false);
   const [actionError, setActionError] = useState(null);
@@ -89,17 +91,20 @@ const JobDetail = ({ jobId, isOwner = true }) => {
     cargarJob();
   }, [cargarJob]);
 
-  useEffect(() => {
-    if (isOwner) return;
-
-    getMisPostulaciones()
+  const cargarMiPostulacion = useCallback(() => {
+    return getMisPostulaciones()
       .then((postulaciones) => {
         const propia = postulaciones.find((p) => String(p.id_trabajo) === String(jobId));
         setMiPostulacion(propia ?? null);
       })
       .catch((err) => console.error('Error al traer tus postulaciones:', err))
       .finally(() => setPostulacionesLoaded(true));
-  }, [jobId, isOwner]);
+  }, [jobId]);
+
+  useEffect(() => {
+    if (isOwner) return;
+    cargarMiPostulacion();
+  }, [isOwner, cargarMiPostulacion]);
 
   const cargarElegibilidadResena = useCallback(() => {
     return getElegibilidadResena(jobId)
@@ -200,7 +205,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
               <p className={styles.heroSubtitle}>
                 {job.employer_name}
                 {job.employer_verificado && <span className={styles.heroVerificado}>✓</span>}
-                {employerJobsCount > 0 && ` · ${employerJobsCount} changas publicadas`}
+                {employerJobsCount > 0 && ` · ${employerJobsCount} trabajos publicados`}
               </p>
             )}
           </div>
@@ -232,6 +237,38 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             <span className={styles.urgente}>⚡ Urgente</span>
           )}
         </div>
+
+        {/* Quién publicó: arriba, para poder ver su perfil sin scrollear hasta el final. */}
+        {!isOwner && job.employer_name && (
+          <button
+            className={styles.employerCard}
+            onClick={() => navigate(`/perfil/${job.id_contratante}`)}
+            aria-label={`Ver perfil de ${job.employer_name}`}
+          >
+            {job.employer_avatar && !employerAvatarError ? (
+              <img
+                className={styles.employerAvatar}
+                src={job.employer_avatar}
+                alt={job.employer_name}
+                onError={() => setEmployerAvatarError(true)}
+              />
+            ) : (
+              <div className={styles.employerAvatarFallback}>{job.employer_name.charAt(0).toUpperCase()}</div>
+            )}
+            <div className={styles.employerInfo}>
+              <p className={styles.employerName}>{job.employer_name}</p>
+              {job.employer_rating != null && (
+                <p className={styles.employerRating}>
+                  <Star size={13} className={styles.starIcon} /> {Number(job.employer_rating).toFixed(1)}
+                </p>
+              )}
+              <p className={styles.employerLink}>Ver perfil ›</p>
+            </div>
+            {job.employer_verificado && (
+              <span className={styles.verificadoBadge}>Verificado ✓</span>
+            )}
+          </button>
+        )}
 
         {job.description && (
           <div className={styles.section}>
@@ -298,36 +335,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           </div>
         )}
 
-        {!isOwner ? (
-          job.employer_name && (
-            <button
-              className={styles.employerCard}
-              onClick={() => navigate(`/perfil/${job.id_contratante}`)}
-            >
-              {job.employer_avatar && !employerAvatarError ? (
-                <img
-                  className={styles.employerAvatar}
-                  src={job.employer_avatar}
-                  alt={job.employer_name}
-                  onError={() => setEmployerAvatarError(true)}
-                />
-              ) : (
-                <div className={styles.employerAvatarFallback}>{job.employer_name.charAt(0).toUpperCase()}</div>
-              )}
-              <div className={styles.employerInfo}>
-                <p className={styles.employerName}>{job.employer_name}</p>
-                {job.employer_rating != null && (
-                  <p className={styles.employerRating}>
-                    <Star size={13} className={styles.starIcon} /> {Number(job.employer_rating).toFixed(1)}
-                  </p>
-                )}
-              </div>
-              {job.employer_verificado && (
-                <span className={styles.verificadoBadge}>Verificado ✓</span>
-              )}
-            </button>
-          )
-        ) : (
+        {isOwner && (
           <button className={styles.applicantsRow} onClick={() => navigate(`/ofertas/${jobId}/postulantes`)}>
             <Users size={16} className={styles.infoIcon} />
             <span>{applicantsCount} {applicantsCount === 1 ? 'postulante' : 'postulantes'}</span>
@@ -364,7 +372,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           ) : !miPostulacion && job.estado === 'vencido' ? (
             <p className={styles.msg}>Este trabajo venció, ya no se puede postular.</p>
           ) : !miPostulacion ? (
-            <button className={styles.postulantesBtn} onClick={() => navigate(`/trabajador/postularme/${jobId}`)}>
+            <button className={styles.postulantesBtn} onClick={() => setShowPostularModal(true)}>
               Postularme
             </button>
           ) : miPostulacion.estado === 'pendiente' ? (
@@ -401,6 +409,13 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           <p className={styles.msg}>Ya dejaste tu reseña para este trabajo.</p>
         )}
       </div>
+
+      <PostularmeModal
+        open={showPostularModal}
+        job={job}
+        onClose={() => setShowPostularModal(false)}
+        onPosted={cargarMiPostulacion}
+      />
 
       <CancelarPostulacionModal
         open={showCancelModal}

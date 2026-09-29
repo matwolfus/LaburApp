@@ -26,7 +26,6 @@ import Ajustes from '../pages/shared/Ajustes';
 import HomeTrabajador from '../pages/trabajador/Home';
 import BuscarTrabajos from '../pages/trabajador/BuscarTrabajos';
 import DetalleTrabajoTrabajador from '../pages/trabajador/DetalleTrabajo';
-import Postularme from '../pages/trabajador/Postularme';
 import EstadoTrabajos from '../pages/trabajador/EstadoTrabajos';
 
 
@@ -50,7 +49,6 @@ const router = createBrowserRouter([
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
       { path: '/perfil/editar', element: <EditarPerfil/>},
       { path: '/trabajador/trabajos/:jobId', element: <DetalleTrabajoTrabajador /> },
-      { path: '/trabajador/postularme/:jobId', element: <Postularme /> },
       { path: '/chats/:idContrato', element: <ChatIndividual /> },
 
       // Con header/navbar
