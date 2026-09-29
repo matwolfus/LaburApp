@@ -117,7 +117,7 @@ export default function VerPerfil() {
                 : perfil.biografiaContratante,
 
             categorias: esTrabajador
-                ? perfil.categoriasTrabaja
+                ? (perfil.insignias || []).map((c) => c.nombre)
                 : perfil.categoriasContrata,
 
             resenas: esTrabajador
@@ -247,10 +247,11 @@ export default function VerPerfil() {
                 <PerfilCategorias
                     categorias={datos.categorias}
                     own={false}
-                    titulo={datos.esTrabajador ? "Trabajos en los que participó" : "Categorías que contrató"}
+                    insignias={datos.esTrabajador}
+                    titulo={datos.esTrabajador ? "Insignias" : "Categorías que contrató"}
                     vacioOther={
                         datos.esTrabajador
-                            ? "Todavía no trabajó en ninguna categoría."
+                            ? "Todavía no completó trabajos."
                             : "Todavía no contrató en ninguna categoría."
                     }
                 />

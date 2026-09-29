@@ -23,7 +23,7 @@ export default function PerfilStats({ datos, miembroDesde }) {
                         ? Number(datos.rating).toFixed(1)
                         : "—"}
                 </h2>
-                <span>Rating</span>
+                <span>{datos?.rating != null ? "Rating" : "Sin reseñas"}</span>
             </div>
 
             {/* Miembro desde */}
@@ -33,11 +33,11 @@ export default function PerfilStats({ datos, miembroDesde }) {
                     {fecha && !isNaN(fecha.getTime())
                         ? fecha.toLocaleDateString("es-AR", {
                               month: "short",
-                              year: "2-digit"
+                              year: "numeric"
                           })
                         : "—"}
                 </h2>
-                <span>Miembro</span>
+                <span>Miembro desde</span>
             </div>
 
         </div>

@@ -66,3 +66,13 @@
         padding: 16px;
     }
 }
+
+/* Insignias: categorías con trabajos completados. */
+.iconInsignia {
+    color: #F97316;
+}
+
+.pillInsignia {
+    background: #FFF4E8;
+    color: #B45309;
+}

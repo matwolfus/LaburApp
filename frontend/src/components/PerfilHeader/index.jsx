@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pencil } from "lucide-react";
 import styles from "./PerfilHeader.module.css";
 
 function getIniciales(nombre = "") {
@@ -10,12 +11,19 @@ function getIniciales(nombre = "") {
         .join("");
 }
 
-export default function PerfilHeader({ perfil, modo, setModo, own = true }) {
+export default function PerfilHeader({ perfil, modo, setModo, own = true, onEdit }) {
 
     const [avatarError, setAvatarError] = useState(false);
 
     return (
         <div className={styles.header}>
+
+            {own && onEdit && (
+                <button type="button" className={styles.editBtn} onClick={onEdit}>
+                    <Pencil size={14} />
+                    Editar perfil
+                </button>
+            )}
 
             {perfil.avatar && !avatarError ? (
                 <img
@@ -48,6 +56,10 @@ export default function PerfilHeader({ perfil, modo, setModo, own = true }) {
                     📍 {perfil.localidad}
                 </p>
             )}
+
+            <p className={styles.switchLabel}>
+                {own ? "Modo activo · tocá para cambiar" : "Mostrando el perfil como"}
+            </p>
 
             {own ? (
                 <div className={styles.switch}>

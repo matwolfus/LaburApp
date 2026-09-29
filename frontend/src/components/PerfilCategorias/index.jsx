@@ -1,4 +1,4 @@
-import { Tags } from "lucide-react";
+import { Tags, Award } from "lucide-react";
 import styles from "./PerfilCategorias.module.css";
 
 export default function PerfilCategorias({
@@ -7,13 +7,15 @@ export default function PerfilCategorias({
     titulo = "Categorías",
     vacioOwn = "Todavía no seleccionaste categorías.",
     vacioOther = "Este usuario todavía no tiene categorías registradas.",
+    insignias = false,
 }) {
+    const Icono = insignias ? Award : Tags;
 
     return (
         <section className={styles.card}>
 
             <h3 className={styles.title}>
-                <Tags size={17} className={styles.icon} />
+                <Icono size={17} className={insignias ? `${styles.icon} ${styles.iconInsignia}` : styles.icon} />
                 {titulo}
             </h3>
 
@@ -28,8 +30,8 @@ export default function PerfilCategorias({
                 <div className={styles.lista}>
 
                     {categorias.map((categoria) => (
-                        <span key={categoria} className={styles.pill}>
-                            {categoria}
+                        <span key={categoria} className={insignias ? `${styles.pill} ${styles.pillInsignia}` : styles.pill}>
+                            {insignias && "🏅 "}{categoria}
                         </span>
                     ))}
 

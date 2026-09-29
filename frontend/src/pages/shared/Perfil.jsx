@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { getMiUsuario, logout } from "../../services/api";
+import { useNavigate } from "react-router-dom";
+import { getMiUsuario } from "../../services/api";
 import { useAuth } from "../../context/useAuth";
 import { useRoleSwitch } from "../../hooks/useRoleSwitch";
 import styles from '../../styles/Perfil.module.css'
@@ -9,12 +10,12 @@ import PerfilStats from "../../components/PerfilStats";
 import PerfilBio from "../../components/PerfilBio";
 import PerfilCategorias from "../../components/PerfilCategorias";
 import PerfilResenas from "../../components/PerfilResenas";
-import PerfilActions from "../../components/PerfilActions";
 import ConfirmModal from "../../components/ConfirmModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
 export default function PerfilPage() {
 
+    const navigate = useNavigate();
     const [perfil, setPerfil] = useState(null);
     const { modo, hydrateModo, modoError } = useAuth();
     const { switching, changeModo } = useRoleSwitch();
@@ -83,7 +84,7 @@ export default function PerfilPage() {
 
             categorias:
                 modo === "trabajador"
-                    ? perfil.categoriasTrabaja
+                    ? (perfil.insignias || []).map((c) => c.nombre)
                     : perfil.categoriasContrata,
 
             resenas:
@@ -127,6 +128,7 @@ export default function PerfilPage() {
                 perfil={perfil}
                 modo={modo}
                 setModo={handleRequestModoChange}
+                onEdit={() => navigate("/perfil/editar")}
             />
 
             {modoError && (
@@ -152,10 +154,11 @@ export default function PerfilPage() {
 
             <PerfilCategorias
                 categorias={datos.categorias}
-                titulo={modo === "trabajador" ? "Trabajos en los que participaste" : "Categorías que contrataste"}
+                insignias={modo === "trabajador"}
+                titulo={modo === "trabajador" ? "Insignias" : "Categorías que contrataste"}
                 vacioOwn={
                     modo === "trabajador"
-                        ? "Todavía no trabajaste en ninguna categoría."
+                        ? "Todavía no completaste trabajos."
                         : "Todavía no contrataste en ninguna categoría."
                 }
             />
@@ -163,10 +166,6 @@ export default function PerfilPage() {
             <PerfilResenas
                 resenas={datos.resenas}
                 cantidad={datos.cantidadResenas}
-            />
-
-            <PerfilActions
-                onLogout={logout}
             />
 
         </div>
