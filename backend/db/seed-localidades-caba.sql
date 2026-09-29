@@ -2,9 +2,9 @@
 -- Se corre a mano en el SQL Editor de Supabase. Es idempotente: no duplica
 -- barrios que ya existen (compara nombre + provincia).
 --
--- Antes de correrlo, verificá el nombre de la provincia con:
---   SELECT id, nombre FROM provincias WHERE nombre ILIKE '%buenos aires%' OR nombre ILIKE '%caba%';
--- Si el nombre no matchea con el filtro de abajo, ajustá el ILIKE.
+-- Hoy la tabla provincias solo tiene "Buenos Aires" (id 1), así que los barrios
+-- se cargan bajo esa provincia. Si más adelante agregás "Ciudad Autónoma de
+-- Buenos Aires" como provincia aparte, el filtro de abajo la prefiere.
 
 DO $$
 DECLARE
@@ -15,7 +15,8 @@ BEGIN
   WHERE nombre ILIKE '%Ciudad%Buenos Aires%'
      OR nombre ILIKE 'CABA'
      OR nombre ILIKE 'Capital Federal'
-  ORDER BY id
+     OR nombre ILIKE 'Buenos Aires'
+  ORDER BY (nombre ILIKE 'Buenos Aires') , id
   LIMIT 1;
 
   IF v_provincia IS NULL THEN
