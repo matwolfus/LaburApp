@@ -44,6 +44,8 @@ export default function EditarPerfil() {
 
     const [categorias, setCategorias] = useState([]);
     const [categoriaIdsSeleccionadas, setCategoriaIdsSeleccionadas] = useState([]);
+    // Solo lectura: categorías donde ya completó trabajos como trabajador.
+    const [insignias, setInsignias] = useState([]);
 
     // =====================================
     // ESTADOS UI
@@ -150,6 +152,8 @@ export default function EditarPerfil() {
                 setCategoriaIdsSeleccionadas(
                     (dataPerfil.categoriasOfrecidas || []).map((c) => c.id)
                 );
+
+                setInsignias(dataPerfil.insignias || []);
 
                 // =====================================
                 // LOCALIDADES
@@ -660,13 +664,47 @@ export default function EditarPerfil() {
 
 
                     {/* ========================= */}
-                    {/* CATEGORÍAS QUE OFRECE */}
+                    {/* INSIGNIAS (solo lectura) */}
                     {/* ========================= */}
 
                     <div className={styles.field}>
 
                         <label>
-                            Categorías que ofrecés como trabajador
+                            Insignias
+                        </label>
+
+                        <p className={styles.categoriasHint}>
+                            Categorías en las que completaste trabajos.
+                        </p>
+
+                        {insignias.length === 0 ? (
+                            <p className={styles.categoriasHint}>
+                                Todavía no completaste trabajos.
+                            </p>
+                        ) : (
+                            <div className={styles.categoriasGrid}>
+                                {insignias.map((ins) => (
+                                    <span
+                                        key={ins.id}
+                                        className={`${styles.categoriaChip} ${styles.insigniaChip}`}
+                                    >
+                                        🏅 {ins.nombre}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
+                    </div>
+
+
+                    {/* ========================= */}
+                    {/* TRABAJOS QUE ESTÁ DISPUESTO A HACER */}
+                    {/* ========================= */}
+
+                    <div className={styles.field}>
+
+                        <label>
+                            Trabajos que estás dispuesto a hacer
                         </label>
 
                         <p className={styles.categoriasHint}>

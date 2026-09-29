@@ -238,6 +238,27 @@ export default class UsuariosRepository {
             ORDER BY c.nombre;
         `, [idUsuario]);
 
+        // Insignias: categorías en las que el usuario COMPLETÓ trabajos como
+        // trabajador (trabajo finalizado). Solo lectura, con id para el front.
+        const insignias = await this.db.queryAll(`
+            SELECT DISTINCT
+                c.id,
+                c.nombre
+
+            FROM contratos co
+
+            INNER JOIN trabajos t
+                ON t.id = co.id_trabajo
+
+            INNER JOIN categorias c
+                ON c.id = t.id_categoria
+
+            WHERE co.id_trabajador = $1
+              AND t.estado = 'finalizado'
+
+            ORDER BY c.nombre;
+        `, [idUsuario]);
+
         // ========= RESEÑAS =========
 
         const resenasTrabajador = await this.db.queryAll(`
@@ -314,6 +335,7 @@ export default class UsuariosRepository {
             categoriasOfrecidas: categoriasOfrecidas.map(c => ({ id: c.id, nombre: c.nombre })),
             categoriasTrabaja: categoriasTrabaja.map(c => c.nombre),
             categoriasContrata: categoriasContrata.map(c => c.nombre),
+            insignias: insignias.map(c => ({ id: c.id, nombre: c.nombre })),
                         resenasTrabajador: resenasTrabajador.map(r => ({
                 id: r.id,
                 calificacion: r.calificacion,
