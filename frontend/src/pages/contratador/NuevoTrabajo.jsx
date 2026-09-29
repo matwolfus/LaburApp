@@ -7,7 +7,7 @@ import DateTimePicker from "../../components/DateTimeSelector/DateTimeSelector";
 import DurationSelector from "../../components/DurationSelector/DurationSelector";
 import PrioritySelector from "../../components/PrioritySelector/PrioritySelector";
 import MapPicker from "../../components/MapPicker/MapPicker";
-import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos } from "../../services/api";
+import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos, getLocalidades } from "../../services/api";
 import { geocodeAddress, reverseGeocodeAddress } from "../../services/geocoding";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
@@ -55,6 +55,8 @@ export default function NuevoTrabajo() {
   const [duracion, setDuracion] = useState(60);
   const [presupuesto, setPresupuesto] = useState("");
   const [direccion, setDireccion] = useState("");
+  const [idLocalidad, setIdLocalidad] = useState("");
+  const [localidades, setLocalidades] = useState([]);
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
 
@@ -95,6 +97,7 @@ export default function NuevoTrabajo() {
         setDuracion(job.duration != null ? Number(job.duration) : null);
         setPresupuesto(budgetToInputValue(job.budget));
         setDireccion(job.address ?? "");
+        setIdLocalidad(job.id_localidad ?? "");
         setLat(job.lat ?? null);
         setLng(job.lng ?? null);
         setExistingFotos((job.images ?? []).map((img) => ({ id: img.id, url: img.url })));
@@ -103,6 +106,12 @@ export default function NuevoTrabajo() {
       .finally(() => setLoadingJob(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
+
+  useEffect(() => {
+    getLocalidades()
+      .then((data) => setLocalidades(data || []))
+      .catch((err) => console.error("Error al cargar las localidades:", err));
+  }, []);
 
   useEffect(() => {
     return () => fotos.forEach((foto) => URL.revokeObjectURL(foto.previewUrl));
@@ -232,6 +241,7 @@ export default function NuevoTrabajo() {
         prioridad,
         duracion,
         direccion: direccion.trim(),
+        id_localidad: idLocalidad ? Number(idLocalidad) : undefined,
         lat: lat ?? undefined,
         lng: lng ?? undefined,
       };
@@ -383,6 +393,21 @@ export default function NuevoTrabajo() {
               }}
             />
           </div>
+
+          <label className={styles.label} htmlFor="localidad">LOCALIDAD</label>
+          <select
+            id="localidad"
+            className={styles.textInput}
+            value={idLocalidad}
+            onChange={(e) => setIdLocalidad(e.target.value)}
+          >
+            <option value="">Seleccioná una localidad</option>
+            {localidades.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.nombre} ({l.provincia})
+              </option>
+            ))}
+          </select>
 
           <label className={styles.label} htmlFor="direccion">UBICACIÓN</label>
           <input

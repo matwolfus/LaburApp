@@ -190,6 +190,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.lat,
         t.lng,
         t.id_categoria,
+        t.id_localidad,
         t.id_contratante,
         c.nombre           AS category,
         l.nombre           AS localidad,
@@ -415,6 +416,8 @@ async getJobsByEmployerAndStatus(employerId, status) {
           direccion       = $9,
           lat             = $10,
           lng             = $11,
+          -- Si el form no manda localidad, se conserva la que ya tenía.
+          id_localidad    = COALESCE($12, id_localidad),
           actualizado_en  = NOW()
         WHERE id = $1
         RETURNING id
@@ -432,6 +435,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         entity.direccion ?? null,
         entity.lat ?? null,
         entity.lng ?? null,
+        entity.id_localidad ?? null,
       ];
 
       const updated = await txDb.queryOne(updateSql, updateValues);
