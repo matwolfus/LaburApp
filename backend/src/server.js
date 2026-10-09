@@ -8,6 +8,7 @@ import postulacionesController from './controllers/postulaciones-controller.js';
 import categoriasRouter from './controllers/categorias-controller.js';
 import usuariosRouter from './controllers/usuarios-controller.js';
 import localidadesRouter from './controllers/localidades-controller.js';
+import provinciasRouter from './controllers/provincias-controller.js';
 import uploadsRouter from './controllers/uploads-controller.js';
 import notificacionesRouter from './controllers/notificaciones-controller.js';
 import resenasRouter from './controllers/resenas-controller.js';
@@ -31,6 +32,8 @@ app.use('/api/categorias', categoriasRouter);
 app.use('/api/usuarios', usuariosRouter);
 
 app.use('/api/localidades', localidadesRouter);
+
+app.use('/api/provincias', provinciasRouter);
 
 app.use('/api/uploads', uploadsRouter);
 

@@ -192,3 +192,15 @@
 .perfilLink:hover:not(:disabled) .headerNombre {
   text-decoration: underline;
 }
+
+/* Chat de una postulación retirada / rechazada */
+.soloLectura {
+  margin: 0;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0));
+  background: #F4F6FB;
+  border-top: 1px solid #E8ECF3;
+  font-size: 13px;
+  color: var(--color-muted, #64748B);
+  text-align: center;
+  flex-shrink: 0;
+}

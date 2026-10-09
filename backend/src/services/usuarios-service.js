@@ -226,7 +226,14 @@ export default class UsuariosService {
         return null;
     }
 
-    return await this.repository.updatePerfil(idUsuario, datos);
+    // Las biografías son opcionales: vacío o solo espacios se guarda como null.
+    const normalizarBio = (bio) => (typeof bio === 'string' && bio.trim() ? bio.trim() : null);
+
+    return await this.repository.updatePerfil(idUsuario, {
+        ...datos,
+        biografia_contratante: normalizarBio(datos.biografia_contratante),
+        biografia_trabajador: normalizarBio(datos.biografia_trabajador),
+    });
 
     }
 
@@ -240,9 +247,14 @@ export default class UsuariosService {
         return { success: true };
     }
 
-    // Trabajadores que ofrecen una categoría determinada, para la pantalla "Buscar".
-    async searchByCategoriaAsync(idCategoria) {
-        const workers = await this.repository.searchByCategoria(idCategoria);
+    // Trabajadores para la pantalla "Buscar" (categoría / provincia / localidad,
+    // todos opcionales pero al menos uno: sin filtros no se lista a todos).
+    async searchTrabajadoresAsync(filtros) {
+        const { idCategoria, idProvincia, idLocalidad } = filtros;
+        if (!idCategoria && !idProvincia && !idLocalidad) {
+            return [];
+        }
+        const workers = await this.repository.searchTrabajadores(filtros);
         return workers.map((w) => ({ ...w, rating: Number(w.rating) }));
     }
 }

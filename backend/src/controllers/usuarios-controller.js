@@ -111,11 +111,16 @@ router.patch('/me/rol', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/usuarios/buscar?categoria=<id> -> trabajadores que ofrecen esa categoría.
+// GET /api/usuarios/buscar?categoria=&provincia=&localidad= -> trabajadores
+// filtrados por oficio y/o zona (todos opcionales, al menos uno).
 // Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
 router.get('/buscar', async (req, res) => {
   try {
-    const workers = await service.searchByCategoriaAsync(req.query.categoria);
+    const workers = await service.searchTrabajadoresAsync({
+      idCategoria: req.query.categoria,
+      idProvincia: req.query.provincia,
+      idLocalidad: req.query.localidad,
+    });
     res.json(workers);
   } catch (error) {
     console.error('Error in GET /buscar:', error);

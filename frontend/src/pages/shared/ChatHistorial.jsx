@@ -48,9 +48,9 @@ export default function ChatHistorial() {
       <div className={styles.lista}>
         {conversaciones.map((c) => (
           <button
-            key={c.id_contrato}
+            key={c.id_postulacion}
             className={styles.item}
-            onClick={() => navigate(`/chats/${c.id_contrato}`)}
+            onClick={() => navigate(`/chats/${c.id_postulacion}`)}
           >
             {c.otro_avatar ? (
               <img src={c.otro_avatar} alt={c.otro_nombre} className={styles.avatar} />

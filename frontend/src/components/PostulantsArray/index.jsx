@@ -6,6 +6,7 @@ import { getPostulantesByTrabajo, aceptarPostulacion } from '../../services/api'
 // Mapea la respuesta del backend al formato que espera PostulantCard
 const mapPostulante = (p) => ({
   id: p.id,
+  idTrabajador: p.id_trabajador,
   name: p.nombre_completo,
   location: [p.localidad, p.provincia].filter(Boolean).join(', '),
   rating: parseFloat(p.prom_calif_trabajador) || 0,

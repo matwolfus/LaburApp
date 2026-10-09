@@ -20,6 +20,10 @@ export default class NotificacionesRepository {
                 datos->>'titulo'        AS titulo,
                 datos->>'cuerpo'        AS cuerpo,
                 (datos->>'id_referencia')::int AS id_referencia,
+                (datos->>'id_trabajo')::int     AS id_trabajo,
+                (datos->>'id_postulacion')::int AS id_postulacion,
+                datos->>'localidad'     AS localidad,
+                datos->>'respondida'    AS respondida,
                 leido,
                 creado_en
             FROM notificaciones
@@ -62,7 +66,10 @@ export default class NotificacionesRepository {
             RETURNING id
         `;
 
+        // entity.extra: campos adicionales propios de cada tipo (id_trabajo,
+        // id_postulacion, localidad, ...), van al mismo jsonb.
         const datos = JSON.stringify({
+            ...(entity?.extra ?? {}),
             titulo: entity?.titulo ?? null,
             cuerpo: entity?.cuerpo ?? null,
             id_referencia: entity?.id_referencia ?? null,
@@ -89,5 +96,41 @@ export default class NotificacionesRepository {
         const updatedId = await this.db.queryReturnId(sql, [id]);
 
         return updatedId != null ? 1 : 0;
+    }
+
+    getNoLeidasCountAsync = async (idUsuario) => {
+
+        const sql = `
+            SELECT COUNT(*) AS count
+            FROM notificaciones
+            WHERE id_usuario = $1 AND leido = FALSE
+        `;
+
+        return await this.db.queryRowCount(sql, [idUsuario]);
+    }
+
+    // Borra la notificación 'nueva_postulacion' de una postulación (cuando el
+    // trabajador la cancela, la tarjeta ya no tiene sentido).
+    deleteNuevaPostulacionAsync = async (idPostulacion) => {
+
+        await this.db.queryAll(
+            `DELETE FROM notificaciones
+             WHERE tipo = 'nueva_postulacion'
+               AND (datos->>'id_postulacion')::int = $1`,
+            [idPostulacion]
+        );
+    }
+
+    // Marca una notificación de reconfirmación como respondida (para que la
+    // tarjeta ya no muestre los botones "Sigo interesado" / "Ya no me interesa").
+    marcarReconfirmacionRespondidaAsync = async (idPostulacion) => {
+
+        await this.db.queryAll(
+            `UPDATE notificaciones
+             SET datos = datos || '{"respondida": "true"}'::jsonb, leido = TRUE
+             WHERE tipo = 'reconfirmar_postulacion'
+               AND (datos->>'id_postulacion')::int = $1`,
+            [idPostulacion]
+        );
     }
 }

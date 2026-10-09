@@ -12,7 +12,10 @@ import styles from './CancelarPostulacionModal.module.css';
 // postulaciones no tiene ninguna columna para guardarlo. Si más adelante se
 // quiere persistir, hay que agregar esa columna y mandar `motivo` en el
 // body de cancelarPostulacion (que hoy solo recibe el id).
-export default function CancelarPostulacionModal({ open, postulacionId, onClose, onCancelled }) {
+//
+// aceptada: si la postulación ya estaba aceptada, el trabajo queda en
+// espera hasta que el contratante lo reabra (el texto lo avisa).
+export default function CancelarPostulacionModal({ open, postulacionId, aceptada = false, onClose, onCancelled }) {
   const [step, setStep] = useState('confirm'); // 'confirm' | 'success'
   const [motivo, setMotivo] = useState('');
   const [entendido, setEntendido] = useState(false);
@@ -54,7 +57,7 @@ export default function CancelarPostulacionModal({ open, postulacionId, onClose,
         subtitle="Cancelaste tu postulación correctamente"
         rows={[
           { icon: <Bell size={14} />, text: 'La otra persona será notificada' },
-          { icon: <MessageSquare size={14} />, text: 'Tu mensaje fue enviado' },
+          { icon: <MessageSquare size={14} />, text: 'El chat queda disponible solo para lectura' },
         ]}
         primaryLabel="Entendido"
         onPrimary={handleClose}
@@ -67,9 +70,12 @@ export default function CancelarPostulacionModal({ open, postulacionId, onClose,
       <div className={styles.content}>
 
         <AlertTriangle size={40} className={styles.warningIcon} />
-        <h2 className={styles.title}>¿Cancelar postulación?</h2>
+        <h2 className={styles.title}>{aceptada ? '¿Cancelar tu participación?' : '¿Cancelar postulación?'}</h2>
 
         <div className={styles.alertBox}>
+          {aceptada && (
+            <p>Ya te habían aceptado: el trabajo queda en espera hasta que el contratante lo reabra.</p>
+          )}
           <p>Atención, si estás a menos de 24 horas de la tarea puede afectar a tu reputación en la plataforma</p>
         </div>
 

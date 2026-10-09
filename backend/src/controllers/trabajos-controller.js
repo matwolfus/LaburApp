@@ -235,13 +235,62 @@ router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/trabajos/buscar?categoria=<id> -> trabajos abiertos, para que un
-// trabajador los descubra (Home / Buscar Trabajos). Sin auth: cualquiera
+// PATCH /api/trabajos/:id/reabrir { programado_para } -> el contratador
+// reabre un trabajo que quedó 'en_espera' porque el trabajador aceptado
+// canceló. Los postulantes rechazados automáticamente reciben una
+// notificación para reconfirmar su interés.
+router.patch('/:id/reabrir', authMiddleware, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    const job = await service.getJobById(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Trabajo no encontrado' });
+    }
+
+    if (Number(job.id_contratante) !== req.userId) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    const resultado = await service.reabrirTrabajoAsync(jobId, job.estado, req.body?.programado_para);
+
+    if (!resultado) {
+      return res.status(400).json({ error: 'Solo se puede reabrir un trabajo en espera' });
+    }
+
+    try {
+      for (const p of resultado.aReconfirmar) {
+        await notificacionesService.crearAsync({
+          id_usuario: p.id_trabajador,
+          tipo: 'reconfirmar_postulacion',
+          titulo: `"${job.title}" está disponible de nuevo. ¿Seguís interesado?`,
+          cuerpo: 'Tenés 2 días para responder. Si no respondés, se toma como que ya no te interesa.',
+          id_referencia: Number(jobId),
+          extra: { id_postulacion: p.id, id_trabajo: Number(jobId) },
+        });
+      }
+    } catch (notifError) {
+      console.error('Error notificando reapertura:', notifError);
+    }
+
+    return res.status(200).json({ id: jobId });
+  } catch (error) {
+    console.error('Error in PATCH /trabajos/:id/reabrir:', error.message);
+    return res.status(400).json({ error: error.message });
+  }
+});
+
+// GET /api/trabajos/buscar?categoria=&provincia=&localidad= (todos
+// opcionales) -> trabajos abiertos, para que un trabajador los descubra (Home / Buscar Trabajos). Sin auth: cualquiera
 // puede navegar changas abiertas sin loguearse, igual que el detalle público.
 // Debe declararse ANTES de '/:id' por el mismo motivo que el resto.
 router.get('/buscar', async (req, res) => {
   try {
-    const jobs = await service.buscarAbiertosAsync(req.query.categoria);
+    const jobs = await service.buscarAbiertosAsync({
+      idCategoria: req.query.categoria,
+      idProvincia: req.query.provincia,
+      idLocalidad: req.query.localidad,
+    });
     res.json(jobs);
   } catch (error) {
     console.error('Error in GET /buscar:', error);

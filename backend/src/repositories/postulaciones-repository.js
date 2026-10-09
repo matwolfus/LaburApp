@@ -44,6 +44,8 @@ export default class PostulacionesRepository {
                 ON r.id_receptor = u.id
 
             WHERE p.id_trabajo = $1
+              -- Retiradas o esperando reconfirmación: el contratante no las puede aceptar.
+              AND p.estado NOT IN ('retirado', 'por_reconfirmar')
 
             GROUP BY
                 p.id,
@@ -72,8 +74,10 @@ export default class PostulacionesRepository {
                 p.precio_propuesto,
                 p.estado,
                 p.postulado_en,
+                p.reconfirmar_hasta,
 
                 t.titulo AS titulo_trabajo,
+                t.id_contratante,
                 t.estado AS estado_trabajo,
                 t.programado_para,
                 t.direccion,
@@ -104,7 +108,7 @@ export default class PostulacionesRepository {
     getByIdAsync = async (id) => {
 
         const sql = `
-            SELECT id, id_trabajo, id_trabajador, precio_propuesto, estado
+            SELECT id, id_trabajo, id_trabajador, precio_propuesto, estado, reconfirmar_hasta
             FROM postulaciones
             WHERE id = $1
         `;
@@ -123,6 +127,11 @@ export default class PostulacionesRepository {
         return await this.db.queryOne(sql, [idTrabajo]);
     }
 
+    // Si el trabajador ya se había postulado y después retiró la postulación,
+    // el UNIQUE (id_trabajo, id_trabajador) impide un INSERT nuevo: en ese
+    // caso se "revive" la misma fila como pendiente. Si la fila existente NO
+    // está retirada, el DO UPDATE no aplica y no vuelve ningún id (el
+    // controller lo trata como "ya te postulaste").
     createAsync = async (entity) => {
 
         const sql = `
@@ -140,6 +149,14 @@ export default class PostulacionesRepository {
                 $4,
                 NOW()
             )
+            ON CONFLICT (id_trabajo, id_trabajador) DO UPDATE
+            SET
+                precio_propuesto   = EXCLUDED.precio_propuesto,
+                estado             = 'pendiente',
+                postulado_en       = NOW(),
+                rechazo_automatico = FALSE,
+                reconfirmar_hasta  = NULL
+            WHERE postulaciones.estado = 'retirado'
             RETURNING id
         `;
 
@@ -182,10 +199,13 @@ export default class PostulacionesRepository {
 
             // RETURNING id_trabajador: el controller necesita saber a quién
             // avisar (notificación 'postulacion_rechazada'), sin otra query.
+            // rechazo_automatico = true: si el aceptado después cancela y el
+            // contratante reabre el trabajo, estos postulantes reciben la
+            // reconfirmación (ver reabrir en trabajos-repository).
             const rechazados = await txDb.queryAll(
                 `UPDATE postulaciones
-                 SET estado = 'rechazado'
-                 WHERE id_trabajo = $1 AND id <> $2 AND estado = 'pendiente'
+                 SET estado = 'rechazado', rechazo_automatico = TRUE, reconfirmar_hasta = NULL
+                 WHERE id_trabajo = $1 AND id <> $2 AND estado IN ('pendiente', 'por_reconfirmar')
                  RETURNING id_trabajador`,
                 [idTrabajo, idPostulacion]
             );
@@ -203,5 +223,106 @@ export default class PostulacionesRepository {
 
             return rechazados.map((row) => row.id_trabajador);
         });
+    }
+
+    // Cancelación por parte del trabajador (no borra la fila: queda
+    // 'retirado', así el historial y el chat se conservan).
+    // - pendiente / por_reconfirmar -> retirado.
+    // - aceptado -> retirado + contrato 'cancelado' + trabajo 'en_espera'
+    //   (el contratante decide si lo reabre).
+    // Todo en una transacción. Devuelve si el trabajo quedó en espera.
+    cancelarAsync = async (postulacion) => {
+
+        return await this.db.withTransaction(async (txDb) => {
+
+            await txDb.queryAll(
+                `UPDATE postulaciones
+                 SET estado = 'retirado', reconfirmar_hasta = NULL
+                 WHERE id = $1`,
+                [postulacion.id]
+            );
+
+            if (postulacion.estado !== 'aceptado') {
+                return { trabajoEnEspera: false };
+            }
+
+            await txDb.queryAll(
+                `UPDATE contratos SET estado = 'cancelado'
+                 WHERE id_postulacion = $1 AND estado = 'activo'`,
+                [postulacion.id]
+            );
+
+            await txDb.queryAll(
+                `UPDATE trabajos SET estado = 'en_espera', actualizado_en = NOW()
+                 WHERE id = $1 AND estado = 'activa'`,
+                [postulacion.id_trabajo]
+            );
+
+            return { trabajoEnEspera: true };
+        });
+    }
+
+    // Respuesta a la reconfirmación: "Sigo interesado" -> pendiente,
+    // "Ya no me interesa" -> retirado.
+    reconfirmarAsync = async (idPostulacion, sigue) => {
+
+        const sql = `
+            UPDATE postulaciones
+            SET
+                estado = $2,
+                rechazo_automatico = CASE WHEN $2 = 'pendiente' THEN FALSE ELSE rechazo_automatico END,
+                reconfirmar_hasta = NULL
+            WHERE id = $1 AND estado = 'por_reconfirmar'
+            RETURNING id
+        `;
+
+        return await this.db.queryReturnId(sql, [idPostulacion, sigue ? 'pendiente' : 'retirado']);
+    }
+
+    // Sin respuesta en el plazo -> se toma como "Ya no me interesa". Mismo
+    // patrón "chequeo al leer" que expirarVencidos (no hay cron): se llama
+    // antes de listar postulantes, postulaciones propias y notificaciones.
+    // También marca como respondidas las notificaciones de reconfirmación de
+    // esas postulaciones, para que ya no muestren los botones.
+    expirarReconfirmaciones = async () => {
+
+        await this.db.queryAll(`
+            WITH vencidas AS (
+                UPDATE postulaciones
+                SET estado = 'retirado', reconfirmar_hasta = NULL
+                WHERE estado = 'por_reconfirmar' AND reconfirmar_hasta < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')
+                RETURNING id
+            )
+            UPDATE notificaciones n
+            SET datos = n.datos || '{"respondida": "true"}'::jsonb
+            WHERE n.tipo = 'reconfirmar_postulacion'
+              AND (n.datos->>'id_postulacion')::int IN (SELECT id FROM vencidas)
+        `);
+    }
+
+    // "Barrio, Provincia" del trabajador, para mostrar en la notificación
+    // 'nueva_postulacion' del contratante.
+    getLocalidadTrabajadorAsync = async (idTrabajador) => {
+
+        const row = await this.db.queryOne(
+            `SELECT l.nombre AS localidad, pr.nombre AS provincia
+             FROM usuarios u
+             LEFT JOIN localidades l ON l.id = u.id_localidad
+             LEFT JOIN provincias pr ON pr.id = l.id_provincia
+             WHERE u.id = $1`,
+            [idTrabajador]
+        );
+
+        return [row?.localidad, row?.provincia].filter(Boolean).join(', ') || null;
+    }
+
+    getNombreTrabajadorAsync = async (idTrabajador) => {
+
+        const row = await this.db.queryOne(
+            `SELECT nombre_completo FROM usuarios WHERE id = $1`,
+            [idTrabajador]
+        );
+
+        return row?.nombre_completo ?? 'Un trabajador';
     }
 }

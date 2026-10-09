@@ -101,22 +101,47 @@ export default class UsuariosRepository {
         });
     }
 
-    // Trabajadores que ofrecen una categoría determinada, para la pantalla "Buscar".
-    async searchByCategoria(idCategoria) {
+    // Trabajadores para la pantalla "Buscar" del contratante. Filtros
+    // opcionales y combinables: categoría (oficio que ofrece), provincia y
+    // localidad (zona de trabajo = localidad de su perfil). Con filtro de
+    // ubicación, los perfiles sin localidad cargada no aparecen.
+    async searchTrabajadores({ idCategoria, idProvincia, idLocalidad } = {}) {
+        const values = [];
+        const filtros = [];
+
+        if (idCategoria) {
+            values.push(idCategoria);
+            filtros.push(`AND EXISTS (
+                SELECT 1 FROM usuario_categoria uc
+                WHERE uc.id_usuario = u.id AND uc.id_categoria = $${values.length}
+            )`);
+        }
+
+        if (idLocalidad) {
+            values.push(idLocalidad);
+            filtros.push(`AND u.id_localidad = $${values.length}`);
+        } else if (idProvincia) {
+            values.push(idProvincia);
+            filtros.push(`AND l.id_provincia = $${values.length}`);
+        }
+
         const sql = `
             SELECT
                 u.id,
                 u.nombre_completo                           AS name,
                 u.url_avatar                                AS photo_url,
                 u.biografia_trabajador                      AS description,
-                COALESCE(u.prom_calif_trabajador, 0)::float AS rating
+                COALESCE(u.prom_calif_trabajador, 0)::float AS rating,
+                l.nombre                                    AS localidad,
+                pr.nombre                                   AS provincia
             FROM usuarios u
-            JOIN usuario_categoria uc ON uc.id_usuario = u.id
-            WHERE uc.id_categoria = $1
-              AND u.ultimo_rol   = 'trabajador'
+            LEFT JOIN localidades l ON l.id = u.id_localidad
+            LEFT JOIN provincias pr ON pr.id = l.id_provincia
+            WHERE u.ultimo_rol = 'trabajador'
+            ${filtros.join('\n            ')}
             ORDER BY rating DESC
         `;
-        return await this.db.queryAll(sql, [idCategoria]);
+        return await this.db.queryAll(sql, values);
     }
 
     async getPerfil(idUsuario) {
@@ -133,12 +158,17 @@ export default class UsuariosRepository {
                 u.verificado,
                 u.creado_en,
                 u.ultimo_rol,
-                l.nombre AS localidad
+                l.nombre AS localidad,
+                l.id_provincia,
+                pr.nombre AS provincia
 
             FROM usuarios u
 
             LEFT JOIN localidades l
                 ON l.id = u.id_localidad
+
+            LEFT JOIN provincias pr
+                ON pr.id = l.id_provincia
 
             WHERE u.id = $1
         `, [idUsuario]);
@@ -314,6 +344,8 @@ export default class UsuariosRepository {
             avatar: usuario.url_avatar,
             localidad: usuario.localidad,
             idLocalidad: usuario.id_localidad,
+            provincia: usuario.provincia,
+            idProvincia: usuario.id_provincia,
             verificado: usuario.verificado,
 
             biografiaTrabajador: usuario.biografia_trabajador,

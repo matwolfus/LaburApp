@@ -20,12 +20,11 @@ export default function VerPerfil() {
     const navigate = useNavigate();
 
     const [perfil, setPerfil] = useState(null);
-    // Solo se puede chatear si ya existe un contrato entre el usuario
-    // logueado y este perfil (mensajes.id_contrato es NOT NULL: el chat
-    // vive atado a un contrato, no a un par de usuarios en general). Si
-    // nunca trabajaron juntos, no hay a dónde llevar el chat, así que el
-    // botón "Contactar" directamente no se muestra.
-    const [idContratoConEstePerfil, setIdContratoConEstePerfil] = useState(null);
+    // Solo se puede chatear si ya existe una conversación entre el usuario
+    // logueado y este perfil (el chat vive atado a una postulación, no a un
+    // par de usuarios en general). Si no hay ninguna, el botón "Contactar"
+    // directamente no se muestra. Si hay varias, se usa la más reciente.
+    const [idChatConEstePerfil, setIdChatConEstePerfil] = useState(null);
     // Acá el modo es SOLO local (no pasa por useAuth/switchModo): es la vista
     // de un perfil ajeno, tocar el toggle solo cambia qué se está mirando,
     // nunca el modo activo propio.
@@ -82,7 +81,7 @@ export default function VerPerfil() {
         getConversaciones()
             .then((conversaciones) => {
                 const conv = conversaciones.find((c) => String(c.otro_id) === String(id));
-                setIdContratoConEstePerfil(conv?.id_contrato ?? null);
+                setIdChatConEstePerfil(conv?.id_postulacion ?? null);
             })
             .catch((err) => console.error("Error al consultar conversaciones:", err));
 
@@ -226,10 +225,10 @@ export default function VerPerfil() {
                     own={false}
                 />
 
-                {idContratoConEstePerfil && (
+                {idChatConEstePerfil && (
                     <button
                         className={styles.contactarBtn}
-                        onClick={() => navigate(`/chats/${idContratoConEstePerfil}`)}
+                        onClick={() => navigate(`/chats/${idChatConEstePerfil}`)}
                     >
                         <MessageSquare size={16} />
                         Contactar

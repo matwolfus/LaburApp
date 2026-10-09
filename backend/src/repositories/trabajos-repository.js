@@ -129,18 +129,28 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
    // Trabajos abiertos para que un trabajador los descubra (Home / Buscar).
   // Sin auth -> NO joinea usuarios (no exponer datos del contratante a
-  // cualquiera sin loguearse). idCategoria es opcional: sin filtro trae
-  // todos los abiertos (feed "Changas disponibles" del Home).
-  async buscarAbiertos(idCategoria) {
+  // cualquiera sin loguearse). Filtros opcionales y combinables: categoría,
+  // provincia y localidad. Sin filtros trae todos los abiertos (feed del Home).
+  async buscarAbiertos({ idCategoria, idProvincia, idLocalidad } = {}) {
     await this.expirarVencidos();
 
     const values = [];
-    let filtroCategoria = '';
+    const filtros = [];
 
     if (idCategoria) {
       values.push(idCategoria);
-      filtroCategoria = `AND t.id_categoria = $${values.length}`;
+      filtros.push(`AND t.id_categoria = $${values.length}`);
     }
+
+    if (idLocalidad) {
+      values.push(idLocalidad);
+      filtros.push(`AND t.id_localidad = $${values.length}`);
+    } else if (idProvincia) {
+      values.push(idProvincia);
+      filtros.push(`AND l.id_provincia = $${values.length}`);
+    }
+
+    const filtroCategoria = filtros.join(' ');
 
     const sql = `
       SELECT
@@ -191,6 +201,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.lng,
         t.id_categoria,
         t.id_localidad,
+        l.id_provincia,
         t.id_contratante,
         c.nombre           AS category,
         l.nombre           AS localidad,
@@ -211,13 +222,12 @@ async getJobsByEmployerAndStatus(employerId, status) {
           WHERE mp.id_trabajo = t.id AND mp.id_trabajador = $2 AND mp.estado = 'pendiente'
           LIMIT 1) AS my_proposed_price,
 
-        -- ORDER BY obligatorio: hoy un trabajo debería tener un solo
-        -- contrato (cancelar cierra todo, no hay reapertura), pero sin
-        -- orden un LIMIT 1 es no determinístico si alguna vez hay más de
-        -- una fila, y el botón "Chat" del frontend podría apuntar al
-        -- contrato equivocado.
-        (SELECT co2.id FROM contratos co2
-          WHERE co2.id_trabajo = t.id ORDER BY co2.creado_en DESC LIMIT 1) AS id_contrato,
+        -- Postulación del contrato más reciente (el chat está atado a la
+        -- postulación). Con reapertura puede haber más de un contrato: el
+        -- ORDER BY garantiza que el botón "Chat" apunte al último.
+        (SELECT co2.id_postulacion FROM contratos co2
+          WHERE co2.id_trabajo = t.id AND co2.estado IN ('activo', 'completado')
+          ORDER BY co2.creado_en DESC LIMIT 1) AS id_postulacion_aceptada,
 
         COALESCE(
           json_agg(
@@ -249,7 +259,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       WHERE t.id = $1
 
-      GROUP BY t.id, c.nombre, l.nombre, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado, emp.prom_calif_contratante
+      GROUP BY t.id, c.nombre, l.nombre, l.id_provincia, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado, emp.prom_calif_contratante
     `;
 
     return await this.db.queryOne(sql, [jobId, viewerUserId]);
@@ -320,8 +330,8 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       const rechazados = await txDb.queryAll(
         `UPDATE postulaciones
-         SET estado = 'rechazado'
-         WHERE id_trabajo = $1 AND estado = 'pendiente'
+         SET estado = 'rechazado', rechazo_automatico = FALSE, reconfirmar_hasta = NULL
+         WHERE id_trabajo = $1 AND estado IN ('pendiente', 'por_reconfirmar')
          RETURNING id_trabajador`,
         [jobId]
       );
@@ -339,6 +349,35 @@ async getJobsByEmployerAndStatus(employerId, status) {
       ];
 
       return { id: updated.id, idsANotificar };
+    });
+  }
+
+  // Reabre un trabajo 'en_espera' (el trabajador aceptado canceló): vuelve a
+  // 'abierto' con una fecha nueva, y los postulantes que el sistema rechazó
+  // al aceptar a otro pasan a 'por_reconfirmar' con 2 días para responder.
+  // Devuelve esas postulaciones para que el controller las notifique.
+  async reabrirTrabajo(jobId, programadoPara) {
+    return await this.db.withTransaction(async (txDb) => {
+
+      const updated = await txDb.queryOne(
+        `UPDATE trabajos
+         SET estado = 'abierto', programado_para = $2, actualizado_en = NOW()
+         WHERE id = $1 AND estado = 'en_espera'
+         RETURNING id`,
+        [jobId, programadoPara]
+      );
+
+      if (!updated) return null;
+
+      const aReconfirmar = await txDb.queryAll(
+        `UPDATE postulaciones
+         SET estado = 'por_reconfirmar', reconfirmar_hasta = (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires') + INTERVAL '2 days'
+         WHERE id_trabajo = $1 AND estado = 'rechazado' AND rechazo_automatico = TRUE
+         RETURNING id, id_trabajador`,
+        [jobId]
+      );
+
+      return { id: updated.id, aReconfirmar };
     });
   }
 

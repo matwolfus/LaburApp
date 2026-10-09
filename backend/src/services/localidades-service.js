@@ -6,7 +6,11 @@ export default class LocalidadesService {
         this.repository = new LocalidadesRepository();
     }
 
-    async getAll() {
-        return await this.repository.getAll();
+    async getAll(filtros) {
+        return await this.repository.getAll(filtros);
+    }
+
+    async getProvincias() {
+        return await this.repository.getProvincias();
     }
 }

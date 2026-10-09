@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   getCategorias,
-  buscarTrabajadoresPorCategoria,
+  buscarTrabajadores,
   getConversaciones,
 } from '../../services/api';
 
 import WorkerSearchCard from '../../components/WorkerSearchCard/WorkerSearchCard.jsx';
+import UbicacionSelector from '../../components/UbicacionSelector';
 
 export default function BuscarTrabajo() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,8 +18,11 @@ export default function BuscarTrabajo() {
     return fromUrl && !Number.isNaN(parsed) ? parsed : null;
   });
   const [workers, setWorkers] = useState([]);
-  // otro_id -> id_contrato, para habilitar "Contactar" solo con quien ya hay contrato.
-  const [contratosPorUsuario, setContratosPorUsuario] = useState({});
+  const [ubicacion, setUbicacion] = useState({ idProvincia: '', idLocalidad: '' });
+  const [reintento, setReintento] = useState(0);
+  // otro_id -> id_postulacion del chat más reciente con esa persona, para
+  // habilitar "Contactar" solo con quien ya hay una conversación.
+  const [chatsPorUsuario, setChatsPorUsuario] = useState({});
 
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,15 +53,21 @@ export default function BuscarTrabajo() {
   useEffect(() => {
     getConversaciones()
       .then((convs) => {
-        setContratosPorUsuario(
-          Object.fromEntries(convs.map((c) => [String(c.otro_id), c.id_contrato]))
-        );
+        // Vienen ordenadas de la más reciente a la más vieja: se queda la primera.
+        const mapa = {};
+        for (const c of convs) {
+          mapa[String(c.otro_id)] ??= c.id_postulacion;
+        }
+        setChatsPorUsuario(mapa);
       })
       .catch((err) => console.error('Error cargando conversaciones:', err));
   }, []);
 
+  // Hace falta al menos un filtro (oficio o zona) para listar trabajadores.
+  const hayFiltro = Boolean(categoriaId || ubicacion.idProvincia || ubicacion.idLocalidad);
+
   useEffect(() => {
-    if (!categoriaId) {
+    if (!hayFiltro) {
       setWorkers([]);
       return;
     }
@@ -65,7 +75,11 @@ export default function BuscarTrabajo() {
       setLoading(true);
       setError(null);
       try {
-        const data = await buscarTrabajadoresPorCategoria(categoriaId);
+        const data = await buscarTrabajadores({
+          categoria: categoriaId,
+          provincia: ubicacion.idProvincia,
+          localidad: ubicacion.idLocalidad,
+        });
         setWorkers(data || []);
       } catch (err) {
         console.error('Error buscando trabajadores:', err);
@@ -76,7 +90,7 @@ export default function BuscarTrabajo() {
       }
     };
     buscar();
-  }, [categoriaId]);
+  }, [hayFiltro, categoriaId, ubicacion.idProvincia, ubicacion.idLocalidad, reintento]);
 
   const filteredWorkers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -88,9 +102,11 @@ export default function BuscarTrabajo() {
     });
   }, [workers, search]);
 
+  // Tocar la categoría ya elegida la deselecciona.
   const handleCategoryChange = (categoryId) => {
-    setCategoriaId(categoryId);
-    setSearchParams({ categoria: categoryId }, { replace: true });
+    const nueva = categoriaId === categoryId ? null : categoryId;
+    setCategoriaId(nueva);
+    setSearchParams(nueva ? { categoria: nueva } : {}, { replace: true });
     setSearch('');
     setError(null);
   };
@@ -115,13 +131,7 @@ export default function BuscarTrabajo() {
           <button
             type="button"
             className="buscar-retry-button"
-            onClick={() => {
-              if (categoriaId) {
-                const currentCategory = categoriaId;
-                setCategoriaId(null);
-                setTimeout(() => setCategoriaId(currentCategory), 0);
-              }
-            }}
+            onClick={() => setReintento((n) => n + 1)}
           >
             Intentar nuevamente
           </button>
@@ -129,12 +139,12 @@ export default function BuscarTrabajo() {
       );
     }
 
-    if (!categoriaId) {
+    if (!hayFiltro) {
       return (
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
-          <h3>Elegí una categoría</h3>
-          <p>Seleccioná una categoría para ver trabajadores disponibles.</p>
+          <h3>Elegí un oficio o una zona</h3>
+          <p>Seleccioná una categoría o una ubicación para ver trabajadores disponibles.</p>
         </div>
       );
     }
@@ -144,7 +154,7 @@ export default function BuscarTrabajo() {
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
           <h3>Todavía no hay trabajadores</h3>
-          <p>No hay trabajadores disponibles en esta categoría todavía.</p>
+          <p>No hay trabajadores disponibles con estos filtros todavía.</p>
         </div>
       );
     }
@@ -165,7 +175,7 @@ export default function BuscarTrabajo() {
           <WorkerSearchCard
             key={worker.id}
             {...worker}
-            idContrato={contratosPorUsuario[String(worker.id)] ?? null}
+            idPostulacionChat={chatsPorUsuario[String(worker.id)] ?? null}
           />
         ))}
       </div>
@@ -192,9 +202,19 @@ export default function BuscarTrabajo() {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar trabajadores..."
               aria-label="Buscar trabajadores"
-              disabled={!categoriaId}
+              disabled={!hayFiltro}
             />
           </div>
+        </section>
+
+        {/* ZONA DE TRABAJO */}
+        <section className="buscar-filters-section" aria-label="Filtrar por zona de trabajo">
+          <UbicacionSelector
+            variant="filter"
+            value={ubicacion}
+            onChange={setUbicacion}
+            idPrefix="buscar-trabajadores"
+          />
         </section>
 
         {/* CATEGORÍAS */}

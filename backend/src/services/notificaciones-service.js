@@ -37,4 +37,19 @@ export default class NotificacionesService {
 
         return await this.repository.marcarLeidoAsync(id);
     }
+
+    getNoLeidasCountAsync = async (idUsuario) => {
+
+        return await this.repository.getNoLeidasCountAsync(idUsuario);
+    }
+
+    deleteNuevaPostulacionAsync = async (idPostulacion) => {
+
+        return await this.repository.deleteNuevaPostulacionAsync(idPostulacion);
+    }
+
+    marcarReconfirmacionRespondidaAsync = async (idPostulacion) => {
+
+        return await this.repository.marcarReconfirmacionRespondidaAsync(idPostulacion);
+    }
 }

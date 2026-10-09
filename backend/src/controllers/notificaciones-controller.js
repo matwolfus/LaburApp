@@ -6,9 +6,14 @@ import NotificacionesService
 import authMiddleware
     from './../middlewares/auth-middleware.js';
 
+import PostulacionesService
+    from './../services/postulaciones-service.js';
+
 const router = Router();
 
 const service = new NotificacionesService();
+
+const postulacionesService = new PostulacionesService();
 
 
 // =========================================================
@@ -18,6 +23,9 @@ const service = new NotificacionesService();
 router.get('/', authMiddleware, async (req, res) => {
 
     try {
+
+        // Así las reconfirmaciones vencidas ya no muestran los botones.
+        await postulacionesService.expirarReconfirmacionesAsync();
 
         const notificaciones =
             await service.getByUsuarioAsync(req.userId);
@@ -30,6 +38,30 @@ router.get('/', authMiddleware, async (req, res) => {
 
         return res.status(500).json({
             message: 'Error obteniendo notificaciones'
+        });
+    }
+});
+
+
+// =========================================================
+// CANTIDAD DE NO LEIDAS (badge de la campanita)
+// =========================================================
+
+router.get('/no-leidas/count', authMiddleware, async (req, res) => {
+
+    try {
+
+        const count =
+            await service.getNoLeidasCountAsync(req.userId);
+
+        return res.status(200).json({ count });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+            message: 'Error obteniendo notificaciones no leidas'
         });
     }
 });

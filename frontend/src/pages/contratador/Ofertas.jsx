@@ -32,6 +32,8 @@ export default function Ofertas() {
   // candidatos), por eso se agrupa junto con 'proxima' en "Próximas Ofertas".
   const upcomingJobs = jobs.filter((job) => ['abierto', 'proxima'].includes(job.estado));
   const activeJobs = jobs.filter((job) => job.estado === 'activa');
+  // El trabajador aceptado canceló: esperan que el contratante los reabra.
+  const enEsperaJobs = jobs.filter((job) => job.estado === 'en_espera');
 
   return (
     <div className="ofertas-page">
@@ -40,6 +42,18 @@ export default function Ofertas() {
         <h1 className="ofertas-page__title">Ofertas</h1>
         <p className="ofertas-page__subtitle">Gestioná tus publicaciones</p>
       </div>
+
+      {enEsperaJobs.length > 0 && (
+        <>
+          <SectionHeader title="En espera" />
+          <p className="ofertas-empty">
+            El trabajador aceptado canceló. Entrá al detalle para reabrir el trabajo.
+          </p>
+          <div className="job-list">
+            {enEsperaJobs.map(job => <JobCard key={job.id} job={job} />)}
+          </div>
+        </>
+      )}
 
       <SectionHeader title="Proximas Ofertas" />
       <div className="job-list">

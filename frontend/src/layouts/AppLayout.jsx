@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import { getMiUsuario } from '../services/api';
 import { useAuth } from '../context/useAuth';
 import { homeDeModo } from '../hooks/useRoleSwitch';
+import useBadges from '../hooks/useBadges';
 import '../layouts/layout.css';
 import logo from '../assets/logo.png';
 
@@ -16,6 +17,7 @@ export default function AppLayout() {
   const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { modo, hydrateModo } = useAuth();
+  const badges = useBadges();
 
   useEffect(() => {
     getMiUsuario()
@@ -37,13 +39,14 @@ export default function AppLayout() {
         onLogoClick={() => navigate(homeDeModo(modo ?? localStorage.getItem('modoActivo')))}
         onAvatarClick={() => navigate('/perfil')}
         onBellClick={() => navigate('/notificaciones')}
+        notificacionesNoLeidas={badges.notificaciones}
         onMenuClick={() => setSidebarOpen(true)}
       />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="app-shell__content">
         <Outlet />
       </main>
-      <BottomNav modo={modo} />
+      <BottomNav modo={modo} mensajesNoLeidos={badges.mensajes} />
     </div>
   );
 }

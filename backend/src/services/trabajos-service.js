@@ -44,9 +44,24 @@ export default class TrabajosService {
     return await this.repository.getJobById(jobId, viewerUserId);
   }
 
-  // Trabajos abiertos para que un trabajador los descubra (idCategoria opcional).
-  async buscarAbiertosAsync(idCategoria) {
-    return await this.repository.buscarAbiertos(idCategoria);
+  // Trabajos abiertos para que un trabajador los descubra (filtros opcionales).
+  async buscarAbiertosAsync(filtros) {
+    return await this.repository.buscarAbiertos(filtros);
+  }
+
+  // Solo un trabajo 'en_espera' se reabre, y siempre con una fecha nueva
+  // que no esté en el pasado (si no, vencería en el acto).
+  async reabrirTrabajoAsync(jobId, currentEstado, programadoPara) {
+    if (currentEstado !== 'en_espera') {
+      throw new Error("Solo se puede reabrir un trabajo en espera");
+    }
+    if (!programadoPara || isNaN(Date.parse(programadoPara))) {
+      throw new Error('Elegí una nueva fecha para el trabajo');
+    }
+    if (this.#esFechaPasada(programadoPara)) {
+      throw new Error('La fecha y hora del trabajo ya pasaron');
+    }
+    return await this.repository.reabrirTrabajo(jobId, programadoPara);
   }
 
   // Marca un trabajo 'activa' como completado (cierra también su contrato).

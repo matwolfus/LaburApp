@@ -1,0 +1,68 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px 24px;
+}
+
+.icon {
+  color: var(--color-primary, #2D3B8E);
+  margin-bottom: 10px;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 800;
+  color: #1F2937;
+}
+
+.text {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #4B5062;
+  line-height: 1.5;
+}
+
+.picker {
+  width: 100%;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.error {
+  color: #DC2626;
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+
+.confirmBtn {
+  width: 100%;
+  border: none;
+  background: var(--color-primary, #2D3B8E);
+  color: white;
+  padding: 15px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmBtn:hover:not(:disabled) { opacity: 0.9; }
+
+.volverBtn {
+  margin-top: 12px;
+  border: none;
+  background: transparent;
+  color: #2F3685;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}

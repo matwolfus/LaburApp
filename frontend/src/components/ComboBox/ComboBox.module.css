@@ -1,0 +1,126 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa3b8;
+  pointer-events: none;
+  display: flex;
+}
+
+.wrapper .input {
+  width: 100%;
+  border: 1.5px solid #e6e9f2;
+  border-radius: 14px;
+  padding: 13px 38px 13px 14px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: #26263a;
+  background-color: #f8f9fc;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.wrapper .input.withIcon {
+  padding-left: 42px;
+}
+
+.input:focus {
+  border-color: var(--color-primary, #2d3b8e);
+  box-shadow: 0 0 0 3px rgba(45, 59, 142, 0.12);
+  background-color: #ffffff;
+  cursor: text;
+}
+
+.input::placeholder {
+  color: #a8afc2;
+}
+
+/* Con algo elegido el placeholder muestra la opción actual mientras se busca */
+.input:not(:placeholder-shown),
+.input:focus::placeholder {
+  color: #26263a;
+}
+
+.input:focus::placeholder {
+  opacity: 0.5;
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa3b8;
+  pointer-events: none;
+}
+
+.clearBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #9aa3b8;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  border-radius: 8px;
+}
+
+.clearBtn:hover {
+  color: var(--color-primary, #2d3b8e);
+}
+
+.list {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #ffffff;
+  border: 1px solid #e6e9f2;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(45, 59, 142, 0.12);
+}
+
+.option {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #26263a;
+  cursor: pointer;
+  text-align: left;
+}
+
+.optionActive {
+  background: rgba(45, 59, 142, 0.08);
+}
+
+.optionSelected {
+  font-weight: 700;
+  color: var(--color-primary, #2d3b8e);
+}
+
+.empty {
+  padding: 10px 12px;
+  font-size: 13.5px;
+  color: var(--color-muted, #64748b);
+}

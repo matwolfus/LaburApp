@@ -115,3 +115,36 @@
   .notif-page  { padding: 16px 12px 90px; }
   .notif-card  { padding: 12px; }
 }
+
+/* No leídas: fondo celeste + punto */
+.notif-card--no-leida {
+  background: #EEF3FF;
+  border-color: #C7D4F7;
+}
+
+.notif-card__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-orange, #F97316);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.notif-card__localidad {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.notif-card__error {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: #EF4444;
+}
+
+.notif-card__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
-import { getMensajes, getConversaciones, enviarMensaje } from '../../services/api';
+import { getMensajes, getChatInfo, enviarMensaje } from '../../services/api';
 import styles from './ChatIndividual.module.css';
 
 const POLL_INTERVAL_MS = 3500;
@@ -19,12 +19,17 @@ const mergeUnicos = (prev, nuevos) => {
 };
 
 export default function ChatIndividual() {
-  const { idContrato } = useParams();
+  // El chat está atado a la postulación: así se puede hablar antes de que
+  // acepten al trabajador.
+  const { idPostulacion } = useParams();
   const navigate = useNavigate();
   const myUserId = Number(localStorage.getItem('userId'));
 
   const [mensajes, setMensajes] = useState([]);
   const [otro, setOtro] = useState(null);
+  // false cuando la postulación está retirada / rechazada: historial de solo lectura.
+  const [puedeEscribir, setPuedeEscribir] = useState(true);
+  const [estadoPostulacion, setEstadoPostulacion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [texto, setTexto] = useState('');
@@ -35,28 +40,30 @@ export default function ChatIndividual() {
   const ultimoIdRef = useRef(null);
   const listRef = useRef(null);
 
-  // Carga inicial: historial completo (sin `desde`) + datos de la otra
-  // persona (salen de /conversaciones, no del endpoint de mensajes).
+  // Carga inicial: historial completo (sin `desde`) + cabecera del chat
+  // (otra persona, trabajo y si se puede escribir). La cabecera funciona
+  // aunque todavía no haya mensajes.
   useEffect(() => {
     let cancelado = false;
 
-    Promise.all([getMensajes(idContrato), getConversaciones()])
-      .then(([mensajesIniciales, conversaciones]) => {
+    Promise.all([getMensajes(idPostulacion), getChatInfo(idPostulacion)])
+      .then(([mensajesIniciales, info]) => {
         if (cancelado) return;
         setMensajes(mensajesIniciales);
         if (mensajesIniciales.length > 0) {
           ultimoIdRef.current = mensajesIniciales[mensajesIniciales.length - 1].id;
         }
-        const conv = conversaciones.find((c) => String(c.id_contrato) === String(idContrato));
-        if (conv) {
-          setOtro({ id: conv.otro_id, nombre: conv.otro_nombre, avatar: conv.otro_avatar, tituloTrabajo: conv.titulo_trabajo });
+        if (info) {
+          setOtro({ id: info.otro_id, nombre: info.otro_nombre, avatar: info.otro_avatar, tituloTrabajo: info.titulo_trabajo });
+          setPuedeEscribir(Boolean(info.puede_escribir));
+          setEstadoPostulacion(info.estado_postulacion);
         }
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
 
     return () => { cancelado = true; };
-  }, [idContrato]);
+  }, [idPostulacion]);
 
   // Polling incremental: arranca recién después de la carga inicial, y solo
   // agrega mensajes nuevos (nunca reemplaza el array completo).
@@ -64,7 +71,7 @@ export default function ChatIndividual() {
     if (loading) return;
 
     const interval = setInterval(() => {
-      getMensajes(idContrato, ultimoIdRef.current ?? undefined)
+      getMensajes(idPostulacion, ultimoIdRef.current ?? undefined)
         .then((nuevos) => {
           if (nuevos.length === 0) return;
           ultimoIdRef.current = Math.max(ultimoIdRef.current ?? 0, nuevos[nuevos.length - 1].id);
@@ -74,7 +81,7 @@ export default function ChatIndividual() {
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [idContrato, loading]);
+  }, [idPostulacion, loading]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -88,7 +95,7 @@ export default function ChatIndividual() {
     setEnviando(true);
     setError(null);
     try {
-      const nuevo = await enviarMensaje(idContrato, cuerpo);
+      const nuevo = await enviarMensaje(idPostulacion, cuerpo);
       const mensaje = { id: nuevo.id, id_remitente: myUserId, cuerpo, enviado_en: nuevo.enviado_en, leido_en: null };
       setMensajes((prev) => mergeUnicos(prev, [mensaje]));
       ultimoIdRef.current = Math.max(ultimoIdRef.current ?? 0, nuevo.id);
@@ -143,6 +150,13 @@ export default function ChatIndividual() {
 
       {error && <p className={styles.error}>{error}</p>}
 
+      {!loading && !puedeEscribir ? (
+        <p className={styles.soloLectura}>
+          {estadoPostulacion === 'rechazado'
+            ? 'Esta postulación no fue seleccionada. El chat quedó en solo lectura.'
+            : 'Esta postulación fue retirada. El chat quedó en solo lectura.'}
+        </p>
+      ) : (
       <form className={styles.inputRow} onSubmit={handleEnviar}>
         <input
           className={styles.input}
@@ -155,6 +169,7 @@ export default function ChatIndividual() {
           <Send size={18} />
         </button>
       </form>
+      )}
     </div>
   );
 }

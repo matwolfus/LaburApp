@@ -1,5 +1,3 @@
-﻿// TODO: postulaciones controller
-
 import { Router } from 'express';
 
 import PostulacionesService
@@ -121,6 +119,12 @@ router.post('/', authMiddleware, async (req, res) => {
             return res.status(403).json({ message: 'No podés postularte a tu propio trabajo' });
         }
 
+        const trabajo = await trabajosService.getJobById(req.body.id_trabajo);
+
+        if (trabajo.estado !== 'abierto' && trabajo.estado !== 'proxima') {
+            return res.status(400).json({ message: 'Este trabajo ya no recibe postulaciones' });
+        }
+
         const entity = new PostulacionEntity(
 
             0,
@@ -138,19 +142,28 @@ router.post('/', authMiddleware, async (req, res) => {
         const newId =
             await service.createAsync(entity);
 
+        // Sin id: ya existía una postulación no retirada (ver createAsync).
+        if (newId == null) {
+            return res.status(409).json({
+                message: 'Ya te postulaste a este trabajo'
+            });
+        }
+
         // Notificar al dueño del trabajo. Va en su propio try/catch: un
         // problema acá no debe hacer fallar la creación de la postulación,
         // que ya se guardó con éxito.
         try {
 
-            const trabajo = await trabajosService.getJobById(req.body.id_trabajo);
+            const localidad = await service.getLocalidadTrabajadorAsync(req.userId);
 
             await notificacionesService.crearAsync({
                 id_usuario: owner,
                 tipo: 'nueva_postulacion',
-                titulo: `Nueva postulación para "${trabajo?.title ?? 'tu changa'}"`,
+                titulo: `Nueva postulación para "${trabajo?.title ?? 'tu trabajo'}"`,
                 cuerpo: null,
                 id_referencia: req.userId, // id del trabajador que se postuló, para "Ver Perfil"
+                // id_postulacion: para borrar esta notificación si se cancela la postulación.
+                extra: { id_trabajo: Number(req.body.id_trabajo), id_postulacion: newId, localidad },
             });
 
         } catch (notifError) {
@@ -183,16 +196,89 @@ router.post('/', authMiddleware, async (req, res) => {
 
 
 // =========================================================
-// DELETE POSTULACION
+// CANCELAR POSTULACION (el trabajador se baja)
 // =========================================================
 
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
 
     try {
 
         const id = req.params.id;
 
-        // Solo el trabajador dueño de la postulación puede borrarla.
+        const postulacion = await service.getByIdAsync(id);
+
+        if (!postulacion) {
+
+            return res.status(404).json({
+                message: 'Postulacion no encontrada'
+            });
+        }
+
+        // Solo el trabajador dueño de la postulación puede cancelarla.
+        if (Number(postulacion.id_trabajador) !== req.userId) {
+
+            return res.status(403).json({
+                message: 'No autorizado'
+            });
+        }
+
+        const trabajo = await trabajosService.getJobById(postulacion.id_trabajo);
+
+        const { trabajoEnEspera } =
+            await service.cancelarAsync(postulacion, trabajo?.estado);
+
+        // Notificaciones DESPUÉS del commit, en su propio try/catch.
+        try {
+
+            await notificacionesService.deleteNuevaPostulacionAsync(postulacion.id);
+
+            const nombre = await service.getNombreTrabajadorAsync(req.userId);
+
+            await notificacionesService.crearAsync({
+                id_usuario: trabajo.id_contratante,
+                tipo: 'postulacion_cancelada',
+                titulo: trabajoEnEspera
+                    ? `${nombre} canceló su participación en "${trabajo.title}". Podés reabrir el trabajo para elegir a otra persona.`
+                    : `${nombre} canceló su postulación a "${trabajo.title}"`,
+                cuerpo: null,
+                id_referencia: postulacion.id_trabajo,
+            });
+
+        } catch (notifError) {
+
+            console.log(notifError);
+        }
+
+        return res.status(200).json({
+            message: 'Postulacion cancelada',
+            trabajoEnEspera
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(error.status ?? 500).json({
+            message: error.status ? error.message : 'Error cancelando postulacion'
+        });
+    }
+});
+
+// =========================================================
+// RECONFIRMAR POSTULACION (después de que el trabajo se reabrió)
+// =========================================================
+
+router.patch('/:id/reconfirmar', authMiddleware, async (req, res) => {
+
+    try {
+
+        const id = req.params.id;
+        const sigue = req.body?.sigue === true;
+
+        // Primero vencer las que pasaron el plazo, así una respuesta tardía
+        // no se acepta.
+        await service.expirarReconfirmacionesAsync();
+
         const postulacion = await service.getByIdAsync(id);
 
         if (!postulacion) {
@@ -209,26 +295,43 @@ router.delete('/:id', authMiddleware, async (req, res) => {
             });
         }
 
-        const rowsAffected =
-            await service.deleteByIdAsync(id);
+        const trabajo = await trabajosService.getJobById(postulacion.id_trabajo);
 
-        if (rowsAffected == 0) {
+        await service.reconfirmarAsync(postulacion, trabajo?.estado, sigue);
 
-            return res.status(404).json({
-                message: 'Postulacion no encontrada'
-            });
+        try {
+
+            await notificacionesService.marcarReconfirmacionRespondidaAsync(postulacion.id);
+
+            if (sigue) {
+
+                const localidad = await service.getLocalidadTrabajadorAsync(req.userId);
+
+                await notificacionesService.crearAsync({
+                    id_usuario: trabajo.id_contratante,
+                    tipo: 'nueva_postulacion',
+                    titulo: `Un postulante sigue interesado en "${trabajo.title}"`,
+                    cuerpo: null,
+                    id_referencia: req.userId,
+                    extra: { id_trabajo: postulacion.id_trabajo, id_postulacion: postulacion.id, localidad },
+                });
+            }
+
+        } catch (notifError) {
+
+            console.log(notifError);
         }
 
         return res.status(200).json({
-            message: 'Postulacion eliminada'
+            message: sigue ? 'Postulacion reactivada' : 'Postulacion retirada'
         });
 
     } catch (error) {
 
         console.log(error);
 
-        return res.status(500).json({
-            message: 'Error eliminando postulacion'
+        return res.status(error.status ?? 500).json({
+            message: error.status ? error.message : 'Error reconfirmando postulacion'
         });
     }
 });
@@ -293,7 +396,7 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
             return res.status(400).json({ message: `No se puede aceptar: el trabajo ${motivo}` });
         }
 
-        const tituloTrabajo = trabajo?.title ?? 'tu changa';
+        const tituloTrabajo = trabajo?.title ?? 'tu trabajo';
         const precioAcordado = postulacion.precio_propuesto ?? trabajo?.budget;
 
         // acceptAsync ya hizo commit acá (aceptar + rechazar al resto +

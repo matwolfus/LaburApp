@@ -148,9 +148,24 @@ export async function getPerfil(idUsuario) {
 
 }
 
-// GET /api/localidades
-export async function getLocalidades() {
-  const res = await fetch(`${BASE_URL}/localidades`);
+// Arma "?a=1&b=2" salteando los valores vacíos.
+function toQuery(params) {
+  const qs = new URLSearchParams(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+  ).toString();
+  return qs ? `?${qs}` : '';
+}
+
+// GET /api/provincias
+export async function getProvincias() {
+  const res = await fetch(`${BASE_URL}/provincias`);
+  if (!res.ok) throw new Error('Error al traer las provincias');
+  return res.json();
+}
+
+// GET /api/localidades?provincia=&q= (ambos opcionales)
+export async function getLocalidades({ provincia, q } = {}) {
+  const res = await fetch(`${BASE_URL}/localidades${toQuery({ provincia, q })}`);
 
   if (!res.ok) {
     throw new Error('Error al traer las localidades');
@@ -231,11 +246,32 @@ export async function getConversaciones() {
   return res.json();
 }
 
-// GET /api/mensajes/contrato/:idContrato (protegida). desdeId es opcional:
+// GET /api/mensajes/no-leidos/count (protegida) -> { count }
+export async function getMensajesNoLeidosCount() {
+  const res = await fetch(`${BASE_URL}/mensajes/no-leidos/count`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error('Error al traer los mensajes no leídos');
+  return res.json();
+}
+
+// GET /api/mensajes/postulacion/:id/info (protegida) -> cabecera del chat
+export async function getChatInfo(idPostulacion) {
+  const res = await fetch(`${BASE_URL}/mensajes/postulacion/${idPostulacion}/info`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al abrir el chat');
+  }
+  return res.json();
+}
+
+// GET /api/mensajes/postulacion/:idPostulacion (protegida). desdeId es opcional:
 // sin él trae todo el historial, con él solo los mensajes posteriores a ese id.
-export async function getMensajes(idContrato, desdeId) {
+export async function getMensajes(idPostulacion, desdeId) {
   const query = desdeId ? `?desde=${desdeId}` : '';
-  const res = await fetch(`${BASE_URL}/mensajes/contrato/${idContrato}${query}`, {
+  const res = await fetch(`${BASE_URL}/mensajes/postulacion/${idPostulacion}${query}`, {
     headers: { ...authHeaders() },
   });
   if (!res.ok) throw new Error('Error al traer los mensajes');
@@ -243,11 +279,11 @@ export async function getMensajes(idContrato, desdeId) {
 }
 
 // POST /api/mensajes (protegida)
-export async function enviarMensaje(idContrato, cuerpo) {
+export async function enviarMensaje(idPostulacion, cuerpo) {
   const res = await fetch(`${BASE_URL}/mensajes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ id_contrato: idContrato, cuerpo }),
+    body: JSON.stringify({ id_postulacion: idPostulacion, cuerpo }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -262,6 +298,15 @@ export async function getNotificaciones() {
     headers: { ...authHeaders() },
   });
   if (!res.ok) throw new Error('Error al traer las notificaciones');
+  return res.json();
+}
+
+// GET /api/notificaciones/no-leidas/count (protegida) -> { count }
+export async function getNotificacionesNoLeidasCount() {
+  const res = await fetch(`${BASE_URL}/notificaciones/no-leidas/count`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error('Error al traer las notificaciones no leídas');
   return res.json();
 }
 
@@ -291,9 +336,9 @@ export async function aceptarPostulacion(id) {
   return res.json();
 }
 
-// Agregar al final de frontend/src/services/api.js
-export async function buscarTrabajadoresPorCategoria(categoriaId) {
-  const res = await fetch(`${BASE_URL}/usuarios/buscar?categoria=${categoriaId}`);
+// GET /api/usuarios/buscar?categoria=&provincia=&localidad= (al menos uno)
+export async function buscarTrabajadores({ categoria, provincia, localidad } = {}) {
+  const res = await fetch(`${BASE_URL}/usuarios/buscar${toQuery({ categoria, provincia, localidad })}`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || 'Error al buscar trabajadores');
@@ -329,10 +374,9 @@ export async function actualizarMisCategorias(categoriaIds) {
   return res.json();
 }
 
-// GET /api/trabajos/buscar?categoria=<id> -> trabajos abiertos (categoria opcional)
-export async function buscarTrabajosPorCategoria(categoriaId) {
-  const query = categoriaId ? `?categoria=${categoriaId}` : '';
-  const res = await fetch(`${BASE_URL}/trabajos/buscar${query}`);
+// GET /api/trabajos/buscar?categoria=&provincia=&localidad= -> trabajos abiertos (filtros opcionales)
+export async function buscarTrabajos({ categoria, provincia, localidad } = {}) {
+  const res = await fetch(`${BASE_URL}/trabajos/buscar${toQuery({ categoria, provincia, localidad })}`);
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || 'Error al buscar trabajos');
@@ -365,15 +409,44 @@ export async function getMisPostulaciones() {
   return res.json();
 }
 
-// DELETE /api/postulaciones/:id -> cancelar una postulación propia
+// PATCH /api/postulaciones/:id/cancelar -> cancelar una postulación propia
+// (queda 'retirado'; si estaba aceptada, el trabajo queda en espera).
 export async function cancelarPostulacion(id) {
-  const res = await fetch(`${BASE_URL}/postulaciones/${id}`, {
-    method: 'DELETE',
+  const res = await fetch(`${BASE_URL}/postulaciones/${id}/cancelar`, {
+    method: 'PATCH',
     headers: { ...authHeaders() },
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.message || 'Error al cancelar la postulación');
+  }
+  return res.json();
+}
+
+// PATCH /api/postulaciones/:id/reconfirmar { sigue } -> "Sigo interesado" / "Ya no me interesa"
+export async function reconfirmarPostulacion(id, sigue) {
+  const res = await fetch(`${BASE_URL}/postulaciones/${id}/reconfirmar`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ sigue }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message || 'Error al responder');
+  }
+  return res.json();
+}
+
+// PATCH /api/trabajos/:id/reabrir { programado_para } (protegida: solo el dueño)
+export async function reabrirTrabajo(jobId, programadoPara) {
+  const res = await fetch(`${BASE_URL}/trabajos/${jobId}/reabrir`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ programado_para: programadoPara }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Error al reabrir el trabajo');
   }
   return res.json();
 }

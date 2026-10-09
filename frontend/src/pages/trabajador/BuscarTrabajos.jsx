@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   getCategorias,
-  buscarTrabajosPorCategoria,
+  buscarTrabajos,
 } from '../../services/api';
 
 import JobSearchCard from '../../components/JobSearchCard/index.jsx';
+import UbicacionSelector from '../../components/UbicacionSelector';
 
 // Mismo esqueleto que pages/contratador/BuscarTrabajo.jsx (mismas clases
 // globales de index.css: buscar-page/buscar-content/etc.), pero buscando
@@ -19,6 +20,8 @@ export default function BuscarTrabajos() {
     return fromUrl && !Number.isNaN(parsed) ? parsed : null;
   });
   const [jobs, setJobs] = useState([]);
+  const [ubicacion, setUbicacion] = useState({ idProvincia: '', idLocalidad: '' });
+  const [reintento, setReintento] = useState(0);
 
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,7 +54,11 @@ export default function BuscarTrabajos() {
       setLoading(true);
       setError(null);
       try {
-        const data = await buscarTrabajosPorCategoria(categoriaId);
+        const data = await buscarTrabajos({
+          categoria: categoriaId,
+          provincia: ubicacion.idProvincia,
+          localidad: ubicacion.idLocalidad,
+        });
         setJobs(data || []);
       } catch (err) {
         console.error('Error buscando trabajos:', err);
@@ -62,7 +69,7 @@ export default function BuscarTrabajos() {
       }
     };
     buscar();
-  }, [categoriaId]);
+  }, [categoriaId, ubicacion.idProvincia, ubicacion.idLocalidad, reintento]);
 
   const filteredJobs = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -74,9 +81,11 @@ export default function BuscarTrabajos() {
     });
   }, [jobs, search]);
 
+  // Tocar la categoría ya elegida la deselecciona (busca en todas).
   const handleCategoryChange = (categoryId) => {
-    setCategoriaId(categoryId);
-    setSearchParams({ categoria: categoryId }, { replace: true });
+    const nueva = categoriaId === categoryId ? null : categoryId;
+    setCategoriaId(nueva);
+    setSearchParams(nueva ? { categoria: nueva } : {}, { replace: true });
     setSearch('');
     setError(null);
   };
@@ -101,11 +110,7 @@ export default function BuscarTrabajos() {
           <button
             type="button"
             className="buscar-retry-button"
-            onClick={() => {
-              const currentCategory = categoriaId;
-              setCategoriaId(null);
-              setTimeout(() => setCategoriaId(currentCategory), 0);
-            }}
+            onClick={() => setReintento((n) => n + 1)}
           >
             Intentar nuevamente
           </button>
@@ -118,7 +123,7 @@ export default function BuscarTrabajos() {
         <div className="buscar-state-container">
           <span className="buscar-state-icon">⌕</span>
           <h3>Todavía no hay trabajos</h3>
-          <p>No hay trabajos abiertos en esta categoría todavía.</p>
+          <p>No hay trabajos abiertos con estos filtros todavía.</p>
         </div>
       );
     }
@@ -149,7 +154,7 @@ export default function BuscarTrabajos() {
         {/* HERO */}
         <section className="buscar-hero">
           <h1>{selectedCategory?.name || 'Buscar trabajos'}</h1>
-          <p>Encontrá la changa ideal para vos.</p>
+          <p>Encontrá el trabajo ideal para vos.</p>
         </section>
 
         {/* BUSCADOR */}
@@ -164,6 +169,16 @@ export default function BuscarTrabajos() {
               aria-label="Buscar trabajos"
             />
           </div>
+        </section>
+
+        {/* UBICACIÓN */}
+        <section className="buscar-filters-section" aria-label="Filtrar por ubicación">
+          <UbicacionSelector
+            variant="filter"
+            value={ubicacion}
+            onChange={setUbicacion}
+            idPrefix="buscar-trabajos"
+          />
         </section>
 
         {/* CATEGORÍAS */}

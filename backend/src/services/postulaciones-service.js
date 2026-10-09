@@ -1,5 +1,3 @@
-﻿// TODO: postulaciones service
-// TODO: postulaciones service
 import PostulacionesRepository from './../repositories/postulaciones-repository.js';
 
 export default class PostulacionesService {
@@ -10,6 +8,8 @@ export default class PostulacionesService {
 
     getByTrabajoIdAsync = async (idTrabajo) => {
 
+        await this.repository.expirarReconfirmaciones();
+
         const postulaciones =
             await this.repository.getByTrabajoIdAsync(idTrabajo);
 
@@ -17,6 +17,8 @@ export default class PostulacionesService {
     }
 
     getByTrabajadorIdAsync = async (idTrabajador) => {
+
+        await this.repository.expirarReconfirmaciones();
 
         return await this.repository.getByTrabajadorIdAsync(idTrabajador);
     }
@@ -85,5 +87,63 @@ export default class PostulacionesService {
         }
 
         return await this.repository.acceptAsync(idPostulacion, idTrabajo, idContratante, idTrabajador, precioAcordado);
+    }
+
+    expirarReconfirmacionesAsync = async () => {
+
+        return await this.repository.expirarReconfirmaciones();
+    }
+
+    getNombreTrabajadorAsync = async (idTrabajador) => {
+
+        return await this.repository.getNombreTrabajadorAsync(idTrabajador);
+    }
+
+    getLocalidadTrabajadorAsync = async (idTrabajador) => {
+
+        return await this.repository.getLocalidadTrabajadorAsync(idTrabajador);
+    }
+
+    // Valida el estado acá (no en el repository), mismo criterio que
+    // TrabajosService.cancelarTrabajoAsync. Los errores llevan .status para
+    // que el controller responda el código correcto.
+    cancelarAsync = async (postulacion, estadoTrabajo) => {
+
+        if (postulacion.estado === 'retirado') {
+            const err = new Error('Esta postulación ya fue cancelada');
+            err.status = 409;
+            throw err;
+        }
+
+        if (!['pendiente', 'aceptado', 'por_reconfirmar'].includes(postulacion.estado)) {
+            const err = new Error(`No se puede cancelar una postulación en estado '${postulacion.estado}'`);
+            err.status = 400;
+            throw err;
+        }
+
+        if (estadoTrabajo === 'finalizado') {
+            const err = new Error('El trabajo ya fue completado');
+            err.status = 400;
+            throw err;
+        }
+
+        return await this.repository.cancelarAsync(postulacion);
+    }
+
+    reconfirmarAsync = async (postulacion, estadoTrabajo, sigue) => {
+
+        if (postulacion.estado !== 'por_reconfirmar') {
+            const err = new Error('Esta postulación ya no está esperando confirmación');
+            err.status = 409;
+            throw err;
+        }
+
+        if (sigue && estadoTrabajo !== 'abierto') {
+            const err = new Error('El trabajo ya no está disponible');
+            err.status = 400;
+            throw err;
+        }
+
+        return await this.repository.reconfirmarAsync(postulacion.id, sigue);
     }
 }

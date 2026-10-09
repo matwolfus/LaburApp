@@ -6,7 +6,8 @@ import MapPreview from '../MapPreview';
 import CancelarPostulacionModal from '../CancelarPostulacionModal';
 import PostularmeModal from '../PostularmeModal';
 import DejarResenaModal from '../DejarResenaModal';
-import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena } from '../../services/api';
+import ReabrirTrabajoModal from '../ReabrirTrabajoModal';
+import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena, reconfirmarPostulacion } from '../../services/api';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import styles from './JobDetail.module.css';
 
@@ -14,10 +15,14 @@ const ESTADO_LABELS = {
   abierto: 'Buscando trabajador',
   proxima: 'Buscando trabajador',
   activa: 'En curso',
+  en_espera: 'En espera',
   finalizado: 'Finalizado',
   cancelado: 'Cancelado',
   vencido: 'Vencido',
 };
+
+// Estados del trabajo en los que se aceptan postulaciones nuevas.
+const RECIBE_POSTULACIONES = ['abierto', 'proxima'];
 
 function estadoLabel(estado) {
   return ESTADO_LABELS[estado] ?? 'Finalizado';
@@ -70,6 +75,8 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const [postulacionesLoaded, setPostulacionesLoaded] = useState(isOwner);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showPostularModal, setShowPostularModal] = useState(false);
+  const [showReabrirModal, setShowReabrirModal] = useState(false);
+  const [respondiendo, setRespondiendo] = useState(false);
   const [completando, setCompletando] = useState(false);
   const [cancelando, setCancelando] = useState(false);
   const [actionError, setActionError] = useState(null);
@@ -145,6 +152,19 @@ const JobDetail = ({ jobId, isOwner = true }) => {
     }
   };
 
+  const handleReconfirmar = async (sigue) => {
+    setRespondiendo(true);
+    setActionError(null);
+    try {
+      await reconfirmarPostulacion(miPostulacion.id, sigue);
+      await cargarMiPostulacion();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setRespondiendo(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.wrapper}>
@@ -177,6 +197,11 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const presupuesto = formatPresupuesto(precioEfectivo);
   const presupuestoPublicadoOriginal = precioDistintoAlPublicado ? formatPresupuesto(job.budget) : null;
   const applicantsCount = Number(job.applicants_count) || 0;
+  const recibePostulaciones = RECIBE_POSTULACIONES.includes(job.estado);
+  // Chat: el contratante habla con el trabajador aceptado; el trabajador,
+  // con el contratante, desde su propia postulación (cualquier estado: si
+  // está retirada o rechazada el chat queda en solo lectura).
+  const idPostulacionChat = isOwner ? job.id_postulacion_aceptada : miPostulacion?.id;
   const employerJobsCount = Number(job.employer_jobs_count) || 0;
 
   return (
@@ -344,6 +369,18 @@ const JobDetail = ({ jobId, isOwner = true }) => {
 
         {actionError && <p className={styles.actionError}>{actionError}</p>}
 
+        {isOwner && job.estado === 'en_espera' && (
+          <div className={styles.enEsperaBox}>
+            <p>
+              La persona que habías aceptado canceló su participación. El trabajo
+              quedó en espera: podés reabrirlo con una nueva fecha para elegir a otra persona.
+            </p>
+            <button className={styles.postularmeBtn} onClick={() => setShowReabrirModal(true)}>
+              Reabrir trabajo
+            </button>
+          </div>
+        )}
+
         <div className={styles.actions}>
           {isOwner ? (
             <>
@@ -371,6 +408,8 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             <p className={styles.msg}>Este es un trabajo que publicaste vos.</p>
           ) : !miPostulacion && job.estado === 'vencido' ? (
             <p className={styles.msg}>Este trabajo venció, ya no se puede postular.</p>
+          ) : !miPostulacion && !recibePostulaciones ? (
+            <p className={styles.msg}>Este trabajo ya no recibe postulaciones.</p>
           ) : !miPostulacion ? (
             <button className={styles.postularmeBtn} onClick={() => setShowPostularModal(true)}>
               Postularme
@@ -383,7 +422,33 @@ const JobDetail = ({ jobId, isOwner = true }) => {
               </button>
             </div>
           ) : miPostulacion.estado === 'aceptado' ? (
-            <span className={styles.aceptadoBadge}>🎉 ¡Te aceptaron para este trabajo!</span>
+            <div className={styles.postuladoBlock}>
+              <span className={styles.aceptadoBadge}>🎉 ¡Te aceptaron para este trabajo!</span>
+              {job.estado === 'activa' && (
+                <button className={styles.cancelarBtn} onClick={() => setShowCancelModal(true)}>
+                  Cancelar mi participación
+                </button>
+              )}
+            </div>
+          ) : miPostulacion.estado === 'por_reconfirmar' ? (
+            <div className={styles.postuladoBlock}>
+              <span className={styles.postuladoLabel}>El trabajo está disponible de nuevo. ¿Seguís interesado?</span>
+              <button className={styles.postularmeBtn} onClick={() => handleReconfirmar(true)} disabled={respondiendo}>
+                Sigo interesado
+              </button>
+              <button className={styles.cancelarBtn} onClick={() => handleReconfirmar(false)} disabled={respondiendo}>
+                Ya no me interesa
+              </button>
+            </div>
+          ) : miPostulacion.estado === 'retirado' && recibePostulaciones ? (
+            // Retiró su postulación pero el trabajo sigue abierto: puede volver
+            // a postularse (el backend reactiva la misma postulación).
+            <div className={styles.postuladoBlock}>
+              <span className={styles.postuladoLabel}>Cancelaste tu postulación</span>
+              <button className={styles.postularmeBtn} onClick={() => setShowPostularModal(true)}>
+                Postularme de nuevo
+              </button>
+            </div>
           ) : (
             <span className={styles.postuladoLabel}>
               {miPostulacion.estado === 'rechazado' ? 'Tu postulación no fue seleccionada' : 'Cancelaste tu postulación'}
@@ -391,8 +456,8 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           )}
         </div>
 
-        {job.id_contrato && (
-          <button className={styles.postulantesBtn} onClick={() => navigate(`/chats/${job.id_contrato}`)}>
+        {idPostulacionChat && !esPropioTrabajo && (
+          <button className={styles.postulantesBtn} onClick={() => navigate(`/chats/${idPostulacionChat}`)}>
             <MessageSquare size={16} />
             Chat
           </button>
@@ -420,8 +485,16 @@ const JobDetail = ({ jobId, isOwner = true }) => {
       <CancelarPostulacionModal
         open={showCancelModal}
         postulacionId={miPostulacion?.id}
+        aceptada={miPostulacion?.estado === 'aceptado'}
         onClose={() => setShowCancelModal(false)}
-        onCancelled={() => setMiPostulacion(null)}
+        onCancelled={() => { cargarMiPostulacion(); cargarJob(); }}
+      />
+
+      <ReabrirTrabajoModal
+        open={showReabrirModal}
+        jobId={jobId}
+        onClose={() => setShowReabrirModal(false)}
+        onReopened={cargarJob}
       />
 
       <DejarResenaModal

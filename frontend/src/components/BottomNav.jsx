@@ -17,7 +17,7 @@ const ITEMS_TRABAJADOR = [
   { to: '/perfil',            icon: User,          label: 'Perfil'       },
 ];
 
-export default function BottomNav({ modo }) {
+export default function BottomNav({ modo, mensajesNoLeidos = 0 }) {
   const items = modo === 'trabajador' ? ITEMS_TRABAJADOR : ITEMS_CONTRATADOR;
 
   return (
@@ -31,7 +31,12 @@ export default function BottomNav({ modo }) {
             'bottom-nav__item' + (isActive ? ' bottom-nav__item--active' : '')
           }
         >
-          <Icon size={22} strokeWidth={2} />
+          <span className="bottom-nav__icon">
+            <Icon size={22} strokeWidth={2} />
+            {to === '/chats' && mensajesNoLeidos > 0 && (
+              <span className="bottom-nav__dot" aria-label="Mensajes sin leer" />
+            )}
+          </span>
           <span className="bottom-nav__label">{label}</span>
         </NavLink>
       ))}

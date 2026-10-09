@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import styles from './PostulantCard.module.css'
 
 const BADGE_CONFIG = {
@@ -7,14 +8,16 @@ const BADGE_CONFIG = {
 };
 
 // Valores de `estado` restringidos por CHECK constraint en la tabla postulaciones:
-// 'pendiente' | 'aceptado' | 'rechazado' | 'retirado'.
+// 'pendiente' | 'aceptado' | 'rechazado' | 'retirado' | 'por_reconfirmar'
+// (las dos últimas no llegan acá: el backend no las lista al contratante).
 const ESTADO_CONFIG = {
   aceptado:  { label: 'Aceptado',  className: styles.badgeAceptada },
   rechazado: { label: 'Rechazado', className: styles.badgeRechazada },
 };
 
 const PostulantCard = ({ postulant, onAceptar, puedeAceptar = true }) => {
-  const { id, name, location, rating, reviews, price, badges = [], avatar, estado } = postulant;
+  const navigate = useNavigate();
+  const { id, idTrabajador, name, location, rating, reviews, price, badges = [], avatar, estado } = postulant;
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2);
   const estadoBadge = ESTADO_CONFIG[estado];
 
@@ -48,8 +51,16 @@ const PostulantCard = ({ postulant, onAceptar, puedeAceptar = true }) => {
         </p>
       )}
       <div className={styles.actions}>
-        <button className={styles.profileBtn}>Ver perfil</button>
-        <button className={styles.chatBtn} disabled title="Disponible próximamente">💬</button>
+        <button className={styles.profileBtn} onClick={() => navigate(`/perfil/${idTrabajador}`)}>Ver perfil</button>
+        {/* El chat está atado a la postulación: se puede hablar antes de aceptar. */}
+        <button
+          className={styles.chatBtn}
+          onClick={() => navigate(`/chats/${id}`)}
+          title={`Chatear con ${name}`}
+          aria-label={`Chatear con ${name}`}
+        >
+          💬
+        </button>
         {estado === 'pendiente' && puedeAceptar && (
           <button className={styles.acceptBtn} onClick={() => onAceptar?.(id)} title="Aceptar postulante">
             ✓ Aceptar

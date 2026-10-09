@@ -271,3 +271,19 @@
   .cta-card      { padding: 22px 14px; }
 }
 
+
+/* Postulación a reconfirmar (el trabajo se reabrió) */
+.job-card__reconfirmar {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #FFF7ED;
+  border: 1px solid #FED7AA;
+}
+
+.job-card__reconfirmar p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #9A3412;
+  line-height: 1.4;
+}

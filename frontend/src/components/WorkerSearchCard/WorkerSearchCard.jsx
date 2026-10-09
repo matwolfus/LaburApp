@@ -8,7 +8,9 @@ const WorkerSearchCard = ({
   photo_url,
   description,
   rating = 0,
-  idContrato = null,
+  localidad = null,
+  provincia = null,
+  idPostulacionChat = null,
 }) => {
   const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
@@ -44,6 +46,10 @@ const WorkerSearchCard = ({
             <span className={styles.star}>★</span>
             <span className={styles.ratingValue}>{Number(rating).toFixed(1)}</span>
           </div>
+
+          {(localidad || provincia) && (
+            <p className={styles.location}>📍 {[localidad, provincia].filter(Boolean).join(', ')}</p>
+          )}
         </div>
 
         {/* CORAZÓN */}
@@ -68,13 +74,13 @@ const WorkerSearchCard = ({
         </div>
       )}
 
-      {/* CONTACTAR: el chat vive atado a un contrato, sin contrato no hay chat */}
-      {idContrato && (
+      {/* CONTACTAR: el chat vive atado a una postulación, sin una no hay chat */}
+      {idPostulacionChat && (
         <div className={styles.details}>
           <button
             type="button"
             className={styles.contactBtn}
-            onClick={() => navigate(`/chats/${idContrato}`)}
+            onClick={() => navigate(`/chats/${idPostulacionChat}`)}
           >
             Contactar
           </button>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, UserCheck, Eye, ArrowLeft, Camera, User, Phone, MapPin, Award, Briefcase } from "lucide-react";
+import { Check, UserCheck, Eye, ArrowLeft, Camera, User, Phone, Award, Briefcase } from "lucide-react";
 import { uploadFotos, actualizarMisCategorias, getCategorias, BASE_URL } from "../../services/api";
+import UbicacionSelector from "../../components/UbicacionSelector";
 import { resizeImage } from "../../utils/resizeImage";
 import styles from "../../styles/editarPerfil.module.css";
 
@@ -21,7 +22,7 @@ export default function EditarPerfil() {
     const [telefono, setTelefono] = useState("");
     const [biografiaContratante, setBiografiaContratante] = useState("");
     const [biografiaTrabajador, setBiografiaTrabajador] = useState("");
-    const [idLocalidad, setIdLocalidad] = useState("");
+    const [ubicacion, setUbicacion] = useState({ idProvincia: "", idLocalidad: "" });
     const [avatar, setAvatar] = useState("");
 
     // =====================================
@@ -32,12 +33,6 @@ export default function EditarPerfil() {
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [avatarError, setAvatarError] = useState("");
     const fileInputRef = useRef(null);
-
-    // =====================================
-    // ESTADO LOCALIDADES
-    // =====================================
-
-    const [localidades, setLocalidades] = useState([]);
 
     // =====================================
     // ESTADO CATEGORÍAS QUE OFRECE
@@ -80,7 +75,7 @@ export default function EditarPerfil() {
                     return;
                 }
 
-                const [resPerfil, resLocalidades, dataCategorias] = await Promise.all([
+                const [resPerfil, dataCategorias] = await Promise.all([
 
                     fetch(`${BASE_URL}/usuarios/me`, {
                         method: "GET",
@@ -88,8 +83,6 @@ export default function EditarPerfil() {
                             Authorization: `Bearer ${token}`
                         }
                     }),
-
-                    fetch(`${BASE_URL}/localidades`),
 
                     getCategorias().catch((err) => {
                         console.error("No se pudieron cargar las categorías:", err);
@@ -142,9 +135,12 @@ export default function EditarPerfil() {
                     dataPerfil.biografiaTrabajador || ""
                 );
 
-                setIdLocalidad(
-                    dataPerfil.idLocalidad || ""
-                );
+                // La provincia no se guarda en el usuario: viene deducida
+                // de su localidad (el backend la devuelve en idProvincia).
+                setUbicacion({
+                    idProvincia: dataPerfil.idProvincia || "",
+                    idLocalidad: dataPerfil.idLocalidad || ""
+                });
 
                 setAvatar(
                     dataPerfil.avatar || ""
@@ -155,25 +151,6 @@ export default function EditarPerfil() {
                 );
 
                 setInsignias(dataPerfil.insignias || []);
-
-                // =====================================
-                // LOCALIDADES
-                // =====================================
-
-                if (resLocalidades.ok) {
-
-                    const dataLocalidades =
-                        await resLocalidades.json();
-
-                    setLocalidades(dataLocalidades);
-
-                } else {
-
-                    console.error(
-                        "No se pudieron cargar las localidades desde la API."
-                    );
-
-                }
 
             } catch (err) {
 
@@ -314,8 +291,8 @@ export default function EditarPerfil() {
                             biografiaTrabajador,
 
                         idLocalidad:
-                            idLocalidad
-                                ? Number(idLocalidad)
+                            ubicacion.idLocalidad
+                                ? Number(ubicacion.idLocalidad)
                                 : null,
 
                         avatar
@@ -632,42 +609,11 @@ export default function EditarPerfil() {
                         </div>
 
                         <div className={styles.field}>
-
-                            <label htmlFor="localidad">
-                                Localidad
-                            </label>
-
-                            <div className={styles.inputWrap}>
-                                <MapPin size={18} className={styles.inputIcon} />
-                                <select
-                                    id="localidad"
-                                    value={idLocalidad}
-                                    onChange={(e) =>
-                                        setIdLocalidad(
-                                            e.target.value
-                                        )
-                                    }
-                                    required
-                                >
-
-                                    <option value="">
-                                        Seleccioná una localidad
-                                    </option>
-
-                                    {localidades.map((loc) => (
-
-                                        <option
-                                            key={loc.id}
-                                            value={loc.id}
-                                        >
-                                            {loc.nombre} — {loc.provincia}
-                                        </option>
-
-                                    ))}
-
-                                </select>
-                            </div>
-
+                            <UbicacionSelector
+                                value={ubicacion}
+                                onChange={setUbicacion}
+                                idPrefix="perfil"
+                            />
                         </div>
 
                     </div>
@@ -680,6 +626,10 @@ export default function EditarPerfil() {
                     <div className={styles.card}>
 
                         <h2 className={styles.cardTitle}>Sobre vos</h2>
+
+                        <p className={styles.categoriasHint}>
+                            Opcional. Contale a los demás un poco sobre vos.
+                        </p>
 
                         <div className={styles.field}>
 
@@ -696,7 +646,6 @@ export default function EditarPerfil() {
                                         e.target.value
                                     )
                                 }
-                                required
                             />
 
                         </div>
@@ -716,7 +665,6 @@ export default function EditarPerfil() {
                                         e.target.value
                                     )
                                 }
-                                required
                             />
 
                         </div>

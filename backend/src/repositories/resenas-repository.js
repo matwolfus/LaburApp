@@ -13,9 +13,15 @@ export default class ResenasRepository {
   // reseña.
   async getElegibilidad(idTrabajo, idUsuario) {
     const contrato = await this.db.queryOne(
+      // Un trabajo reabierto puede tener un contrato 'cancelado' y otro
+      // vigente: se prioriza el completado, después el más reciente. Un
+      // contrato cancelado nunca habilita reseña (puedeResenar exige
+      // 'completado').
       `SELECT id, id_contratante, id_trabajador, estado
        FROM contratos
-       WHERE id_trabajo = $1`,
+       WHERE id_trabajo = $1
+       ORDER BY (estado = 'completado') DESC, creado_en DESC
+       LIMIT 1`,
       [idTrabajo]
     );
 

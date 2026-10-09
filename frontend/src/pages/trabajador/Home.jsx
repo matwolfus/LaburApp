@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryCard from "../../components/CategoryCard/CategoryCard.jsx";
 import JobSearchCard from "../../components/JobSearchCard/index.jsx";
-import { getCategorias, getMiUsuario, buscarTrabajosPorCategoria, getMisPostulaciones } from "../../services/api";
+import { getCategorias, getMiUsuario, buscarTrabajos, getMisPostulaciones } from "../../services/api";
 // Reusa el CSS module de InicioContratador: mismas clases genéricas
 // (homeScreen/content/sectionTitle/etc.), el layout de este Home es
 // estructuralmente igual, solo cambian los datos.
@@ -14,6 +14,7 @@ const ESTADO_LABEL = {
   aceptado: "Aceptado",
   rechazado: "Rechazado",
   retirado: "Retirado",
+  por_reconfirmar: "Confirmá tu interés",
 };
 
 const etiquetaPostulacion = (p) =>
@@ -40,13 +41,15 @@ export default function HomeTrabajador() {
         const [userRes, categoriesRes, jobsRes, postulacionesRes] = await Promise.all([
           getMiUsuario(),
           getCategorias(),
-          buscarTrabajosPorCategoria(),
+          buscarTrabajos(),
           getMisPostulaciones(),
         ]);
         setUser(userRes);
         setCategories(categoriesRes);
         setJobs(jobsRes);
-        setPostulaciones(postulacionesRes);
+        // Las postulaciones que el trabajador canceló no se muestran en el
+        // Inicio (siguen en "Mis postulaciones", en el historial).
+        setPostulaciones(postulacionesRes.filter((p) => p.estado !== "retirado"));
       } catch (err) {
         setError(err.message || "Error al cargar los datos");
       } finally {

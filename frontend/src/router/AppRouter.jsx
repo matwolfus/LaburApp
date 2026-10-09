@@ -49,7 +49,7 @@ const router = createBrowserRouter([
       { path: '/nuevo-trabajo', element: <NuevoTrabajo /> },
       { path: '/perfil/editar', element: <EditarPerfil/>},
       { path: '/trabajador/trabajos/:jobId', element: <DetalleTrabajoTrabajador /> },
-      { path: '/chats/:idContrato', element: <ChatIndividual /> },
+      { path: '/chats/:idPostulacion', element: <ChatIndividual /> },
 
       // Con header/navbar
       {
