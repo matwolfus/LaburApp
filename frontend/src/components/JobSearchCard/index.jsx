@@ -6,7 +6,9 @@ import styles from './JobSearchCard.module.css';
 // Buscar Trabajos). Inspirada visualmente en WorkerSearchCard, pero con
 // campos de dominio distintos (un trabajo, no una persona), por eso es un
 // componente separado en vez de una variante con props opcionales.
-const JobSearchCard = ({ id, title, description, budget, address, category, localidad, provincia, image_url }) => {
+// yaPostulado: el trabajador ya tiene una postulación activa a este trabajo
+// -> el botón pasa a gris "Ya postulado" en vez del naranja "Postularme".
+const JobSearchCard = ({ id, title, description, budget, address, category, localidad, provincia, image_url, yaPostulado = false }) => {
   const navigate = useNavigate();
   const ubicacion = [localidad, provincia].filter(Boolean).join(', ') || address;
   const CategoryIcon = getCategoryIcon(category);
@@ -46,9 +48,13 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
         {budget != null && (
           <span className={styles.price}>${Number(budget).toLocaleString('es-AR')}</span>
         )}
-        <button type="button" className={styles.applyBtn}>
-          Postularme
-        </button>
+        {yaPostulado ? (
+          <span className={styles.appliedBtn}>✓ Ya postulado</span>
+        ) : (
+          <button type="button" className={styles.applyBtn}>
+            Postularme
+          </button>
+        )}
       </div>
 
     </article>

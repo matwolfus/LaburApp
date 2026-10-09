@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   getCategorias,
   buscarTrabajos,
+  getMisPostulaciones,
 } from '../../services/api';
 
 import JobSearchCard from '../../components/JobSearchCard/index.jsx';
@@ -22,6 +23,9 @@ export default function BuscarTrabajos() {
   const [jobs, setJobs] = useState([]);
   const [ubicacion, setUbicacion] = useState({ idProvincia: '', idLocalidad: '' });
   const [reintento, setReintento] = useState(0);
+  // Trabajos a los que ya me postulé (sin contar las postulaciones retiradas,
+  // a esos se puede volver a postular).
+  const [idsPostulados, setIdsPostulados] = useState(new Set());
 
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,6 +35,14 @@ export default function BuscarTrabajos() {
   const selectedCategory = categories.find(
     (category) => category.id === categoriaId
   );
+
+  useEffect(() => {
+    getMisPostulaciones()
+      .then((postulaciones) => setIdsPostulados(new Set(
+        postulaciones.filter((p) => p.estado !== 'retirado').map((p) => String(p.id_trabajo))
+      )))
+      .catch((err) => console.error('Error cargando tus postulaciones:', err));
+  }, []);
 
   useEffect(() => {
     const cargarCategorias = async () => {
@@ -141,7 +153,7 @@ export default function BuscarTrabajos() {
     return (
       <div className="buscar-workers-list">
         {filteredJobs.map((job) => (
-          <JobSearchCard key={job.id} {...job} />
+          <JobSearchCard key={job.id} {...job} yaPostulado={idsPostulados.has(String(job.id))} />
         ))}
       </div>
     );

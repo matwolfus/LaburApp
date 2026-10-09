@@ -9,7 +9,8 @@ import PrioritySelector from "../../components/PrioritySelector/PrioritySelector
 import MapPicker from "../../components/MapPicker/MapPicker";
 import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos } from "../../services/api";
 import UbicacionSelector from "../../components/UbicacionSelector";
-import { geocodeAddress, reverseGeocodeAddress } from "../../services/geocoding";
+import { geocodeAddress, reverseGeocode } from "../../services/geocoding";
+import { ubicacionDesdeMapa, nombresDeUbicacion } from "../../utils/ubicacionDesdeMapa";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
 const MAX_FOTOS = 2;
@@ -57,6 +58,9 @@ export default function NuevoTrabajo() {
   const [presupuesto, setPresupuesto] = useState("");
   const [direccion, setDireccion] = useState("");
   const [ubicacion, setUbicacion] = useState({ idProvincia: "", idLocalidad: "" });
+  // Provincia / localidad detectadas en el punto del mapa (para completar los
+  // desplegables solos y avisar si después no coinciden).
+  const [ubicacionMapa, setUbicacionMapa] = useState(null);
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
 
@@ -138,6 +142,21 @@ export default function NuevoTrabajo() {
     setExistingFotos((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Completa provincia y localidad con lo que hay en el punto del mapa.
+  // Si la localidad del mapa no está en nuestra lista, se deja la provincia
+  // y se avisa (ver avisoUbicacion).
+  const sincronizarUbicacionConMapa = async (address) => {
+    try {
+      const detectada = await ubicacionDesdeMapa(address);
+      setUbicacionMapa(detectada);
+      if (detectada.idProvincia) {
+        setUbicacion({ idProvincia: detectada.idProvincia, idLocalidad: detectada.idLocalidad });
+      }
+    } catch (err) {
+      console.error("No se pudo detectar la localidad del mapa:", err);
+    }
+  };
+
   const handleGeocodeAddress = async () => {
     if (!direccion.trim()) return;
 
@@ -145,9 +164,12 @@ export default function NuevoTrabajo() {
     setGeocodingError(null);
 
     try {
-      const { lat: foundLat, lng: foundLng } = await geocodeAddress(direccion);
+      // La provincia / localidad ya elegidas acotan la búsqueda.
+      const contexto = await nombresDeUbicacion(ubicacion).catch(() => ({}));
+      const { lat: foundLat, lng: foundLng, address } = await geocodeAddress(direccion, contexto);
       setLat(foundLat);
       setLng(foundLng);
+      await sincronizarUbicacionConMapa(address);
     } catch (err) {
       setGeocodingError(err.message || "Error al buscar la dirección");
     } finally {
@@ -166,8 +188,11 @@ export default function NuevoTrabajo() {
     setGeocodingError(null);
 
     try {
-      const address = await reverseGeocodeAddress(newLat, newLng);
-      if (requestId === reverseGeocodeRequestRef.current) setDireccion(address);
+      const { direccion: calle, address } = await reverseGeocode(newLat, newLng);
+      if (requestId === reverseGeocodeRequestRef.current) {
+        setDireccion(calle);
+        await sincronizarUbicacionConMapa(address);
+      }
     } catch (err) {
       if (requestId === reverseGeocodeRequestRef.current) {
         setGeocodingError(err.message || "Error al buscar la dirección");
@@ -176,6 +201,20 @@ export default function NuevoTrabajo() {
       if (requestId === reverseGeocodeRequestRef.current) setGeocodingLoading(false);
     }
   };
+
+  // Aviso si el punto del mapa no coincide con la localidad elegida.
+  const avisoUbicacion = (() => {
+    if (!ubicacionMapa?.idProvincia) return null;
+    if (!ubicacionMapa.idLocalidad) {
+      return ubicacionMapa.localidadDetectada
+        ? `El punto del mapa está en "${ubicacionMapa.localidadDetectada}", que no está en la lista de localidades. Elegí la más cercana.`
+        : null;
+    }
+    if (String(ubicacion.idLocalidad) !== String(ubicacionMapa.idLocalidad)) {
+      return `El punto del mapa está en ${ubicacionMapa.nombreLocalidad}, pero elegiste otra localidad. Revisá que coincidan.`;
+    }
+    return null;
+  })();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -413,6 +452,7 @@ export default function NuevoTrabajo() {
             disabled={geocodingLoading}
           />
           {geocodingError && <p className={styles.errorText} role="alert">{geocodingError}</p>}
+          {avisoUbicacion && <p className={styles.warningText} role="status">{avisoUbicacion}</p>}
           <div className={styles.mapWrapper}>
             <MapPicker lat={lat} lng={lng} onChange={handleMapChange} />
           </div>

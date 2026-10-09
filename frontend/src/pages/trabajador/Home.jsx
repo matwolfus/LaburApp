@@ -60,6 +60,10 @@ export default function HomeTrabajador() {
     fetchAll();
   }, []);
 
+  // Trabajos con postulación activa (las retiradas ya se filtraron arriba;
+  // las rechazadas no vuelven a recibir postulación, igual cuentan).
+  const idsPostulados = new Set(postulaciones.map((p) => String(p.id_trabajo)));
+
   if (loading) return <p className={styles.emptyText}>Cargando...</p>;
 
   if (error) {
@@ -112,7 +116,7 @@ export default function HomeTrabajador() {
           ) : (
             <div className={styles.jobsList}>
               {jobs.slice(0, 5).map((job) => (
-                <JobSearchCard key={job.id} {...job} />
+                <JobSearchCard key={job.id} {...job} yaPostulado={idsPostulados.has(String(job.id))} />
               ))}
             </div>
           )}

@@ -133,4 +133,14 @@ export default class NotificacionesRepository {
             [idPostulacion]
         );
     }
+
+    // Entrar a la pantalla de notificaciones las da a todas por vistas.
+    marcarTodasLeidasAsync = async (idUsuario) => {
+
+        await this.db.queryAll(
+            `UPDATE notificaciones SET leido = TRUE
+             WHERE id_usuario = $1 AND leido = FALSE`,
+            [idUsuario]
+        );
+    }
 }

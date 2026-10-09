@@ -131,11 +131,18 @@ async getJobsByEmployerAndStatus(employerId, status) {
   // Sin auth -> NO joinea usuarios (no exponer datos del contratante a
   // cualquiera sin loguearse). Filtros opcionales y combinables: categoría,
   // provincia y localidad. Sin filtros trae todos los abiertos (feed del Home).
-  async buscarAbiertos({ idCategoria, idProvincia, idLocalidad } = {}) {
+  // idExcluirContratante: el usuario logueado, para no mostrarle como
+  // "disponibles" los trabajos que publicó él mismo (en modo contratador).
+  async buscarAbiertos({ idCategoria, idProvincia, idLocalidad, idExcluirContratante } = {}) {
     await this.expirarVencidos();
 
     const values = [];
     const filtros = [];
+
+    if (idExcluirContratante) {
+      values.push(idExcluirContratante);
+      filtros.push(`AND t.id_contratante <> $${values.length}`);
+    }
 
     if (idCategoria) {
       values.push(idCategoria);

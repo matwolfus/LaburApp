@@ -1,7 +1,21 @@
+import { useState } from 'react';
 import { Bell, Menu } from 'lucide-react';
 
-export default function Header({ logoSrc, avatarSrc, onLogoClick, onAvatarClick, onMenuClick, onBellClick, notificacionesNoLeidas = 0 }) {
+// Mismo criterio que PerfilHeader: primeras letras de nombre y apellido.
+function getIniciales(nombre = '') {
+  return nombre
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((palabra) => palabra[0]?.toUpperCase())
+    .join('');
+}
+
+export default function Header({ logoSrc, avatarSrc, nombre = '', onLogoClick, onAvatarClick, onMenuClick, onBellClick, notificacionesNoLeidas = 0 }) {
   const hayNoLeidas = notificacionesNoLeidas > 0;
+  // Si la foto no carga (URL rota), también se muestran las iniciales.
+  const [avatarRoto, setAvatarRoto] = useState(null);
+  const mostrarFoto = avatarSrc && avatarRoto !== avatarSrc;
   return (
     <header className="app-header">
       <button className="app-header__icon-btn" onClick={onLogoClick} aria-label="Ir al inicio">
@@ -12,7 +26,18 @@ export default function Header({ logoSrc, avatarSrc, onLogoClick, onAvatarClick,
 
       <div className="app-header__actions">
         <button className="app-header__icon-btn" onClick={onAvatarClick} aria-label="Mi perfil">
-          <img className="app-header__avatar" src={avatarSrc} alt="Perfil" />
+          {mostrarFoto ? (
+            <img
+              className="app-header__avatar"
+              src={avatarSrc}
+              alt="Perfil"
+              onError={() => setAvatarRoto(avatarSrc)}
+            />
+          ) : (
+            <span className="app-header__avatar app-header__avatar--iniciales" aria-hidden="true">
+              {getIniciales(nombre)}
+            </span>
+          )}
         </button>
         <button
           className="app-header__icon-btn app-header__bell"

@@ -68,6 +68,32 @@ router.get('/no-leidas/count', authMiddleware, async (req, res) => {
 
 
 // =========================================================
+// MARCAR TODAS COMO LEIDAS (al entrar a la pantalla)
+// Debe declararse ANTES de '/:id/leido'.
+// =========================================================
+
+router.patch('/leidas', authMiddleware, async (req, res) => {
+
+    try {
+
+        await service.marcarTodasLeidasAsync(req.userId);
+
+        return res.status(200).json({
+            message: 'Notificaciones marcadas como leidas'
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        return res.status(500).json({
+            message: 'Error marcando notificaciones como leidas'
+        });
+    }
+});
+
+
+// =========================================================
 // MARCAR NOTIFICACION COMO LEIDA
 // =========================================================
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, CheckCircle2, XCircle, Bell, MessageSquare, UserMinus, RotateCcw, MapPin } from 'lucide-react';
 import SectionHeader from '../../components/SectionHeader';
-import { getNotificaciones, marcarNotificacionLeida, reconfirmarPostulacion } from '../../services/api';
+import { getNotificaciones, marcarNotificacionLeida, marcarTodasNotificacionesLeidas, reconfirmarPostulacion } from '../../services/api';
 import { notificarCambioBadges } from '../../hooks/useBadges';
 import '../../styles/notificaciones.css';
 
@@ -72,9 +72,19 @@ export default function Notificaciones() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
 
+  // Al entrar se marcan todas como leídas en el backend (así el contador de
+  // la campanita se va), pero en pantalla las que eran nuevas siguen
+  // resaltadas durante esta visita: el estado local no se toca.
   useEffect(() => {
     getNotificaciones()
-      .then(setNotificaciones)
+      .then((lista) => {
+        setNotificaciones(lista);
+        if (lista.some((n) => !n.leido)) {
+          marcarTodasNotificacionesLeidas()
+            .then(notificarCambioBadges)
+            .catch((err) => console.error('Error al marcar las notificaciones como leídas:', err));
+        }
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);

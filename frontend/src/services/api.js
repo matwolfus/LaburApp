@@ -310,6 +310,16 @@ export async function getNotificacionesNoLeidasCount() {
   return res.json();
 }
 
+// PATCH /api/notificaciones/leidas -> marca todas las del usuario como leídas
+export async function marcarTodasNotificacionesLeidas() {
+  const res = await fetch(`${BASE_URL}/notificaciones/leidas`, {
+    method: 'PATCH',
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error('Error al marcar las notificaciones como leídas');
+  return res.json();
+}
+
 // PATCH /api/notificaciones/:id/leido (protegida: solo el dueño de la notificación)
 export async function marcarNotificacionLeida(id) {
   const res = await fetch(`${BASE_URL}/notificaciones/${id}/leido`, {
@@ -374,9 +384,12 @@ export async function actualizarMisCategorias(categoriaIds) {
   return res.json();
 }
 
-// GET /api/trabajos/buscar?categoria=&provincia=&localidad= -> trabajos abiertos (filtros opcionales)
+// GET /api/trabajos/buscar?categoria=&provincia=&localidad= -> trabajos abiertos (filtros opcionales).
+// Manda el token si hay sesión: el backend excluye los trabajos propios.
 export async function buscarTrabajos({ categoria, provincia, localidad } = {}) {
-  const res = await fetch(`${BASE_URL}/trabajos/buscar${toQuery({ categoria, provincia, localidad })}`);
+  const res = await fetch(`${BASE_URL}/trabajos/buscar${toQuery({ categoria, provincia, localidad })}`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || 'Error al buscar trabajos');

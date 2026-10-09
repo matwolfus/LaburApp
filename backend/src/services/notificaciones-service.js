@@ -52,4 +52,9 @@ export default class NotificacionesService {
 
         return await this.repository.marcarReconfirmacionRespondidaAsync(idPostulacion);
     }
+
+    marcarTodasLeidasAsync = async (idUsuario) => {
+
+        return await this.repository.marcarTodasLeidasAsync(idUsuario);
+    }
 }

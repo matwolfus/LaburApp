@@ -10,11 +10,10 @@ import useBadges from '../hooks/useBadges';
 import '../layouts/layout.css';
 import logo from '../assets/logo.png';
 
-const DEFAULT_AVATAR = 'https://placehold.co/40x40/CBD5E1/FFFFFF?text=R';
-
 export default function AppLayout() {
   const navigate = useNavigate();
-  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
+  const [avatar, setAvatar] = useState(null);
+  const [nombre, setNombre] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { modo, hydrateModo } = useAuth();
   const badges = useBadges();
@@ -23,6 +22,7 @@ export default function AppLayout() {
     getMiUsuario()
       .then((user) => {
         if (user?.avatar) setAvatar(user.avatar);
+        setNombre(user?.nombreCompleto ?? '');
         // Cubre el caso de entrar directo a una pantalla con layout (ej.
         // refrescar en /inicio) sin haber pasado por Perfil.jsx todavía:
         // el contexto arranca en null en cada carga de página a propósito.
@@ -36,6 +36,7 @@ export default function AppLayout() {
       <Header
         logoSrc={logo}
         avatarSrc={avatar}
+        nombre={nombre}
         onLogoClick={() => navigate(homeDeModo(modo ?? localStorage.getItem('modoActivo')))}
         onAvatarClick={() => navigate('/perfil')}
         onBellClick={() => navigate('/notificaciones')}

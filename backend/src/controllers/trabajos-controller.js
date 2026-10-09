@@ -284,12 +284,15 @@ router.patch('/:id/reabrir', authMiddleware, async (req, res) => {
 // opcionales) -> trabajos abiertos, para que un trabajador los descubra (Home / Buscar Trabajos). Sin auth: cualquiera
 // puede navegar changas abiertas sin loguearse, igual que el detalle público.
 // Debe declararse ANTES de '/:id' por el mismo motivo que el resto.
-router.get('/buscar', async (req, res) => {
+// Auth opcional: sin sesión sigue siendo público; con sesión se excluyen
+// los trabajos que publicó el propio usuario.
+router.get('/buscar', optionalAuthMiddleware, async (req, res) => {
   try {
     const jobs = await service.buscarAbiertosAsync({
       idCategoria: req.query.categoria,
       idProvincia: req.query.provincia,
       idLocalidad: req.query.localidad,
+      idExcluirContratante: req.userId ?? null,
     });
     res.json(jobs);
   } catch (error) {

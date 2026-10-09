@@ -124,3 +124,13 @@
 .applyBtn:active {
   transform: translateY(0);
 }
+
+.appliedBtn {
+  margin-left: auto;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: #E5E7EB;
+  color: #6B7280;
+  font-size: 13px;
+  font-weight: 700;
+}
