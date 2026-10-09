@@ -1,4 +1,4 @@
-﻿export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+﻿export const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Devuelve el header Authorization con el JWT guardado (si hay sesión).
 // Se usa en las requests que pegan a rutas protegidas del backend.

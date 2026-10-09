@@ -8,7 +8,10 @@ import { createClient } from '@supabase/supabase-js';
 // Se mantiene solo para servir (via server.js) fotos ya subidas antes de la
 // migración a Supabase Storage, que quedaron guardadas en disco local.
 export const UPLOADS_DIR = path.resolve(import.meta.dirname, '../../uploads');
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+// En Vercel el filesystem es de solo lectura: si no se puede crear, se ignora.
+try {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+} catch {}
 
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;

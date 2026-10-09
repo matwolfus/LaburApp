@@ -41,3 +41,5 @@ app.use('/api/resenas', resenasRouter);
 app.use('/api/mensajes', mensajesRouter);
 
 app.listen(port, () => console.log(`LaburApp backend running at http://localhost:${port}`));
+
+export default app;
