@@ -1,6 +1,7 @@
 ﻿// TODO: trabajos service
 // backend/src/services/trabajos-service.js
 import TrabajosRepository from '../repositories/trabajos-repository.js';
+import { httpError } from '../helpers/http-error.js';
 
 // ACÁ AGREGUÉ
 // Estados que significan "buscando trabajadores" -> PENDIENTE en la UI.
@@ -53,13 +54,13 @@ export default class TrabajosService {
   // que no esté en el pasado (si no, vencería en el acto).
   async reabrirTrabajoAsync(jobId, currentEstado, programadoPara) {
     if (currentEstado !== 'en_espera') {
-      throw new Error("Solo se puede reabrir un trabajo en espera");
+      throw httpError(400, "Solo se puede reabrir un trabajo en espera");
     }
     if (!programadoPara || isNaN(Date.parse(programadoPara))) {
-      throw new Error('Elegí una nueva fecha para el trabajo');
+      throw httpError(400, 'Elegí una nueva fecha para el trabajo');
     }
     if (this.#esFechaPasada(programadoPara)) {
-      throw new Error('La fecha y hora del trabajo ya pasaron');
+      throw httpError(400, 'La fecha y hora del trabajo ya pasaron');
     }
     return await this.repository.reabrirTrabajo(jobId, programadoPara);
   }
@@ -69,7 +70,7 @@ export default class TrabajosService {
   // de las validaciones de negocio de este service.
   async completarTrabajoAsync(jobId, currentEstado) {
     if (currentEstado !== 'activa') {
-      throw new Error("Solo se puede completar un trabajo en estado 'activa'");
+      throw httpError(400, "Solo se puede completar un trabajo en estado 'activa'");
     }
     return await this.repository.completarTrabajo(jobId);
   }
@@ -77,7 +78,7 @@ export default class TrabajosService {
   // Un trabajo ya 'finalizado' o 'cancelado' no se puede volver a cancelar.
   async cancelarTrabajoAsync(jobId, currentEstado) {
     if (currentEstado === 'finalizado' || currentEstado === 'cancelado') {
-      throw new Error(`No se puede cancelar un trabajo en estado '${currentEstado}'`);
+      throw httpError(400, `No se puede cancelar un trabajo en estado '${currentEstado}'`);
     }
     return await this.repository.cancelarTrabajo(jobId);
   }
@@ -92,40 +93,40 @@ export default class TrabajosService {
   // propósito (updateJobAsync manda estado: null porque acá no se edita el estado).
   #validateJobFields(entity, imagenes) {
     // Requeridos
-    if (!entity?.id_contratante) throw new Error('id_contratante es requerido');
-    if (!entity?.id_categoria)   throw new Error('id_categoria es requerido');
-    if (!entity?.titulo)         throw new Error('titulo es requerido');
+    if (!entity?.id_contratante) throw httpError(400, 'id_contratante es requerido');
+    if (!entity?.id_categoria)   throw httpError(400, 'id_categoria es requerido');
+    if (!entity?.titulo)         throw httpError(400, 'titulo es requerido');
 
     // programado_para: si viene, que sea una fecha parseable
     if (entity.programado_para != null && isNaN(Date.parse(entity.programado_para))) {
-      throw new Error('programado_para no es una fecha válida');
+      throw httpError(400, 'programado_para no es una fecha válida');
     }
 
     // presupuesto: si viene, number > 0
     if (entity.presupuesto != null) {
       const p = Number(entity.presupuesto);
-      if (isNaN(p) || p <= 0) throw new Error('presupuesto debe ser un número mayor a 0');
+      if (isNaN(p) || p <= 0) throw httpError(400, 'presupuesto debe ser un número mayor a 0');
     }
 
     // prioridad: si viene, dentro de los valores permitidos
     if (entity.prioridad != null && !['normal', 'urgente'].includes(entity.prioridad)) {
-      throw new Error("prioridad debe ser 'normal' o 'urgente'");
+      throw httpError(400, "prioridad debe ser 'normal' o 'urgente'");
     }
 
     // lat / lng: si vienen, numbers en rango
     if (entity.lat != null) {
       const lat = Number(entity.lat);
-      if (isNaN(lat) || lat < -90 || lat > 90) throw new Error('lat fuera de rango (-90..90)');
+      if (isNaN(lat) || lat < -90 || lat > 90) throw httpError(400, 'lat fuera de rango (-90..90)');
     }
     if (entity.lng != null) {
       const lng = Number(entity.lng);
-      if (isNaN(lng) || lng < -180 || lng > 180) throw new Error('lng fuera de rango (-180..180)');
+      if (isNaN(lng) || lng < -180 || lng > 180) throw httpError(400, 'lng fuera de rango (-180..180)');
     }
 
     // imagenes: si viene, array de strings
     if (imagenes != null) {
       if (!Array.isArray(imagenes) || imagenes.some((u) => typeof u !== 'string')) {
-        throw new Error('imagenes debe ser un array de strings (URLs)');
+        throw httpError(400, 'imagenes debe ser un array de strings (URLs)');
       }
     }
   }
@@ -138,7 +139,7 @@ export default class TrabajosService {
     // Un trabajo nuevo en el pasado quedaría 'vencido' al instante (ver
     // expirarVencidos) y nunca se listaría.
     if (this.#esFechaPasada(entity.programado_para)) {
-      throw new Error('La fecha y hora del trabajo ya pasaron');
+      throw httpError(400, 'La fecha y hora del trabajo ya pasaron');
     }
 
     const newId = await this.repository.createJob(entity);
@@ -164,12 +165,12 @@ export default class TrabajosService {
 
     // Un trabajo cerrado no se edita (ni el presupuesto ni nada).
     if (actual?.estado === 'finalizado' || actual?.estado === 'cancelado') {
-      throw new Error(`No se puede editar un trabajo en estado '${actual.estado}'`);
+      throw httpError(400, `No se puede editar un trabajo en estado '${actual.estado}'`);
     }
     const cambioFecha = this.#normalizarFecha(actual?.programado_para) !== this.#normalizarFecha(entity.programado_para);
     const fechaPasada = this.#esFechaPasada(entity.programado_para);
     if (cambioFecha && fechaPasada) {
-      throw new Error('La fecha y hora del trabajo ya pasaron');
+      throw httpError(400, 'La fecha y hora del trabajo ya pasaron');
     }
 
     // Vencido + fecha nueva no pasada -> vuelve a 'abierto' (ver repository).

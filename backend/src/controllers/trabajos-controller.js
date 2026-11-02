@@ -1,12 +1,15 @@
 ﻿// TODO: trabajos controller
 // backend/src/controllers/trabajos-controller.js
 import { Router } from 'express';
+import { validarIdNumerico } from '../middlewares/error-middleware.js';
 import TrabajosService from '../services/trabajos-service.js';
 import Trabajo from '../entities/trabajo.js';
 import authMiddleware, { optionalAuthMiddleware } from '../middlewares/auth-middleware.js';
 import NotificacionesService from '../services/notificaciones-service.js';
 
 const router = Router();
+
+router.param('id', validarIdNumerico);
 const service = new TrabajosService();
 const notificacionesService = new NotificacionesService();
 
@@ -15,24 +18,22 @@ const notificacionesService = new NotificacionesService();
 // router.get('/activas'): Igual que proximas pero trae los activos.
 
 // GET /api/trabajos/proximas -> el contratador sale del token, no de la query.
-router.get('/proximas', authMiddleware, async (req, res) => {
+router.get('/proximas', authMiddleware, async (req, res, next) => {
   try {
     const jobs = await service.getUpcomingJobsAsync(req.userId);
     res.json(jobs);
   } catch (error) {
-    console.error('Error in GET /proximas:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // GET /api/trabajos/activas -> el contratador sale del token, no de la query.
-router.get('/activas', authMiddleware, async (req, res) => {
+router.get('/activas', authMiddleware, async (req, res, next) => {
   try {
     const jobs = await service.getActiveJobsAsync(req.userId);
     res.json(jobs);
   } catch (error) {
-    console.error('Error in GET /activas:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
@@ -40,13 +41,12 @@ router.get('/activas', authMiddleware, async (req, res) => {
 // GET /api/trabajos/ofertas?employer_id=1 -> pantalla "Ofertas": TODAS las publicaciones
 // del contratante (sin filtrar por estado), para que una changua recién publicada
 // ('abierto') aparezca ahí también, no solo 'proxima'/'activa'.
-router.get('/ofertas', authMiddleware, async (req, res) => {
+router.get('/ofertas', authMiddleware, async (req, res, next) => {
   try {
     const jobs = await service.getAllJobsAsync(req.userId);
     res.json(jobs);
   } catch (error) {
-    console.error('Error in GET /ofertas:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 // ACÁ YA NO
@@ -54,13 +54,12 @@ router.get('/ofertas', authMiddleware, async (req, res) => {
 // ACÁ AGREGUÉ
 // GET /api/trabajos/contratador?employer_id=1  -> "Tus Trabajos" de la home
 // Debe declararse ANTES de '/:id' para que no lo capture la ruta con parámetro.
-router.get('/contratador', authMiddleware, async (req, res) => {
+router.get('/contratador', authMiddleware, async (req, res, next) => {
   try {
     const jobs = await service.getJobsByEmployerAsync(req.userId);
     res.json(jobs);
   } catch (error) {
-    console.error('Error in GET /contratador:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 // ACÁ YA NO
@@ -68,7 +67,7 @@ router.get('/contratador', authMiddleware, async (req, res) => {
 // ACÁ AGREGUÉ
 // POST /api/trabajos -> "Publicar tarea" (pantalla "Nuevo trabajo").
 // No choca con GET /:id: son métodos HTTP distintos.
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res, next) => {
   try {
     const b = req.body;
 
@@ -92,9 +91,9 @@ router.post('/', authMiddleware, async (req, res) => {
 
     return res.status(201).json({ id: newId });
   } catch (error) {
-    // Las validaciones del service tiran Error -> las tratamos como 400 (bad request).
-    console.error('Error in POST /trabajos:', error.message);
-    return res.status(400).json({ error: error.message });
+    // Las validaciones del service tiran httpError(400): el error-middleware
+    // responde ese status; cualquier otro error sale como 500.
+    next(error);
   }
 });
 // ACÁ YA NO
@@ -102,7 +101,7 @@ router.post('/', authMiddleware, async (req, res) => {
 // ACÁ AGREGUÉ
 // PUT /api/trabajos/:id -> "Guardar cambios" (pantalla "Editar trabajo").
 // Solo el dueño del trabajo puede editarlo.
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, async (req, res, next) => {
   try {
     const jobId = req.params.id;
 
@@ -136,15 +135,14 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     return res.status(200).json({ id: jobId });
   } catch (error) {
-    console.error('Error in PUT /trabajos/:id:', error.message);
-    return res.status(400).json({ error: error.message });
+    next(error);
   }
 });
 // ACÁ YA NO
 
 // PATCH /api/trabajos/:id/completar -> el contratador marca su trabajo
 // 'activa' como completado (cierra también el contrato asociado).
-router.patch('/:id/completar', authMiddleware, async (req, res) => {
+router.patch('/:id/completar', authMiddleware, async (req, res, next) => {
   try {
     const jobId = req.params.id;
 
@@ -187,14 +185,13 @@ router.patch('/:id/completar', authMiddleware, async (req, res) => {
 
     return res.status(200).json({ id: jobId });
   } catch (error) {
-    console.error('Error in PATCH /trabajos/:id/completar:', error.message);
-    return res.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
 // PATCH /api/trabajos/:id/cancelar -> el contratador cancela su propio
 // trabajo (mientras no esté ya 'finalizado' o 'cancelado').
-router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
+router.patch('/:id/cancelar', authMiddleware, async (req, res, next) => {
   try {
     const jobId = req.params.id;
 
@@ -230,8 +227,7 @@ router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
 
     return res.status(200).json({ id: jobId });
   } catch (error) {
-    console.error('Error in PATCH /trabajos/:id/cancelar:', error.message);
-    return res.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
@@ -239,7 +235,7 @@ router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
 // reabre un trabajo que quedó 'en_espera' porque el trabajador aceptado
 // canceló. Los postulantes rechazados automáticamente reciben una
 // notificación para reconfirmar su interés.
-router.patch('/:id/reabrir', authMiddleware, async (req, res) => {
+router.patch('/:id/reabrir', authMiddleware, async (req, res, next) => {
   try {
     const jobId = req.params.id;
 
@@ -275,8 +271,7 @@ router.patch('/:id/reabrir', authMiddleware, async (req, res) => {
 
     return res.status(200).json({ id: jobId });
   } catch (error) {
-    console.error('Error in PATCH /trabajos/:id/reabrir:', error.message);
-    return res.status(400).json({ error: error.message });
+    next(error);
   }
 });
 
@@ -286,7 +281,7 @@ router.patch('/:id/reabrir', authMiddleware, async (req, res) => {
 // Debe declararse ANTES de '/:id' por el mismo motivo que el resto.
 // Auth opcional: sin sesión sigue siendo público; con sesión se excluyen
 // los trabajos que publicó el propio usuario.
-router.get('/buscar', optionalAuthMiddleware, async (req, res) => {
+router.get('/buscar', optionalAuthMiddleware, async (req, res, next) => {
   try {
     const jobs = await service.buscarAbiertosAsync({
       idCategoria: req.query.categoria,
@@ -296,8 +291,7 @@ router.get('/buscar', optionalAuthMiddleware, async (req, res) => {
     });
     res.json(jobs);
   } catch (error) {
-    console.error('Error in GET /buscar:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
@@ -315,7 +309,7 @@ router.get('/:id', optionalAuthMiddleware, async (req, res) => {
 
 
     return res.status(404).json({
-      message: 'Trabajo no encontrado'
+      error: 'Trabajo no encontrado'
     });
   }
 

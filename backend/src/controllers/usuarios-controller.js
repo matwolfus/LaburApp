@@ -1,8 +1,11 @@
 import { Router } from 'express';
+import { validarIdNumerico } from '../middlewares/error-middleware.js';
 import UsuariosService from '../services/usuarios-service.js';
 import authMiddleware from '../middlewares/auth-middleware.js';
 
 const router = Router();
+
+router.param('id', validarIdNumerico);
 const service = new UsuariosService();
 
 router.post('/login', async (req, res) => {
@@ -26,19 +29,18 @@ router.post('/register', async (req, res) => {
 });
 
 // GET /api/usuarios/recomendados
-router.get('/recomendados', async (req, res) => {
+router.get('/recomendados', async (req, res, next) => {
   try {
     const workers = await service.getRecommendedWorkersAsync();
     res.json(workers);
   } catch (error) {
-    console.error('Error in GET /recomendados:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // GET /api/usuarios/me -> el usuario logueado (identidad tomada del token, no de la URL).
 // Debe declararse ANTES de '/:id' para que no lo capture la ruta con parámetro.
-router.get('/me', authMiddleware, async (req, res) => {
+router.get('/me', authMiddleware, async (req, res, next) => {
     try {
         const perfil = await service.getPerfil(req.userId);
         if (!perfil) {
@@ -48,14 +50,11 @@ router.get('/me', authMiddleware, async (req, res) => {
         }
         res.json(perfil);
     } catch (error) {
-        console.error('Error in GET /me:', error);
-        res.status(500).json({
-            error: 'Internal server error'
-        });
+        next(error);
     }
 });
 
-router.get('/:id/perfil', async (req, res) => {
+router.get('/:id/perfil', async (req, res, next) => {
     try {
 
         const perfil = await service.getPerfil(req.params.id);
@@ -69,19 +68,13 @@ router.get('/:id/perfil', async (req, res) => {
         res.json(perfil);
 
     } catch (error) {
-
-        console.error('Error in GET /:id/perfil:', error);
-
-        res.status(500).json({
-            error: 'Internal server error'
-        });
-
+        next(error);
     }
 });
 
 // PUT /api/usuarios/me/categorias -> reemplaza el set de categorías del usuario logueado.
 // Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
-router.put('/me/categorias', authMiddleware, async (req, res) => {
+router.put('/me/categorias', authMiddleware, async (req, res, next) => {
   try {
     const { categoriaIds } = req.body;
     const result = await service.updateCategoriasAsync(req.userId, categoriaIds);
@@ -90,14 +83,13 @@ router.put('/me/categorias', authMiddleware, async (req, res) => {
     }
     res.status(200).json(result);
   } catch (error) {
-    console.error('Error in PUT /me/categorias:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // PATCH /api/usuarios/me/rol -> cambia el modo activo (contratador/trabajador).
 // Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
-router.patch('/me/rol', authMiddleware, async (req, res) => {
+router.patch('/me/rol', authMiddleware, async (req, res, next) => {
   try {
     const { rol } = req.body;
     const result = await service.updateUltimoRolAsync(req.userId, rol);
@@ -106,15 +98,14 @@ router.patch('/me/rol', authMiddleware, async (req, res) => {
     }
     res.status(200).json(result);
   } catch (error) {
-    console.error('Error in PATCH /me/rol:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // GET /api/usuarios/buscar?categoria=&provincia=&localidad= -> trabajadores
 // filtrados por oficio y/o zona (todos opcionales, al menos uno).
 // Debe declararse ANTES de '/:id' por el mismo motivo que '/me'.
-router.get('/buscar', async (req, res) => {
+router.get('/buscar', async (req, res, next) => {
   try {
     const workers = await service.searchTrabajadoresAsync({
       idCategoria: req.query.categoria,
@@ -123,13 +114,12 @@ router.get('/buscar', async (req, res) => {
     });
     res.json(workers);
   } catch (error) {
-    console.error('Error in GET /buscar:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // GET /api/usuarios/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const user = await service.getUserById(req.params.id);
     if (!user) {
@@ -137,8 +127,7 @@ router.get('/:id', async (req, res) => {
     }
     res.json(user);
   } catch (error) {
-    console.error('Error in GET /:id:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 

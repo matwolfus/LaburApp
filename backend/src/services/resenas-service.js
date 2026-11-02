@@ -1,5 +1,6 @@
 // backend/src/services/resenas-service.js
 import ResenasRepository from '../repositories/resenas-repository.js';
+import { httpError } from '../helpers/http-error.js';
 
 export default class ResenasService {
   constructor() {
@@ -16,21 +17,21 @@ export default class ResenasService {
   async crearResenaAsync(idTrabajo, idUsuario, calificacion, comentario) {
     const calificacionNum = Number(calificacion);
     if (!Number.isInteger(calificacionNum) || calificacionNum < 1 || calificacionNum > 5) {
-      throw new Error('La calificación tiene que ser un número entero entre 1 y 5');
+      throw httpError(400, 'La calificación tiene que ser un número entero entre 1 y 5');
     }
 
     const elegibilidad = await this.repository.getElegibilidad(idTrabajo, idUsuario);
 
     if (elegibilidad.idReceptor === null) {
-      throw new Error('No participaste de este trabajo');
+      throw httpError(403, 'No participaste de este trabajo');
     }
 
     if (elegibilidad.yaReseño) {
-      throw new Error('Ya dejaste tu reseña para este trabajo');
+      throw httpError(409, 'Ya dejaste tu reseña para este trabajo');
     }
 
     if (!elegibilidad.puedeResenar) {
-      throw new Error('Este trabajo todavía no está completado');
+      throw httpError(400, 'Este trabajo todavía no está completado');
     }
 
     try {
@@ -49,7 +50,7 @@ export default class ResenasService {
       // reseñaste" de cualquier otro error real (ej. de conexión), que no
       // debe disfrazarse de "ya reseñaste".
       if (err.code === '23505') {
-        throw new Error('Ya dejaste tu reseña para este trabajo');
+        throw httpError(409, 'Ya dejaste tu reseña para este trabajo');
       }
       throw err;
     }

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { validarIdNumerico } from '../middlewares/error-middleware.js';
 
 import PostulacionesService
     from './../services/postulaciones-service.js';
@@ -17,6 +18,9 @@ import NotificacionesService
 
 const router = Router();
 
+router.param('id', validarIdNumerico);
+router.param('idTrabajo', validarIdNumerico);
+
 const service = new PostulacionesService();
 
 const trabajosService = new TrabajosService();
@@ -28,7 +32,7 @@ const notificacionesService = new NotificacionesService();
 // GET POSTULACIONES POR TRABAJO
 // =========================================================
 
-router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res) => {
+router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -38,11 +42,11 @@ router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res) => {
         const owner = await trabajosService.getJobOwnerAsync(idTrabajo);
 
         if (owner === null) {
-            return res.status(404).json({ message: 'Trabajo no encontrado' });
+            return res.status(404).json({ error: 'Trabajo no encontrado' });
         }
 
         if (Number(owner) !== req.userId) {
-            return res.status(403).json({ message: 'No autorizado' });
+            return res.status(403).json({ error: 'No autorizado' });
         }
 
         const postulaciones =
@@ -51,12 +55,7 @@ router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res) => {
         return res.status(200).json(postulaciones);
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo postulaciones'
-        });
+        next(error);
     }
 });
 
@@ -65,7 +64,7 @@ router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res) => {
 // GET COUNT POSTULACIONES
 // =========================================================
 
-router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res) => {
+router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -75,11 +74,11 @@ router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res) => {
         const owner = await trabajosService.getJobOwnerAsync(idTrabajo);
 
         if (owner === null) {
-            return res.status(404).json({ message: 'Trabajo no encontrado' });
+            return res.status(404).json({ error: 'Trabajo no encontrado' });
         }
 
         if (Number(owner) !== req.userId) {
-            return res.status(403).json({ message: 'No autorizado' });
+            return res.status(403).json({ error: 'No autorizado' });
         }
 
         const count =
@@ -88,12 +87,7 @@ router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res) => {
         return res.status(200).json(count);
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo count'
-        });
+        next(error);
     }
 });
 
@@ -102,7 +96,7 @@ router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res) => {
 // CREAR POSTULACION
 // =========================================================
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -110,19 +104,19 @@ router.post('/', authMiddleware, async (req, res) => {
         const owner = await trabajosService.getJobOwnerAsync(req.body.id_trabajo);
 
         if (owner === null) {
-            return res.status(404).json({ message: 'Trabajo no encontrado' });
+            return res.status(404).json({ error: 'Trabajo no encontrado' });
         }
 
         // No te podés postular a tu propio trabajo. Se castea con Number(...)
         // porque owner puede venir como string desde el driver de pg.
         if (Number(owner) === req.userId) {
-            return res.status(403).json({ message: 'No podés postularte a tu propio trabajo' });
+            return res.status(403).json({ error: 'No podés postularte a tu propio trabajo' });
         }
 
         const trabajo = await trabajosService.getJobById(req.body.id_trabajo);
 
         if (trabajo.estado !== 'abierto' && trabajo.estado !== 'proxima') {
-            return res.status(400).json({ message: 'Este trabajo ya no recibe postulaciones' });
+            return res.status(400).json({ error: 'Este trabajo ya no recibe postulaciones' });
         }
 
         const entity = new PostulacionEntity(
@@ -148,7 +142,7 @@ router.post('/', authMiddleware, async (req, res) => {
         // Sin id: ya existía una postulación no retirada (ver createAsync).
         if (newId == null) {
             return res.status(409).json({
-                message: 'Ya te postulaste a este trabajo'
+                error: 'Ya te postulaste a este trabajo'
             });
         }
 
@@ -180,20 +174,16 @@ router.post('/', authMiddleware, async (req, res) => {
 
     } catch (error) {
 
-        console.log(error);
-
         // UNIQUE (id_trabajo, id_trabajador): ya existe una postulación de
-        // este trabajador a este trabajo. Mensaje amigable en vez del 500
-        // con el texto crudo de Postgres.
+        // este trabajador a este trabajo. Mensaje más específico que el
+        // genérico del error-middleware.
         if (error.code === '23505') {
             return res.status(409).json({
-                message: 'Ya te postulaste a este trabajo'
+                error: 'Ya te postulaste a este trabajo'
             });
         }
 
-        return res.status(500).json({
-            message: 'Error creando la postulación'
-        });
+        next(error);
     }
 });
 
@@ -213,7 +203,7 @@ router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
         if (!postulacion) {
 
             return res.status(404).json({
-                message: 'Postulacion no encontrada'
+                error: 'Postulacion no encontrada'
             });
         }
 
@@ -221,7 +211,7 @@ router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
         if (Number(postulacion.id_trabajador) !== req.userId) {
 
             return res.status(403).json({
-                message: 'No autorizado'
+                error: 'No autorizado'
             });
         }
 
@@ -262,7 +252,7 @@ router.patch('/:id/cancelar', authMiddleware, async (req, res) => {
         console.log(error);
 
         return res.status(error.status ?? 500).json({
-            message: error.status ? error.message : 'Error cancelando postulacion'
+            error: error.status ? error.message : 'Error cancelando postulacion'
         });
     }
 });
@@ -287,14 +277,14 @@ router.patch('/:id/reconfirmar', authMiddleware, async (req, res) => {
         if (!postulacion) {
 
             return res.status(404).json({
-                message: 'Postulacion no encontrada'
+                error: 'Postulacion no encontrada'
             });
         }
 
         if (Number(postulacion.id_trabajador) !== req.userId) {
 
             return res.status(403).json({
-                message: 'No autorizado'
+                error: 'No autorizado'
             });
         }
 
@@ -334,7 +324,7 @@ router.patch('/:id/reconfirmar', authMiddleware, async (req, res) => {
         console.log(error);
 
         return res.status(error.status ?? 500).json({
-            message: error.status ? error.message : 'Error reconfirmando postulacion'
+            error: error.status ? error.message : 'Error reconfirmando postulacion'
         });
     }
 });
@@ -343,7 +333,7 @@ router.patch('/:id/reconfirmar', authMiddleware, async (req, res) => {
 // ACEPTAR POSTULACION
 // =========================================================
 
-router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
+router.patch('/:id/aceptar', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -354,7 +344,7 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
         if (!postulacion) {
 
             return res.status(404).json({
-                message: 'Postulacion no encontrada'
+                error: 'Postulacion no encontrada'
             });
         }
 
@@ -362,15 +352,15 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
         const owner = await trabajosService.getJobOwnerAsync(postulacion.id_trabajo);
 
         if (owner === null) {
-            return res.status(404).json({ message: 'Trabajo no encontrado' });
+            return res.status(404).json({ error: 'Trabajo no encontrado' });
         }
 
         if (Number(owner) !== req.userId) {
-            return res.status(403).json({ message: 'No autorizado' });
+            return res.status(403).json({ error: 'No autorizado' });
         }
 
         if (postulacion.estado !== 'pendiente') {
-            return res.status(400).json({ message: 'Esta postulación ya no está pendiente' });
+            return res.status(400).json({ error: 'Esta postulación ya no está pendiente' });
         }
 
         // Se pide ANTES de aceptar por dos motivos: (1) precioAcordado
@@ -385,7 +375,7 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
         const trabajo = await trabajosService.getJobById(postulacion.id_trabajo);
 
         if (!trabajo) {
-            return res.status(404).json({ message: 'Trabajo no encontrado' });
+            return res.status(404).json({ error: 'Trabajo no encontrado' });
         }
 
         if (trabajo.estado !== 'abierto' && trabajo.estado !== 'proxima') {
@@ -396,7 +386,7 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
                 finalizado: 'ya fue completado',
             }[trabajo.estado] ?? `está en estado '${trabajo.estado}'`;
 
-            return res.status(400).json({ message: `No se puede aceptar: el trabajo ${motivo}` });
+            return res.status(400).json({ error: `No se puede aceptar: el trabajo ${motivo}` });
         }
 
         const tituloTrabajo = trabajo?.title ?? 'tu trabajo';
@@ -446,12 +436,7 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error aceptando postulacion'
-        });
+        next(error);
     }
 });
 
@@ -459,7 +444,7 @@ router.patch('/:id/aceptar', authMiddleware, async (req, res) => {
 // MIS POSTULACIONES
 // =========================================================
 
-router.get('/mias', authMiddleware, async (req, res) => {
+router.get('/mias', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -469,12 +454,7 @@ router.get('/mias', authMiddleware, async (req, res) => {
         return res.status(200).json(postulaciones);
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo tus postulaciones'
-        });
+        next(error);
     }
 });
 

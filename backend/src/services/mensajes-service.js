@@ -1,5 +1,6 @@
 // backend/src/services/mensajes-service.js
 import MensajesRepository, { ESTADOS_CHAT_ABIERTO } from '../repositories/mensajes-repository.js';
+import { httpError } from '../helpers/http-error.js';
 
 const CUERPO_MAX_LENGTH = 2000;
 
@@ -63,10 +64,10 @@ export default class MensajesService {
 
     const texto = (cuerpo ?? '').trim();
     if (!texto) {
-      throw new Error('El mensaje no puede estar vacío');
+      throw httpError(400, 'El mensaje no puede estar vacío');
     }
     if (texto.length > CUERPO_MAX_LENGTH) {
-      throw new Error(`El mensaje no puede superar los ${CUERPO_MAX_LENGTH} caracteres`);
+      throw httpError(400, `El mensaje no puede superar los ${CUERPO_MAX_LENGTH} caracteres`);
     }
 
     const mensaje = await this.repository.crear(idPostulacion, idRemitente, texto);

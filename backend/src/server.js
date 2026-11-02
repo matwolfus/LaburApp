@@ -16,6 +16,7 @@ import notificacionesRouter from './controllers/notificaciones-controller.js';
 import resenasRouter from './controllers/resenas-controller.js';
 import mensajesRouter from './controllers/mensajes-controller.js';
 import { UPLOADS_DIR } from './middlewares/upload-middleware.js';
+import { rutaNoEncontrada, manejarErrores } from './middlewares/error-middleware.js';
 
 const app  = express();
 const port = process.env.PORT || 3000;
@@ -23,6 +24,12 @@ const port = process.env.PORT || 3000;
 // TODO: en producción restringir a { origin: process.env.FRONTEND_URL }
 app.use(cors());
 app.use(express.json());
+// En Express 5 req.body queda undefined si la request no trae JSON: así
+// `const { email } = req.body` no explota con un 500.
+app.use((req, res, next) => {
+  req.body ??= {};
+  next();
+});
 app.use('/uploads', express.static(UPLOADS_DIR));
 
 app.use('/api/trabajos', trabajosRouter);
@@ -44,6 +51,10 @@ app.use('/api/notificaciones', notificacionesRouter);
 app.use('/api/resenas', resenasRouter);
 
 app.use('/api/mensajes', mensajesRouter);
+
+// Siempre al final: lo que no matcheó ninguna ruta y cualquier error.
+app.use('/api', rutaNoEncontrada);
+app.use(manejarErrores);
 
 app.listen(port, () => console.log(`LaburApp backend running at http://localhost:${port}`));
 

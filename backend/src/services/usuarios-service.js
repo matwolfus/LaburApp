@@ -65,6 +65,9 @@ export default class UsuariosService {
 
     validatePassword(password) {
 
+        // Sin contraseña en el body, password.length explotaba con un 500.
+        password = String(password ?? '');
+
         const validation = {
             minLength:
                 password.length >=
@@ -128,7 +131,8 @@ export default class UsuariosService {
             };
         }
 
-        const telefonoLimpio = telefono.replace(/\D/g, '');
+        // String(...): sin teléfono en el body, telefono.replace explotaba con un 500.
+        const telefonoLimpio = String(telefono ?? '').replace(/\D/g, '');
 
         if (telefonoLimpio.length !== 10) {
 

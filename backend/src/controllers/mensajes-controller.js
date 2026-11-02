@@ -1,60 +1,59 @@
 // backend/src/controllers/mensajes-controller.js
 import { Router } from 'express';
+import { validarIdNumerico } from '../middlewares/error-middleware.js';
 import MensajesService from '../services/mensajes-service.js';
 import NotificacionesService from '../services/notificaciones-service.js';
 import authMiddleware from '../middlewares/auth-middleware.js';
 
 const router = Router();
+
+router.param('idPostulacion', validarIdNumerico);
 const service = new MensajesService();
 const notificacionesService = new NotificacionesService();
 
 // El chat está atado a una postulación (no al contrato): así el contratante
 // y el postulante pueden hablar antes de que lo acepten.
 
-router.get('/conversaciones', authMiddleware, async (req, res) => {
+router.get('/conversaciones', authMiddleware, async (req, res, next) => {
   try {
     const conversaciones = await service.getConversacionesAsync(req.userId);
     res.json(conversaciones);
   } catch (error) {
-    console.error('Error in GET /mensajes/conversaciones:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // Total de mensajes sin leer (punto en "Chats" del BottomNav).
-router.get('/no-leidos/count', authMiddleware, async (req, res) => {
+router.get('/no-leidos/count', authMiddleware, async (req, res, next) => {
   try {
     const count = await service.getNoLeidosCountAsync(req.userId);
     res.json({ count });
   } catch (error) {
-    console.error('Error in GET /mensajes/no-leidos/count:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 });
 
 // Cabecera del chat: otra persona, trabajo y si se puede escribir.
-router.get('/postulacion/:idPostulacion/info', authMiddleware, async (req, res) => {
+router.get('/postulacion/:idPostulacion/info', authMiddleware, async (req, res, next) => {
   try {
     const info = await service.getChatInfoAsync(req.params.idPostulacion, req.userId);
     res.json(info);
   } catch (error) {
-    console.error('Error in GET /mensajes/postulacion/:id/info:', error.message);
-    res.status(error.status ?? 400).json({ error: error.message });
+    next(error);
   }
 });
 
-router.get('/postulacion/:idPostulacion', authMiddleware, async (req, res) => {
+router.get('/postulacion/:idPostulacion', authMiddleware, async (req, res, next) => {
   try {
     const desdeId = req.query.desde ? Number(req.query.desde) : undefined;
     const mensajes = await service.getMensajesAsync(req.params.idPostulacion, req.userId, desdeId);
     res.json(mensajes);
   } catch (error) {
-    console.error('Error in GET /mensajes/postulacion/:idPostulacion:', error.message);
-    res.status(error.status ?? 400).json({ error: error.message });
+    next(error);
   }
 });
 
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req, res, next) => {
   try {
     const { id_postulacion, cuerpo } = req.body;
 
@@ -81,8 +80,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
     return res.status(201).json(mensaje);
   } catch (error) {
-    console.error('Error in POST /mensajes:', error.message);
-    return res.status(error.status ?? 400).json({ error: error.message });
+    next(error);
   }
 });
 

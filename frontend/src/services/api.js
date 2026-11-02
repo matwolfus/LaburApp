@@ -329,7 +329,7 @@ export async function marcarNotificacionLeida(id) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || 'Error al marcar la notificación como leída');
+    throw new Error(body.error || 'Error al marcar la notificación como leída');
   }
   return res.json();
 }
@@ -342,7 +342,7 @@ export async function aceptarPostulacion(id) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || 'Error al aceptar la postulación');
+    throw new Error(body.error || 'Error al aceptar la postulación');
   }
   return res.json();
 }
@@ -407,7 +407,7 @@ export async function postularme(idTrabajo, precioPropuesto) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    const err = new Error(body.message || 'Error al postularse');
+    const err = new Error(body.error || 'Error al postularse');
     err.status = res.status;
     throw err;
   }
@@ -432,7 +432,7 @@ export async function cancelarPostulacion(id) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || 'Error al cancelar la postulación');
+    throw new Error(body.error || 'Error al cancelar la postulación');
   }
   return res.json();
 }
@@ -446,7 +446,7 @@ export async function reconfirmarPostulacion(id, sigue) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || 'Error al responder');
+    throw new Error(body.error || 'Error al responder');
   }
   return res.json();
 }

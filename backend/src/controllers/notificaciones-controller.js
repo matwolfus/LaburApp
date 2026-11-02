@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { validarIdNumerico } from '../middlewares/error-middleware.js';
 
 import NotificacionesService
     from './../services/notificaciones-service.js';
@@ -11,6 +12,8 @@ import PostulacionesService
 
 const router = Router();
 
+router.param('id', validarIdNumerico);
+
 const service = new NotificacionesService();
 
 const postulacionesService = new PostulacionesService();
@@ -20,7 +23,7 @@ const postulacionesService = new PostulacionesService();
 // GET NOTIFICACIONES DEL USUARIO LOGUEADO
 // =========================================================
 
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -33,12 +36,7 @@ router.get('/', authMiddleware, async (req, res) => {
         return res.status(200).json(notificaciones);
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo notificaciones'
-        });
+        next(error);
     }
 });
 
@@ -47,7 +45,7 @@ router.get('/', authMiddleware, async (req, res) => {
 // CANTIDAD DE NO LEIDAS (badge de la campanita)
 // =========================================================
 
-router.get('/no-leidas/count', authMiddleware, async (req, res) => {
+router.get('/no-leidas/count', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -57,12 +55,7 @@ router.get('/no-leidas/count', authMiddleware, async (req, res) => {
         return res.status(200).json({ count });
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo notificaciones no leidas'
-        });
+        next(error);
     }
 });
 
@@ -72,7 +65,7 @@ router.get('/no-leidas/count', authMiddleware, async (req, res) => {
 // Debe declararse ANTES de '/:id/leido'.
 // =========================================================
 
-router.patch('/leidas', authMiddleware, async (req, res) => {
+router.patch('/leidas', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -83,12 +76,7 @@ router.patch('/leidas', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error marcando notificaciones como leidas'
-        });
+        next(error);
     }
 });
 
@@ -97,7 +85,7 @@ router.patch('/leidas', authMiddleware, async (req, res) => {
 // MARCAR NOTIFICACION COMO LEIDA
 // =========================================================
 
-router.patch('/:id/leido', authMiddleware, async (req, res) => {
+router.patch('/:id/leido', authMiddleware, async (req, res, next) => {
 
     try {
 
@@ -108,7 +96,7 @@ router.patch('/:id/leido', authMiddleware, async (req, res) => {
         if (!notificacion) {
 
             return res.status(404).json({
-                message: 'Notificacion no encontrada'
+                error: 'Notificacion no encontrada'
             });
         }
 
@@ -116,7 +104,7 @@ router.patch('/:id/leido', authMiddleware, async (req, res) => {
         if (Number(notificacion.id_usuario) !== req.userId) {
 
             return res.status(403).json({
-                message: 'No autorizado'
+                error: 'No autorizado'
             });
         }
 
@@ -127,12 +115,7 @@ router.patch('/:id/leido', authMiddleware, async (req, res) => {
         });
 
     } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error marcando notificacion como leida'
-        });
+        next(error);
     }
 });
 

@@ -5,7 +5,7 @@ const router = Router();
 const service = new LocalidadesService();
 
 // GET /api/provincias
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
 
     try {
 
@@ -14,13 +14,7 @@ router.get('/', async (req, res) => {
         res.status(200).json(provincias);
 
     } catch (error) {
-
-        console.error('Error in GET /provincias:', error);
-
-        res.status(500).json({
-            error: 'Internal server error'
-        });
-
+        next(error);
     }
 
 });
