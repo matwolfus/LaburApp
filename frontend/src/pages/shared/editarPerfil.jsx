@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, UserCheck, Eye, ArrowLeft, Camera, User, Phone, Award, Briefcase } from "lucide-react";
-import { uploadFotos, actualizarMisCategorias, getCategorias, BASE_URL } from "../../services/api";
+import { uploadFotos, actualizarMisCategorias, getCategorias, getMiUsuario, actualizarMiPerfil } from "../../services/api";
 import UbicacionSelector from "../../components/UbicacionSelector";
 import { resizeImage } from "../../utils/resizeImage";
 import styles from "../../styles/editarPerfil.module.css";
@@ -75,14 +75,11 @@ export default function EditarPerfil() {
                     return;
                 }
 
-                const [resPerfil, dataCategorias] = await Promise.all([
+                // Un 401 (sesión vencida) lo resuelve la capa de servicios:
+                // limpia la sesión y vuelve al login.
+                const [dataPerfil, dataCategorias] = await Promise.all([
 
-                    fetch(`${BASE_URL}/usuarios/me`, {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }),
+                    getMiUsuario(),
 
                     getCategorias().catch((err) => {
                         console.error("No se pudieron cargar las categorías:", err);
@@ -92,30 +89,6 @@ export default function EditarPerfil() {
                 ]);
 
                 setCategorias(dataCategorias);
-
-                // =====================================
-                // PERFIL
-                // =====================================
-
-                if (resPerfil.status === 401) {
-                    localStorage.removeItem("token");
-                    navigate("/login");
-                    return;
-                }
-
-                if (resPerfil.status === 404) {
-                    setError("Usuario no encontrado.");
-                    return;
-                }
-
-                if (!resPerfil.ok) {
-                    setError(
-                        "Ocurrió un error al cargar los datos del perfil."
-                    );
-                    return;
-                }
-
-                const dataPerfil = await resPerfil.json();
 
                 // Cargar datos recibidos por la API
 
@@ -155,13 +128,17 @@ export default function EditarPerfil() {
             } catch (err) {
 
                 console.error(
-                    "Error al conectar con el servidor:",
+                    "Error al cargar el perfil:",
                     err
                 );
 
-                setError(
-                    "No se pudo conectar con el servidor."
-                );
+                if (err.status === 404) {
+                    setError("Usuario no encontrado.");
+                } else if (err.status) {
+                    setError("Ocurrió un error al cargar los datos del perfil.");
+                } else {
+                    setError("No se pudo conectar con el servidor.");
+                }
 
             } finally {
 
@@ -266,77 +243,44 @@ export default function EditarPerfil() {
 
         try {
 
-            const token = localStorage.getItem("token");
+            try {
 
-            const response = await fetch(
-                `${BASE_URL}/usuarios/me`,
-                {
-                    method: "PUT",
+                await actualizarMiPerfil({
 
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
+                    nombreCompleto,
 
-                    body: JSON.stringify({
+                    telefono,
 
-                        nombreCompleto,
+                    biografia_contratante:
+                        biografiaContratante,
 
-                        telefono,
+                    biografia_trabajador:
+                        biografiaTrabajador,
 
-                        biografia_contratante:
-                            biografiaContratante,
+                    idLocalidad:
+                        ubicacion.idLocalidad
+                            ? Number(ubicacion.idLocalidad)
+                            : null,
 
-                        biografia_trabajador:
-                            biografiaTrabajador,
+                    avatar
 
-                        idLocalidad:
-                            ubicacion.idLocalidad
-                                ? Number(ubicacion.idLocalidad)
-                                : null,
+                });
 
-                        avatar
+            } catch (err) {
 
-                    })
+                // El 400 trae el motivo concreto (ej. "La foto de perfil no es válida").
+                if (err.status === 400) {
+                    setError(err.message || "Los datos ingresados no son válidos.");
+                } else if (err.status === 404) {
+                    setError("Usuario no encontrado.");
+                } else if (err.status) {
+                    setError("Ocurrió un error. Intentá nuevamente.");
+                } else {
+                    setError("No se pudo conectar con el servidor.");
                 }
-            );
-
-            if (response.status === 401) {
-
-                localStorage.removeItem("token");
-                navigate("/login");
 
                 return;
             }
-
-            if (response.status === 400) {
-
-                setError(
-                    "Los datos ingresados no son válidos."
-                );
-
-                return;
-            }
-
-            if (response.status === 404) {
-
-                setError(
-                    "Usuario no encontrado."
-                );
-
-                return;
-            }
-
-            if (!response.ok) {
-
-                setError(
-                    "Ocurrió un error. Intentá nuevamente."
-                );
-
-                return;
-            }
-
-            await response.json();
 
             try {
                 await actualizarMisCategorias(categoriaIdsSeleccionadas);
