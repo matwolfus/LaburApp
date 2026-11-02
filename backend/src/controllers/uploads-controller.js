@@ -1,18 +1,21 @@
 // backend/src/controllers/uploads-controller.js
 import { Router } from 'express';
 import { uploadFotos, uploadToStorage } from '../middlewares/upload-middleware.js';
+import authMiddleware from '../middlewares/auth-middleware.js';
 
 const router = Router();
 
-// POST /api/uploads (multipart/form-data, campo "fotos", hasta 2 archivos)
-router.post('/', uploadFotos.array('fotos', 2), async (req, res) => {
+// POST /api/uploads (multipart/form-data, campo "fotos", hasta 2 archivos).
+// Requiere sesión: sin esto cualquiera podía subir archivos al bucket.
+router.post('/', authMiddleware, uploadFotos.array('fotos', 2), async (req, res) => {
   try {
     const urls = await Promise.all((req.files ?? []).map(uploadToStorage));
     res.status(201).json({ urls });
   } catch (error) {
     console.error('Error in POST /uploads:', error.message);
-    // Falla de Supabase Storage (no del cliente): no es un 400.
-    res.status(502).json({ error: error.message });
+    // Falla de Supabase Storage (no del cliente): no es un 400. El detalle
+    // queda en el log; al cliente no se le manda el mensaje interno.
+    res.status(502).json({ error: 'No se pudieron subir las imágenes' });
   }
 });
 

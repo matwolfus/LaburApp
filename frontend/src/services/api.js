@@ -91,13 +91,14 @@ export async function getOfertas() {
   return res.json();
 }
 
-// POST /api/uploads
+// POST /api/uploads (protegida: requiere sesión)
 export async function uploadFotos(files) {
   const formData = new FormData();
   files.forEach((file) => formData.append('fotos', file));
 
   const res = await fetch(`${BASE_URL}/uploads`, {
     method: 'POST',
+    headers: { ...authHeaders() },
     body: formData,
   });
   if (!res.ok) {

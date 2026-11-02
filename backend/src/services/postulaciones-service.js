@@ -127,6 +127,21 @@ export default class PostulacionesService {
             throw err;
         }
 
+        if (estadoTrabajo === 'cancelado') {
+            const err = new Error('El trabajo fue cancelado');
+            err.status = 400;
+            throw err;
+        }
+
+        // Bajarse de un trabajo aceptado solo tiene sentido mientras está
+        // 'activa': es lo que lo pasa a 'en_espera' para que el contratador
+        // lo reabra. En otro estado el aviso "Podés reabrir el trabajo" sería falso.
+        if (postulacion.estado === 'aceptado' && estadoTrabajo !== 'activa') {
+            const err = new Error('El trabajo ya no está en curso');
+            err.status = 400;
+            throw err;
+        }
+
         return await this.repository.cancelarAsync(postulacion);
     }
 

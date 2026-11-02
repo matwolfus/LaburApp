@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import UsuariosRepository from '../repositories/usuarios-repository.js';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../configs/jwt-config.js';
+import { esUrlDeStorage } from '../middlewares/upload-middleware.js';
 
 const PASSWORD_RULES = {
     MIN_LENGTH: 8,
@@ -229,8 +230,18 @@ export default class UsuariosService {
     // Las biografías son opcionales: vacío o solo espacios se guarda como null.
     const normalizarBio = (bio) => (typeof bio === 'string' && bio.trim() ? bio.trim() : null);
 
+    // Avatar: sin foto, la que ya tenía (fotos viejas de antes del bucket) o
+    // una subida por POST /uploads. Una URL externa cualquiera no se guarda.
+    const avatar = datos.avatar || null;
+    if (avatar !== null && avatar !== usuario.url_avatar && !esUrlDeStorage(avatar)) {
+        const err = new Error('La foto de perfil no es válida');
+        err.status = 400;
+        throw err;
+    }
+
     return await this.repository.updatePerfil(idUsuario, {
         ...datos,
+        avatar,
         biografia_contratante: normalizarBio(datos.biografia_contratante),
         biografia_trabajador: normalizarBio(datos.biografia_trabajador),
     });

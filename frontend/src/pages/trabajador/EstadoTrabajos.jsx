@@ -89,7 +89,7 @@ export default function EstadoTrabajos() {
               Chat
             </button>
           )}
-          {(p.estado === 'pendiente' || (p.estado === 'aceptado' && p.estado_trabajo !== 'finalizado')) && (
+          {(p.estado === 'pendiente' || (p.estado === 'aceptado' && p.estado_trabajo === 'activa')) && (
             <button className="job-card__btn" onClick={() => setCancelarPostulacion(p)}>
               Cancelar
             </button>

@@ -134,7 +134,10 @@ router.post('/', authMiddleware, async (req, res) => {
 
             req.body.precio_propuesto,
 
-            req.body.estado ?? 'pendiente',
+            // Toda postulación nueva nace 'pendiente': el estado lo decide
+            // el servidor, nunca el body (si no, con Postman uno podía
+            // postularse directamente como 'aceptado').
+            'pendiente',
 
             null
         );
@@ -189,7 +192,7 @@ router.post('/', authMiddleware, async (req, res) => {
         }
 
         return res.status(500).json({
-            message: error.message
+            message: 'Error creando la postulación'
         });
     }
 });

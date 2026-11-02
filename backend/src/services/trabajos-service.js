@@ -161,6 +161,11 @@ export default class TrabajosService {
     // La fecha solo se revalida si cambió: así se puede editar un trabajo vencido
     // (otros campos) sin que lo bloquee, pero no ponerle otra fecha pasada.
     const actual = await this.repository.getSchedule(jobId);
+
+    // Un trabajo cerrado no se edita (ni el presupuesto ni nada).
+    if (actual?.estado === 'finalizado' || actual?.estado === 'cancelado') {
+      throw new Error(`No se puede editar un trabajo en estado '${actual.estado}'`);
+    }
     const cambioFecha = this.#normalizarFecha(actual?.programado_para) !== this.#normalizarFecha(entity.programado_para);
     const fechaPasada = this.#esFechaPasada(entity.programado_para);
     if (cambioFecha && fechaPasada) {

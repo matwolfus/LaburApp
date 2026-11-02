@@ -384,9 +384,11 @@ const JobDetail = ({ jobId, isOwner = true }) => {
         <div className={styles.actions}>
           {isOwner ? (
             <>
-              <button className={styles.editBtn} onClick={() => navigate(`/ofertas/${jobId}/editar`)}>
-                Editar
-              </button>
+              {job.estado !== 'finalizado' && job.estado !== 'cancelado' && (
+                <button className={styles.editBtn} onClick={() => navigate(`/ofertas/${jobId}/editar`)}>
+                  Editar
+                </button>
+              )}
               <button className={styles.postulantesBtn} onClick={() => navigate(`/ofertas/${jobId}/postulantes`)}>
                 Ver postulantes
               </button>

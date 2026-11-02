@@ -1,5 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config();
+// Primer import a propósito: en ESM los imports se evalúan antes que el
+// código del archivo, así que un dotenv.config() acá llegaría tarde para los
+// módulos que leen process.env al cargarse (jwt-config, upload-middleware).
+import 'dotenv/config';
 
 import express from 'express';
 import cors from 'cors';

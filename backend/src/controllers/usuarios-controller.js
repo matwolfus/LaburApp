@@ -161,10 +161,10 @@ router.put('/me', authMiddleware, async (req, res) => {
 
     } catch (error) {
 
-        console.error('Error in PATCH /me:', error);
+        console.error('Error in PUT /me:', error);
 
-        res.status(500).json({
-            error: 'Internal server error'
+        res.status(error.status ?? 500).json({
+            error: error.status ? error.message : 'Internal server error'
         });
 
     }

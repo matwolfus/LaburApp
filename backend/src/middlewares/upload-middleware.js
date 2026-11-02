@@ -60,3 +60,13 @@ export async function uploadToStorage(file) {
 
   return data.publicUrl;
 }
+
+// Prefijo de las URLs públicas del bucket (lo arma Supabase igual que en uploadToStorage).
+const STORAGE_PUBLIC_PREFIX = supabase.storage.from(BUCKET).getPublicUrl('').data.publicUrl;
+
+// true si la URL es de un archivo subido por uploadToStorage (y no una URL externa cualquiera).
+export function esUrlDeStorage(url) {
+  return typeof url === 'string'
+    && url.startsWith(STORAGE_PUBLIC_PREFIX)
+    && url.length > STORAGE_PUBLIC_PREFIX.length;
+}
