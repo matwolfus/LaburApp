@@ -13,7 +13,7 @@
 }
 
 .title {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: 0.5px;
@@ -23,7 +23,7 @@
   background: #f8d7bf;
   color: #6b3f1f;
 
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
 
   padding: 4px 8px;
@@ -69,7 +69,7 @@
 
   background: white;
 
-  color: #333;
+  color: var(--color-text);
 
   font-weight: 700;
 
@@ -97,6 +97,6 @@
 }
 
 .helperText {
-  font-size: 11px;
-  color: #6b7280;
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
 }

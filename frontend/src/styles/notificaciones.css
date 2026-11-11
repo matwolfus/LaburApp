@@ -1,7 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-
 .notif-page {
-  background-color: var(--color-bg, #F4F6FB);
+  background-color: var(--color-bg);
   min-height: 100vh;
   padding: 24px 16px 24px;
   font-family: 'Nunito', sans-serif;
@@ -13,9 +11,9 @@
 .notif-page__header { margin-bottom: 12px; }
 
 .notif-page__title {
-  font-size: 28px;
+  font-size: var(--fs-5xl);
   font-weight: 800;
-  color: var(--color-primary, #2D3B8E);
+  color: var(--color-primary);
   margin: 0;
   line-height: 1.15;
 }
@@ -23,19 +21,19 @@
 .notif-loading,
 .notif-error,
 .notif-empty {
-  font-size: 14px;
-  color: var(--color-muted, #64748B);
+  font-size: var(--fs-base);
+  color: var(--color-muted);
   text-align: center;
   padding: 24px 0;
 }
-.notif-error { color: #EF4444; }
+.notif-error { color: var(--color-danger); }
 
 .notif-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 8px; }
 
 .notif-card {
   background: var(--color-card, #FFFFFF);
   border-radius: var(--radius-card, 16px);
-  border: 0.5px solid #E8ECF3;
+  border: 0.5px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
   padding: 16px;
   display: flex;
@@ -48,7 +46,7 @@
   height: 40px;
   border-radius: 12px;
   background: rgba(45, 59, 142, 0.08);
-  color: var(--color-primary, #2D3B8E);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,16 +56,16 @@
 .notif-card__body { flex: 1; min-width: 0; }
 
 .notif-card__titulo {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
-  color: #1F2937;
+  color: var(--color-text);
   margin: 0 0 4px;
   line-height: 1.4;
 }
 
 .notif-card__cuerpo {
-  font-size: 13px;
-  color: var(--color-muted, #64748B);
+  font-size: var(--fs-md);
+  color: var(--color-muted);
   margin: 0 0 10px;
   line-height: 1.4;
 }
@@ -80,10 +78,10 @@
 }
 
 .notif-card__btn {
-  border: 1.5px solid var(--color-primary, #2D3B8E);
-  background: var(--color-primary, #2D3B8E);
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-primary);
   color: white;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   padding: 8px 18px;
   border-radius: 50px;
@@ -96,7 +94,7 @@
 
 .notif-card__btn--outline {
   background: transparent;
-  color: var(--color-muted, #64748B);
+  color: var(--color-muted);
   border-color: #D1D5DB;
 }
 .notif-card__btn--outline:hover {
@@ -106,8 +104,8 @@
 
 .notif-footnote {
   text-align: center;
-  font-size: 11px;
-  color: var(--color-muted, #64748B);
+  font-size: var(--fs-xs);
+  color: var(--color-muted);
   margin-top: 24px;
 }
 
@@ -127,7 +125,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-orange, #F97316);
+  background: var(--color-orange);
   margin-right: 6px;
   vertical-align: middle;
 }
@@ -140,8 +138,8 @@
 
 .notif-card__error {
   margin: 4px 0 0;
-  font-size: 12.5px;
-  color: #EF4444;
+  font-size: var(--fs-md);
+  color: var(--color-danger);
 }
 
 .notif-card__btn:disabled {

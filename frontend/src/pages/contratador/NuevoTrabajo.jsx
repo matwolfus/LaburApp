@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Camera, X, Check, Bell, FileEdit } from "lucide-react";
+import { Camera, X, Bell, FileEdit } from "lucide-react";
 import BackButton from "../../components/BackButton";
 import CategorySelector from "../../components/CategorySelector/CategorySelector";
 import DateTimePicker from "../../components/DateTimeSelector/DateTimeSelector";
@@ -12,6 +12,7 @@ import UbicacionSelector from "../../components/UbicacionSelector";
 import { geocodeAddress, reverseGeocode } from "../../services/geocoding";
 import { ubicacionDesdeMapa, nombresDeUbicacion } from "../../utils/ubicacionDesdeMapa";
 import { resizeImage } from "../../utils/resizeImage";
+import PantallaGuardado from "../../components/PantallaGuardado";
 import { fechaHoraYaPaso, hoyLocal } from "../../utils/fechas";
 import { ACCEPT_IMAGENES, TIPOS_IMAGEN } from "../../constants/dominio";
 import styles from "../../styles/NuevoTrabajo.module.css";
@@ -304,45 +305,17 @@ export default function NuevoTrabajo() {
   if (saved) {
     return (
       <div className={styles.screen}>
-        <div className={styles.confirmWrapper}>
-          <div className={styles.confirmIconOuter}>
-            <div className={styles.confirmIconInner}>
-              <Check size={32} color="white" strokeWidth={3} />
-            </div>
-          </div>
-
-          <h1 className={styles.confirmTitle}>¡Cambios guardados!</h1>
-          <p className={styles.confirmSubtitle}>Tu publicación fue actualizada</p>
-
-          <div className={styles.confirmCard}>
-            <div className={styles.confirmRow}>
-              <Bell size={18} className={styles.confirmRowIcon} />
-              <span>Los postulantes verán la información actualizada</span>
-            </div>
-            <div className={styles.confirmDivider} />
-            <div className={styles.confirmRow}>
-              <FileEdit size={18} className={styles.confirmRowIcon} />
-              <span>Tu publicación ya está al día</span>
-            </div>
-          </div>
-
-          <p className={styles.confirmHint}>Podés seguir editando cuando quieras</p>
-
-          <button
-            type="button"
-            className={`${styles.submitBtn} ${styles.confirmPrimaryBtn}`}
-            onClick={() => navigate('/inicio', { replace: true })}
-          >
-            Volver al inicio
-          </button>
-          <button
-            type="button"
-            className={styles.confirmSecondaryBtn}
-            onClick={() => navigate(`/ofertas/${jobId}/postulantes`, { replace: true })}
-          >
-            Ver postulantes
-          </button>
-        </div>
+        <PantallaGuardado
+          titulo="¡Cambios guardados!"
+          subtitulo="Tu publicación fue actualizada"
+          filas={[
+            { icono: <Bell size={18} />, texto: 'Los postulantes verán la información actualizada' },
+            { icono: <FileEdit size={18} />, texto: 'Tu publicación ya está al día' },
+          ]}
+          nota="Podés seguir editando cuando quieras"
+          primario={{ label: 'Volver al inicio', onClick: () => navigate('/inicio', { replace: true }) }}
+          secundario={{ label: 'Ver postulantes', onClick: () => navigate(`/ofertas/${jobId}/postulantes`, { replace: true }) }}
+        />
       </div>
     );
   }

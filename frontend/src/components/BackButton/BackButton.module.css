@@ -16,14 +16,14 @@
   cursor: pointer;
   padding: 4px;
   color: var(--color-primary);
-  font-size: 20px;
+  font-size: var(--fs-2xl);
   display: flex;
   align-items: center;
   min-height: 44px;
 }
 
 .title {
-  font-size: 18px;
+  font-size: var(--fs-xl);
   font-weight: 700;
   color: var(--color-primary);
   font-family: 'Nunito', sans-serif;

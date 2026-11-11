@@ -6,6 +6,7 @@ import UbicacionSelector from "../../components/UbicacionSelector";
 import { resizeImage } from "../../utils/resizeImage";
 import { ACCEPT_IMAGENES, TIPOS_IMAGEN } from "../../constants/dominio";
 import Avatar from "../../components/Avatar";
+import PantallaGuardado from "../../components/PantallaGuardado";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -319,49 +320,15 @@ export default function EditarPerfil() {
         return (
             <main className={styles.container}>
 
-                <div className={styles.confirmWrapper}>
-
-                    <div className={styles.confirmIconOuter}>
-                        <div className={styles.confirmIconInner}>
-                            <Check size={32} color="white" strokeWidth={3} />
-                        </div>
-                    </div>
-
-                    <h1 className={styles.confirmTitle}>
-                        ¡Perfil actualizado!
-                    </h1>
-
-                    <p className={styles.confirmSubtitle}>
-                        Tus cambios ya están guardados
-                    </p>
-
-                    <div className={styles.confirmCard}>
-
-                        <div className={styles.confirmRow}>
-                            <UserCheck size={18} className={styles.confirmRowIcon} />
-                            <span>Tu información ya está al día</span>
-                        </div>
-
-                        <div className={styles.confirmDivider} />
-
-                        <div className={styles.confirmRow}>
-                            <Eye size={18} className={styles.confirmRowIcon} />
-                            <span>Los demás verán tu perfil actualizado</span>
-                        </div>
-
-                    </div>
-
-                    <button
-                        type="button"
-                        className={styles.confirmPrimaryBtn}
-                        onClick={() =>
-                            navigate("/perfil", { replace: true })
-                        }
-                    >
-                        Volver a mi perfil
-                    </button>
-
-                </div>
+                <PantallaGuardado
+                    titulo="¡Perfil actualizado!"
+                    subtitulo="Tus cambios ya están guardados"
+                    filas={[
+                        { icono: <UserCheck size={18} />, texto: "Tu información ya está al día" },
+                        { icono: <Eye size={18} />, texto: "Los demás verán tu perfil actualizado" },
+                    ]}
+                    primario={{ label: "Volver a mi perfil", onClick: () => navigate("/perfil", { replace: true }) }}
+                />
 
             </main>
         );

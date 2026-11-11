@@ -36,11 +36,11 @@
     align-items: center;
     justify-content: center;
 
-    background: #2F3685;
+    background: var(--color-primary);
 
     color: #FFFFFF;
 
-    font-size: 16px;
+    font-size: var(--fs-lg);
     font-weight: 700;
 }
 
@@ -57,10 +57,10 @@
 .nombre {
     margin: 0;
 
-    font-size: 14px;
+    font-size: var(--fs-base);
     font-weight: 700;
 
-    color: #1A2560;
+    color: var(--color-primary-dark);
 }
 
 .rating {
@@ -74,13 +74,13 @@
 .estrellas {
     color: #FFC107;
 
-    font-size: 13px;
+    font-size: var(--fs-md);
 
     letter-spacing: 1px;
 }
 
 .ratingNumero {
-    font-size: 12px;
+    font-size: var(--fs-sm);
 
     color: #777D8F;
 
@@ -90,7 +90,7 @@
 .comentario {
     margin: 13px 0 0;
 
-    font-size: 13.5px;
+    font-size: var(--fs-base);
 
     line-height: 1.55;
 
@@ -102,7 +102,7 @@
 
     margin-top: 10px;
 
-    font-size: 11px;
+    font-size: var(--fs-xs);
 
     color: #9AA0B4;
 }

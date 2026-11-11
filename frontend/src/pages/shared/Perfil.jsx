@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getMiUsuario } from "../../services/api";
 import { useAuth } from "../../context/useAuth";
 import { useRoleSwitch } from "../../hooks/useRoleSwitch";
+import { datosPerfilSegunModo } from "../../utils/perfil";
 import styles from '../../styles/Perfil.module.css'
 
 import PerfilHeader from "../../components/PerfilHeader";
@@ -47,45 +48,7 @@ export default function PerfilPage() {
 
     }, []);
 
-    const datos = useMemo(() => {
-
-        if (!perfil || !modo) return null;
-
-        return {
-
-            rating:
-                modo === "trabajador"
-                    ? perfil.ratingTrabajador
-                    : perfil.ratingContratante,
-
-            cantidadTrabajos:
-                modo === "trabajador"
-                    ? perfil.trabajosRealizados
-                    : perfil.trabajosPublicados,
-
-            cantidadResenas:
-                modo === "trabajador"
-                    ? perfil.cantidadResenasTrabajador
-                    : perfil.cantidadResenasContratante,
-
-            biografia:
-                modo === "trabajador"
-                    ? perfil.biografiaTrabajador
-                    : perfil.biografiaContratante,
-
-            categorias:
-                modo === "trabajador"
-                    ? (perfil.insignias || []).map((c) => c.nombre)
-                    : perfil.categoriasContrata,
-
-            resenas:
-                modo === "trabajador"
-                    ? perfil.resenasTrabajador
-                    : perfil.resenasContratante
-
-        };
-
-    }, [perfil, modo]);
+    const datos = useMemo(() => datosPerfilSegunModo(perfil, modo), [perfil, modo]);
 
     // Pide confirmación antes de tocar el modo activo (a diferencia de
     // hidratar, esto SÍ es una decisión del usuario). Si confirma, se

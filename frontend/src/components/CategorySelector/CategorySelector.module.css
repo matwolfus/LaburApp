@@ -10,7 +10,7 @@
   border: none;
   background: var(--color-cta-bg, #f0f3fc);
   color: var(--color-muted, #6b7694);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   font-family: 'Nunito', sans-serif;
   cursor: pointer;
@@ -19,18 +19,18 @@
 
 .chipSelected {
   composes: chip;
-  background: var(--color-primary, #2d3b8e);
+  background: var(--color-primary);
   color: #ffffff;
 }
 
 .helperText {
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--color-muted, #6b7694);
   font-family: 'Nunito', sans-serif;
 }
 
 .errorText {
-  font-size: 13px;
-  color: #ef4444;
+  font-size: var(--fs-md);
+  color: var(--color-danger);
   font-family: 'Nunito', sans-serif;
 }

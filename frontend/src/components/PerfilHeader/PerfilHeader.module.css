@@ -22,7 +22,7 @@
     left: 0;
     right: 0;
     height: 88px;
-    background: linear-gradient(135deg, #2F3685 0%, #4F5BC0 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #4F5BC0 100%);
 }
 
 .avatar {
@@ -46,7 +46,7 @@
 
     border-radius: 50%;
 
-    background: #2F3685;
+    background: var(--color-primary);
     color: #FFFFFF;
 
     display: flex;
@@ -71,10 +71,10 @@
 
     gap: 7px;
 
-    font-size: 24px;
+    font-size: var(--fs-4xl);
     font-weight: 800;
 
-    color: #1A2560;
+    color: var(--color-primary-dark);
 }
 
 .verificado {
@@ -87,18 +87,18 @@
 
     border-radius: 50%;
 
-    background: #2F3685;
+    background: var(--color-primary);
     color: #FFFFFF;
 
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
 }
 
 .localidad {
     margin: 6px 0 0;
 
-    font-size: 14px;
-    color: #6B7280;
+    font-size: var(--fs-base);
+    color: var(--color-muted);
 }
 
 .switch {
@@ -127,10 +127,10 @@
 
     font-family: inherit;
 
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 600;
 
-    color: #6B7280;
+    color: var(--color-muted);
 
     cursor: pointer;
 
@@ -141,7 +141,7 @@
 }
 
 .switchBtn:hover {
-    color: #1A2560;
+    color: var(--color-primary-dark);
 }
 
 .switchBtn:active {
@@ -149,7 +149,7 @@
 }
 
 .activo {
-    background: #2F3685;
+    background: var(--color-primary);
     color: #FFFFFF;
 }
 
@@ -162,7 +162,7 @@
 }
 
 .switchReadOnly .switchBtn:hover {
-    color: #6B7280;
+    color: var(--color-muted);
 }
 
 .switchReadOnly .activo:hover {
@@ -186,11 +186,11 @@
 }
 
 .avatarPlaceholder {
-    font-size: 26px;
+    font-size: var(--fs-4xl);
 }
 
 .nombre {
-    font-size: 21px;
+    font-size: var(--fs-2xl);
 }
 
 .switchBtn {
@@ -210,9 +210,9 @@
     border: none;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.95);
-    color: #2F3685;
+    color: var(--color-primary);
     font-family: inherit;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(23, 29, 110, 0.18);

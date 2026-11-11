@@ -40,7 +40,7 @@
   display: grid;
   place-items: center;
   background: #e8edf8;
-  color: #303889;
+  color: var(--color-primary);
 }
 
 .info {
@@ -53,8 +53,8 @@
 
 .title {
   margin: 0;
-  color: #303889;
-  font-size: 15px;
+  color: var(--color-primary);
+  font-size: var(--fs-lg);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -64,15 +64,15 @@
   padding: 2px 8px;
   border-radius: 6px;
   background: #e8edf8;
-  color: #303889;
-  font-size: 11px;
+  color: var(--color-primary);
+  font-size: var(--fs-xs);
   font-weight: 600;
 }
 
 .location {
   margin: 0;
   color: #747680;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 
 .description {
@@ -81,7 +81,7 @@
   border-radius: 10px;
   background: #f5f5f7;
   color: #565862;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -97,8 +97,8 @@
 }
 
 .price {
-  color: #252a70;
-  font-size: 14px;
+  color: var(--color-primary-dark);
+  font-size: var(--fs-base);
   font-weight: 800;
 }
 
@@ -107,10 +107,10 @@
   padding: 10px 20px;
   border: none;
   border-radius: 16px;
-  background: #ed8500;
+  background: var(--color-orange);
   color: #ffffff;
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
@@ -130,7 +130,7 @@
   padding: 10px 16px;
   border-radius: 16px;
   background: #E5E7EB;
-  color: #6B7280;
-  font-size: 13px;
+  color: var(--color-muted);
+  font-size: var(--fs-md);
   font-weight: 700;
 }

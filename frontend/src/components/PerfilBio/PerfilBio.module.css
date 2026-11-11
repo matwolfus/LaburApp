@@ -16,14 +16,14 @@
     align-items: center;
     gap: 7px;
 
-    font-size: 16px;
+    font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: #1A2560;
+    color: var(--color-primary-dark);
 }
 
 .icon {
-    color: #2F3685;
+    color: var(--color-primary);
 }
 
 .text {
@@ -35,7 +35,7 @@
 
     padding: 13px 15px;
 
-    font-size: 13.5px;
+    font-size: var(--fs-base);
 
     line-height: 1.6;
 

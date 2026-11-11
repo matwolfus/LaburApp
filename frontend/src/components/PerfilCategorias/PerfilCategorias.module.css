@@ -16,14 +16,14 @@
     align-items: center;
     gap: 7px;
 
-    font-size: 16px;
+    font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: #1A2560;
+    color: var(--color-primary-dark);
 }
 
 .icon {
-    color: #2F3685;
+    color: var(--color-primary);
 }
 
 .lista {
@@ -46,14 +46,14 @@
 
     border-radius: 999px;
 
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     font-weight: 600;
 }
 
 .vacio {
     margin: 0;
 
-    font-size: 13px;
+    font-size: var(--fs-md);
 
     color: #9AA0B4;
 }
@@ -66,7 +66,7 @@
 
 /* Insignias: categorías con trabajos completados. */
 .iconInsignia {
-    color: #F97316;
+    color: var(--color-orange);
 }
 
 .pillInsignia {

@@ -4,17 +4,17 @@
 }
 
 .title {
-  font-size: 20px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
-  color: #2D3B8E;
+  color: var(--color-primary);
   margin: 0 0 16px;
 }
 
 .msg {
   padding: 40px 24px;
   text-align: center;
-  color: #64748B;
-  font-size: 14px;
+  color: var(--color-muted);
+  font-size: var(--fs-base);
 }
 
 .empty {
@@ -25,17 +25,17 @@
   gap: 12px;
   padding: 80px 24px;
   text-align: center;
-  color: #64748B;
+  color: var(--color-muted);
 }
 
 .emptyTitle {
   margin: 0;
-  color: #2D3B8E;
+  color: var(--color-primary);
 }
 
 .emptyText {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   max-width: 280px;
 }
 
@@ -71,8 +71,8 @@
 .avatarFallback {
   display: grid;
   place-items: center;
-  background: #E8ECF3;
-  color: #2D3B8E;
+  background: var(--color-border);
+  color: var(--color-primary);
   font-weight: 800;
 }
 
@@ -90,32 +90,32 @@
 
 .nombre {
   font-weight: 800;
-  font-size: 14px;
-  color: #1E293B;
+  font-size: var(--fs-base);
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .hora {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   color: #94A3B8;
   flex-shrink: 0;
 }
 
 .trabajo {
   margin: 2px 0 0;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  color: #2D3B8E;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .preview {
   margin: 2px 0 0;
-  font-size: 13px;
-  color: #64748B;
+  font-size: var(--fs-md);
+  color: var(--color-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -123,9 +123,9 @@
 
 .badge {
   flex-shrink: 0;
-  background: #ED8500;
+  background: var(--color-orange);
   color: #ffffff;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 800;
   min-width: 20px;
   height: 20px;

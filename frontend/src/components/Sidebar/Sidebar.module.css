@@ -46,13 +46,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 16px;
-  border-bottom: 1px solid #E8ECF3;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title {
-  font-size: 16px;
+  font-size: var(--fs-lg);
   font-weight: 800;
-  color: var(--color-primary, #2D3B8E);
+  color: var(--color-primary);
 }
 
 .closeBtn {
@@ -60,7 +60,7 @@
   border: none;
   padding: 4px;
   cursor: pointer;
-  color: var(--color-muted, #64748B);
+  color: var(--color-muted);
   display: flex;
 }
 
@@ -80,18 +80,18 @@
   border: none;
   background: none;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
-  color: #1E293B;
+  color: var(--color-text);
   cursor: pointer;
   text-align: left;
   transition: background-color 0.15s ease;
 }
 
 .item:hover {
-  background-color: #F4F6FB;
+  background-color: var(--color-bg);
 }
 
 .itemDanger {
-  color: #C0392B;
+  color: var(--color-danger);
 }

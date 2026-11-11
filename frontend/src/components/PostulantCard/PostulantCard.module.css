@@ -20,11 +20,11 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #2f3685;
+  background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: var(--fs-xl);
   font-weight: 700;
   color: white;
   flex-shrink: 0;
@@ -49,9 +49,9 @@
 
 .name {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--fs-xl);
   font-weight: 600;
-  color: #2f3685;
+  color: var(--color-primary);
   font-family: 'Inter', sans-serif;
   line-height: 28px;
 }
@@ -60,7 +60,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: #464651;
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -76,14 +76,14 @@
 }
 
 .ratingValue {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
-  color: #e1810d;
+  color: var(--color-orange);
   font-family: 'Inter', sans-serif;
 }
 
 .ratingCount {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: #464651;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -100,7 +100,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 50px;
@@ -116,7 +116,7 @@
 .badgeTop {
   composes: badge;
   background: rgba(225, 129, 13, 0.1);
-  color: #e1810d;
+  color: var(--color-orange);
 }
 
 .badgeTrabajo {
@@ -128,26 +128,26 @@
 .badgeAceptada {
   composes: badge;
   background: rgba(22, 163, 74, 0.1);
-  color: #16a34a;
+  color: var(--color-success-dark);
 }
 
 .badgeRechazada {
   composes: badge;
   background: rgba(220, 38, 38, 0.1);
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 /* ── Precio propuesto ── */
 .price {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: #464651;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
 }
 
 .priceValue {
-  color: #2f3685;
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -161,12 +161,12 @@
 
 .profileBtn {
   flex: 1;
-  border: 2px solid #2f3685;
+  border: 2px solid var(--color-primary);
   background: transparent;
-  color: #2f3685;
+  color: var(--color-primary);
   padding: 14px 18px;
   border-radius: 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
@@ -175,12 +175,12 @@
 }
 
 .profileBtn:hover {
-  background: #2f3685;
+  background: var(--color-primary);
   color: white;
 }
 
 .chatBtn {
-  background: #2f3685;
+  background: var(--color-primary);
   border: none;
   width: 44px;
   height: 44px;
@@ -190,7 +190,7 @@
   justify-content: center;
   cursor: pointer;
   color: white;
-  font-size: 18px;
+  font-size: var(--fs-xl);
   flex-shrink: 0;
   box-shadow: 0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -2px rgba(0,0,0,0.1);
   transition: opacity 0.15s;
@@ -207,11 +207,11 @@
 
 .acceptBtn {
   border: none;
-  background: #16a34a;
+  background: var(--color-success-dark);
   color: white;
   padding: 14px 18px;
   border-radius: 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 600;
   cursor: pointer;
   font-family: 'Inter', sans-serif;

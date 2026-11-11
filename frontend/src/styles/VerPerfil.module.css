@@ -9,9 +9,9 @@
     border: none;
     border-radius: 999px;
     background: #ffffff;
-    color: var(--color-primary, #2d3b8e);
+    color: var(--color-primary);
     font-family: inherit;
-    font-size: 13.5px;
+    font-size: var(--fs-base);
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(45, 59, 142, 0.1);

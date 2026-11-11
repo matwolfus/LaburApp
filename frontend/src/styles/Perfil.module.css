@@ -19,11 +19,11 @@
     gap: 8px;
     width: 100%;
     border: none;
-    background: #2D3B8E;
+    background: var(--color-primary);
     color: #ffffff;
     padding: 13px;
     border-radius: 999px;
-    font-size: 14px;
+    font-size: var(--fs-base);
     font-weight: 800;
     font-family: inherit;
     cursor: pointer;
@@ -40,7 +40,7 @@
     background: #FEE2E2;
     color: #B91C1C;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     text-align: center;
 }
 
@@ -49,19 +49,19 @@
     border-radius: 16px;
     padding: 40px 24px;
     text-align: center;
-    color: #6B7280;
+    color: var(--color-muted);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .estado h2 {
     margin: 0 0 8px;
-    color: #1A2560;
+    color: var(--color-primary-dark);
     font-size: 17px;
 }
 
 .estado p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--fs-base);
 }
 
 /* La app es siempre una columna de celular: estos estilos ya no dependen del viewport. */

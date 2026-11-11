@@ -7,15 +7,15 @@
 }
 
 .warningIcon {
-  color: #DC2626;
+  color: var(--color-danger);
   margin-bottom: 10px;
 }
 
 .title {
   margin: 0 0 16px;
-  font-size: 19px;
+  font-size: var(--fs-xl);
   font-weight: 800;
-  color: #1F2937;
+  color: var(--color-text);
 }
 
 .alertBox {
@@ -28,7 +28,7 @@
 
 .alertBox p {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--fs-md);
   color: #B91C1C;
   line-height: 1.5;
   text-align: left;
@@ -36,19 +36,19 @@
 
 .fieldLabel {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  color: #6B7280;
+  color: var(--color-muted);
   margin-bottom: 6px;
 }
 
 .textarea {
   width: 100%;
   background: #F5F6FA;
-  border: 1px solid #E8ECF3;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 12px 14px;
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   font-family: inherit;
   resize: vertical;
   margin-bottom: 14px;
@@ -60,7 +60,7 @@
   align-items: flex-start;
   gap: 8px;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: #4B5062;
   margin-bottom: 18px;
   cursor: pointer;
@@ -72,19 +72,19 @@
 }
 
 .error {
-  color: #DC2626;
-  font-size: 13px;
+  color: var(--color-danger);
+  font-size: var(--fs-md);
   margin: 0 0 10px;
 }
 
 .confirmBtn {
   width: 100%;
   border: none;
-  background: #DC2626;
+  background: var(--color-danger);
   color: white;
   padding: 15px;
   border-radius: 50px;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -101,8 +101,8 @@
   margin-top: 12px;
   border: none;
   background: transparent;
-  color: #2F3685;
-  font-size: 13.5px;
+  color: var(--color-primary);
+  font-size: var(--fs-base);
   font-weight: 700;
   cursor: pointer;
 }

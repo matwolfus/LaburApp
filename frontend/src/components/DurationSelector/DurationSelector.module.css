@@ -7,7 +7,7 @@
 .label {
   display: block;
   margin-bottom: 12px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: 0.5px;
@@ -19,7 +19,7 @@
   border-radius: 12px;
   background: #ececec;
   padding: 14px 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 500;
   color: #444;
   cursor: pointer;

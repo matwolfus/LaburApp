@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100vh;
   height: 100dvh;
-  background: #F4F6FB;
+  background: var(--color-bg);
   font-family: 'Nunito', sans-serif;
 }
 
@@ -20,8 +20,8 @@
 .backBtn {
   background: none;
   border: none;
-  font-size: 20px;
-  color: #2D3B8E;
+  font-size: var(--fs-2xl);
+  color: var(--color-primary);
   cursor: pointer;
   padding: 4px;
 }
@@ -38,8 +38,8 @@
 .headerAvatarFallback {
   display: grid;
   place-items: center;
-  background: #E8ECF3;
-  color: #2D3B8E;
+  background: var(--color-border);
+  color: var(--color-primary);
   font-weight: 800;
 }
 
@@ -51,17 +51,17 @@
 
 .headerNombre {
   font-weight: 800;
-  font-size: 14px;
-  color: #1E293B;
+  font-size: var(--fs-base);
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .headerTrabajo {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  color: #2D3B8E;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -78,7 +78,7 @@
 .msg {
   text-align: center;
   color: #94A3B8;
-  font-size: 13px;
+  font-size: var(--fs-md);
   margin-top: 24px;
 }
 
@@ -94,7 +94,7 @@
 
 .bubbleMia {
   align-self: flex-end;
-  background: #2D3B8E;
+  background: var(--color-primary);
   color: #ffffff;
   border-bottom-right-radius: 4px;
 }
@@ -102,28 +102,28 @@
 .bubbleAjena {
   align-self: flex-start;
   background: #ffffff;
-  color: #1E293B;
+  color: var(--color-text);
   border-bottom-left-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .bubbleTexto {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .bubbleHora {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   opacity: 0.7;
   align-self: flex-end;
 }
 
 .error {
-  color: #DC2626;
-  font-size: 12px;
+  color: var(--color-danger);
+  font-size: var(--fs-sm);
   text-align: center;
   padding: 4px 16px 0;
 }
@@ -133,23 +133,23 @@
   gap: 8px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
   background: #ffffff;
-  border-top: 1px solid #E8ECF3;
+  border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 .input {
   flex: 1;
-  border: 1px solid #E8ECF3;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: inherit;
   background: #F5F6FA;
   outline: none;
 }
 
 .input:focus {
-  border-color: #2D3B8E;
+  border-color: var(--color-primary);
 }
 
 .sendBtn {
@@ -157,7 +157,7 @@
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: #2D3B8E;
+  background: var(--color-primary);
   color: #ffffff;
   display: grid;
   place-items: center;
@@ -197,10 +197,10 @@
 .soloLectura {
   margin: 0;
   padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0));
-  background: #F4F6FB;
-  border-top: 1px solid #E8ECF3;
-  font-size: 13px;
-  color: var(--color-muted, #64748B);
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-md);
+  color: var(--color-muted);
   text-align: center;
   flex-shrink: 0;
 }

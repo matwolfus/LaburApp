@@ -9,6 +9,6 @@
 .msg {
   padding: 16px 20px;
   color: var(--color-muted);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-family: 'Nunito', sans-serif;
 }
