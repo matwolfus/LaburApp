@@ -5,6 +5,6 @@ dist/
 .DS_Store
 backend/uploads/
 
-# Dumps de la base: tienen datos personales, nunca al repo
+# Dumps binarios de la base (pg_dump.txt sí va: datos ficticios)
 *.dump
 *.log
