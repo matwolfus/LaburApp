@@ -5,6 +5,17 @@ import styles from "./HomeJobCard.module.css";
 
 const TRUNCATE_AT = 60;
 
+// status viene ya mapeado del backend (ver mapEstadoToStatus en trabajos-service.js).
+// abierto = true: el trabajo sigue en curso (estilo "pendiente"); false: ya cerró.
+const STATUS_CONFIG = {
+  PENDIENTE:  { label: "Pendiente",  abierto: true },
+  EN_CURSO:   { label: "En curso",   abierto: true },
+  EN_ESPERA:  { label: "En espera",  abierto: true },
+  FINALIZADO: { label: "Finalizado", abierto: false },
+  CANCELADO:  { label: "Cancelado",  abierto: false },
+  VENCIDO:    { label: "Vencido",    abierto: false },
+};
+
 const HomeJobCard = ({ job }) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
@@ -13,7 +24,7 @@ const HomeJobCard = ({ job }) => {
 
   const desc = description ?? "";
   const isLong = desc.length > TRUNCATE_AT;
-  const isPending = status === "PENDIENTE";
+  const statusCfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDIENTE;
 
   const goToDetalle = () => navigate(`/ofertas/${id}/detalle`);
 
@@ -56,8 +67,8 @@ const HomeJobCard = ({ job }) => {
         )}
       </div>
 
-      <span className={isPending ? styles.statusPending : styles.statusDone}>
-        {isPending ? "Pendiente" : "Finalizado"}
+      <span className={statusCfg.abierto ? styles.statusPending : styles.statusDone}>
+        {statusCfg.label}
       </span>
     </div>
   );

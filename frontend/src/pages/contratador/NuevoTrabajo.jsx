@@ -11,9 +11,12 @@ import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos } from "../..
 import UbicacionSelector from "../../components/UbicacionSelector";
 import { geocodeAddress, reverseGeocode } from "../../services/geocoding";
 import { ubicacionDesdeMapa, nombresDeUbicacion } from "../../utils/ubicacionDesdeMapa";
+import { resizeImage } from "../../utils/resizeImage";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
 const MAX_FOTOS = 2;
+// Mismos tipos que acepta el backend (ALLOWED_MIME_TYPES en upload-middleware.js).
+const TIPOS_IMAGEN = ["image/jpeg", "image/png", "image/webp"];
 
 // Formatea un string de dígitos (+ opcional coma decimal) con puntos de miles: "10000" -> "10.000"
 function formatPresupuesto(raw) {
@@ -123,6 +126,13 @@ export default function NuevoTrabajo() {
 
     if (totalFotos + selected.length > MAX_FOTOS) {
       setFotosError(`Podés subir hasta ${MAX_FOTOS} fotos.`);
+      return;
+    }
+
+    // Mismos tipos que acepta el backend (upload-middleware.js). Antes el
+    // input aceptaba image/* y un HEIC o GIF fallaba recién al publicar.
+    if (selected.some((file) => !TIPOS_IMAGEN.includes(file.type))) {
+      setFotosError("Solo se permiten imágenes JPG, PNG o WebP.");
       return;
     }
 
@@ -261,7 +271,11 @@ export default function NuevoTrabajo() {
       let nuevasUrls = [];
       if (fotos.length > 0) {
         setUploadingFotos(true);
-        const { urls } = await uploadFotos(fotos.map((f) => f.file));
+        // Se achican a 800px / JPEG antes de subir (igual que el avatar en
+        // editarPerfil): una foto de celular pesa varios MB y el backend
+        // rechaza más de 5 MB.
+        const reducidas = await Promise.all(fotos.map((f) => resizeImage(f.file)));
+        const { urls } = await uploadFotos(reducidas);
         nuevasUrls = urls;
       }
 
@@ -379,6 +393,7 @@ export default function NuevoTrabajo() {
           <input
             id="titulo"
             className={styles.textInput}
+            maxLength={100}
             type="text"
             placeholder="Ej: Paseador de perros para fin de semana"
             value={titulo}
@@ -394,6 +409,7 @@ export default function NuevoTrabajo() {
           <textarea
             id="descripcion"
             className={styles.textarea}
+            maxLength={2000}
             placeholder="Contanos qué necesitas exactamente..."
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
@@ -439,6 +455,7 @@ export default function NuevoTrabajo() {
           <input
             id="direccion"
             className={styles.textInput}
+            maxLength={255}
             type="text"
             placeholder="Ej: Potosí 123, Buenos Aires"
             value={direccion}
@@ -509,7 +526,7 @@ export default function NuevoTrabajo() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 multiple
                 className={styles.photosInputHidden}
                 onChange={handleFotosChange}

@@ -1,5 +1,8 @@
 ﻿// backend/src/repositories/trabajos-repository.js
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
+import { cantidadComoContratador, promedioComoContratador } from './sql-calificaciones.js';
+import { FILTRO_POSTULANTES_VISIBLES } from './postulaciones-repository.js';
 
 export default class TrabajosRepository {
   constructor() {
@@ -19,7 +22,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.titulo          AS title,
         t.programado_para AS scheduled_at,
         c.nombre          AS category,
-        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+        (SELECT COUNT(*)::int FROM postulaciones p WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}) AS applicants_count,
         (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
         COALESCE((
           SELECT json_agg(sub.url_avatar)
@@ -27,7 +30,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
             SELECT u.url_avatar
             FROM postulaciones p
             JOIN usuarios u ON u.id = p.id_trabajador
-            WHERE p.id_trabajo = t.id
+            WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}
             ORDER BY p.postulado_en ASC
             LIMIT 3
           ) sub
@@ -58,7 +61,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.estado,
         t.programado_para AS scheduled_at,
         c.nombre          AS category,
-        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+        (SELECT COUNT(*)::int FROM postulaciones p WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}) AS applicants_count,
         (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
         COALESCE((
           SELECT json_agg(sub.url_avatar)
@@ -66,7 +69,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
             SELECT u.url_avatar
             FROM postulaciones p
             JOIN usuarios u ON u.id = p.id_trabajador
-            WHERE p.id_trabajo = t.id
+            WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}
             ORDER BY p.postulado_en ASC
             LIMIT 3
           ) sub
@@ -85,6 +88,10 @@ async getJobsByEmployerAndStatus(employerId, status) {
   // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado, category }.
   // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
   async getJobsByEmployer(employerId) {
+    // Igual que el resto de las lecturas: primero vencer los que ya pasaron
+    // de fecha, si no la home los muestra como pendientes.
+    await this.expirarVencidos();
+
     const sql = `
       SELECT
         t.id,
@@ -114,14 +121,14 @@ async getJobsByEmployerAndStatus(employerId, status) {
   async expirarVencidos() {
     await this.db.queryAll(`
       UPDATE trabajos
-      SET estado = 'vencido', actualizado_en = NOW()
+      SET estado = 'vencido', actualizado_en = ${AHORA}
       WHERE estado IN ('abierto', 'proxima')
         AND programado_para IS NOT NULL
         AND (
           -- Sin horario elegido se guarda 00:00: vence recién cuando pasa el día.
           CASE WHEN programado_para::time = '00:00'
-            THEN programado_para::date < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')::date
-            ELSE programado_para < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')
+            THEN programado_para::date < ${AHORA}::date
+            ELSE programado_para < ${AHORA}
           END
         )
     `);
@@ -217,10 +224,11 @@ async getJobsByEmployerAndStatus(employerId, status) {
         emp.nombre_completo         AS employer_name,
         emp.url_avatar              AS employer_avatar,
         emp.verificado              AS employer_verificado,
-        emp.prom_calif_contratante  AS employer_rating,
+        ${promedioComoContratador('t.id_contratante')} AS employer_rating,
+        ${cantidadComoContratador('t.id_contratante')} AS employer_reviews_count,
 
         (SELECT COUNT(*) FROM trabajos t2 WHERE t2.id_contratante = t.id_contratante) AS employer_jobs_count,
-        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+        (SELECT COUNT(*)::int FROM postulaciones p WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}) AS applicants_count,
 
         (SELECT co.precio_acordado FROM contratos co
           WHERE co.id_trabajo = t.id AND co.estado = 'activo' LIMIT 1) AS contract_price,
@@ -266,7 +274,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       WHERE t.id = $1
 
-      GROUP BY t.id, c.nombre, l.nombre, l.id_provincia, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado, emp.prom_calif_contratante
+      GROUP BY t.id, c.nombre, l.nombre, l.id_provincia, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado
     `;
 
     return await this.db.queryOne(sql, [jobId, viewerUserId]);
@@ -297,7 +305,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
     return await this.db.withTransaction(async (txDb) => {
 
       const updated = await txDb.queryOne(
-        `UPDATE trabajos SET estado = 'finalizado', actualizado_en = NOW()
+        `UPDATE trabajos SET estado = 'finalizado', actualizado_en = ${AHORA}
          WHERE id = $1
          RETURNING id`,
         [jobId]
@@ -306,7 +314,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
       if (!updated) return null;
 
       const contrato = await txDb.queryOne(
-        `UPDATE contratos SET estado = 'completado', completado_en = NOW()
+        `UPDATE contratos SET estado = 'completado', completado_en = ${AHORA}
          WHERE id_trabajo = $1 AND estado = 'activo'
          RETURNING id_trabajador`,
         [jobId]
@@ -327,7 +335,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
     return await this.db.withTransaction(async (txDb) => {
 
       const updated = await txDb.queryOne(
-        `UPDATE trabajos SET estado = 'cancelado', actualizado_en = NOW()
+        `UPDATE trabajos SET estado = 'cancelado', actualizado_en = ${AHORA}
          WHERE id = $1
          RETURNING id`,
         [jobId]
@@ -368,7 +376,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       const updated = await txDb.queryOne(
         `UPDATE trabajos
-         SET estado = 'abierto', programado_para = $2, actualizado_en = NOW()
+         SET estado = 'abierto', programado_para = $2, actualizado_en = ${AHORA}
          WHERE id = $1 AND estado = 'en_espera'
          RETURNING id`,
         [jobId, programadoPara]
@@ -378,7 +386,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       const aReconfirmar = await txDb.queryAll(
         `UPDATE postulaciones
-         SET estado = 'por_reconfirmar', reconfirmar_hasta = (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires') + INTERVAL '2 days'
+         SET estado = 'por_reconfirmar', reconfirmar_hasta = ${AHORA} + INTERVAL '2 days'
          WHERE id_trabajo = $1 AND estado = 'rechazado' AND rechazo_automatico = TRUE
          RETURNING id, id_trabajador`,
         [jobId]
@@ -474,7 +482,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
           id_localidad    = COALESCE($12, id_localidad),
           -- Un trabajo vencido vuelve a 'abierto' si la nueva fecha ya no está en el pasado.
           estado          = CASE WHEN estado = 'vencido' AND $13::boolean THEN 'abierto' ELSE estado END,
-          actualizado_en  = NOW()
+          actualizado_en  = ${AHORA}
         WHERE id = $1
         RETURNING id
       `;

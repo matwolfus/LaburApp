@@ -32,8 +32,14 @@ const PostulantCard = ({ postulant, onAceptar, puedeAceptar = true }) => {
           <p className={styles.name}>{name}</p>
           <p className={styles.location}>📍 {location}</p>
           <div className={styles.rating}>
-            <span className={styles.ratingValue}>⭐ {rating.toFixed(1)}</span>
-            <span className={styles.ratingCount}>({reviews} reseñas)</span>
+            {rating != null ? (
+              <>
+                <span className={styles.ratingValue}>⭐ {rating.toFixed(1)}</span>
+                <span className={styles.ratingCount}>({reviews} {reviews === 1 ? 'reseña' : 'reseñas'})</span>
+              </>
+            ) : (
+              <span className={styles.ratingCount}>Sin reseñas</span>
+            )}
           </div>
         </div>
       </div>

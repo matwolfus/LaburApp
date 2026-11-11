@@ -7,6 +7,7 @@ import CancelarPostulacionModal from '../CancelarPostulacionModal';
 import PostularmeModal from '../PostularmeModal';
 import DejarResenaModal from '../DejarResenaModal';
 import ReabrirTrabajoModal from '../ReabrirTrabajoModal';
+import ConfirmModal from '../ConfirmModal';
 import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena, reconfirmarPostulacion } from '../../services/api';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import styles from './JobDetail.module.css';
@@ -80,6 +81,8 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const [completando, setCompletando] = useState(false);
   const [cancelando, setCancelando] = useState(false);
   const [actionError, setActionError] = useState(null);
+  // Acción del dueño esperando confirmación: null | 'completar' | 'cancelar'.
+  const [confirmacion, setConfirmacion] = useState(null);
   const [employerAvatarError, setEmployerAvatarError] = useState(false);
 
   // Elegibilidad para dejar reseña: solo aplica una vez que el trabajo está
@@ -124,8 +127,12 @@ const JobDetail = ({ jobId, isOwner = true }) => {
     cargarElegibilidadResena();
   }, [job?.estado, cargarElegibilidadResena]);
 
-  const handleCompletar = async () => {
-    if (!window.confirm('¿Marcar este trabajo como completado?')) return;
+  // Los botones abren un ConfirmModal (antes window.confirm); la acción
+  // corre recién al confirmar.
+  const handleCompletar = () => setConfirmacion('completar');
+  const handleCancelar = () => setConfirmacion('cancelar');
+
+  const ejecutarCompletar = async () => {
     setCompletando(true);
     setActionError(null);
     try {
@@ -135,11 +142,11 @@ const JobDetail = ({ jobId, isOwner = true }) => {
       setActionError(err.message);
     } finally {
       setCompletando(false);
+      setConfirmacion(null);
     }
   };
 
-  const handleCancelar = async () => {
-    if (!window.confirm('¿Cancelar este trabajo? Los postulantes pendientes y el contrato activo (si hay) se cierran.')) return;
+  const ejecutarCancelar = async () => {
     setCancelando(true);
     setActionError(null);
     try {
@@ -149,6 +156,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
       setActionError(err.message);
     } finally {
       setCancelando(false);
+      setConfirmacion(null);
     }
   };
 
@@ -503,6 +511,28 @@ const JobDetail = ({ jobId, isOwner = true }) => {
         onClose={() => setShowResenaModal(false)}
         onSubmitted={cargarElegibilidadResena}
         onDone={() => navigate(isOwner ? '/inicio' : '/trabajador/inicio')}
+      />
+
+      <ConfirmModal
+        open={confirmacion === 'completar'}
+        title="¿Marcar el trabajo como completado?"
+        message="Se cierra el contrato y los dos van a poder dejarse una reseña."
+        confirmLabel="Sí, está completado"
+        cancelLabel="Volver"
+        confirming={completando}
+        onConfirm={ejecutarCompletar}
+        onCancel={() => setConfirmacion(null)}
+      />
+
+      <ConfirmModal
+        open={confirmacion === 'cancelar'}
+        title="¿Cancelar este trabajo?"
+        message="Se cierran los postulantes pendientes y el contrato activo, si hay. Esto no se puede deshacer."
+        confirmLabel="Sí, cancelar trabajo"
+        cancelLabel="Volver"
+        confirming={cancelando}
+        onConfirm={ejecutarCancelar}
+        onCancel={() => setConfirmacion(null)}
       />
     </div>
   );

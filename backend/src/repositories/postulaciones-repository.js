@@ -1,5 +1,12 @@
 // TODO: postulaciones repository
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
+import { cantidadComoTrabajador, promedioComoTrabajador } from './sql-calificaciones.js';
+
+// Postulaciones que el contratante ve como "postulantes": las retiradas y
+// las que esperan reconfirmación no cuentan (no se pueden aceptar). La usan
+// la lista de postulantes y todos los conteos, para que coincidan.
+export const FILTRO_POSTULANTES_VISIBLES = "p.estado NOT IN ('retirado', 'por_reconfirmar')";
 
 export default class PostulacionesRepository {
 
@@ -22,12 +29,11 @@ export default class PostulacionesRepository {
                 u.nombre_completo,
                 u.url_avatar,
                 u.biografia_trabajador AS biografia,
-                u.prom_calif_trabajador,
+                ${promedioComoTrabajador('u.id')} AS calificacion,
+                ${cantidadComoTrabajador('u.id')} AS count_resenas,
 
                 l.nombre AS localidad,
-                pr.nombre AS provincia,
-
-                COUNT(r.id) AS count_resenas
+                pr.nombre AS provincia
 
             FROM postulaciones p
 
@@ -40,18 +46,9 @@ export default class PostulacionesRepository {
             LEFT JOIN provincias pr
                 ON l.id_provincia = pr.id
 
-            LEFT JOIN resenas r
-                ON r.id_receptor = u.id
-
             WHERE p.id_trabajo = $1
               -- Retiradas o esperando reconfirmación: el contratante no las puede aceptar.
-              AND p.estado NOT IN ('retirado', 'por_reconfirmar')
-
-            GROUP BY
-                p.id,
-                u.id,
-                l.nombre,
-                pr.nombre
+              AND ${FILTRO_POSTULANTES_VISIBLES}
 
             ORDER BY p.postulado_en DESC
         `;
@@ -79,6 +76,7 @@ export default class PostulacionesRepository {
                 t.titulo AS titulo_trabajo,
                 t.id_contratante,
                 t.estado AS estado_trabajo,
+                t.presupuesto AS presupuesto_trabajo,
                 t.programado_para,
                 t.direccion,
 
@@ -119,9 +117,10 @@ export default class PostulacionesRepository {
     getCountByTrabajoIdAsync = async (idTrabajo) => {
 
         const sql = `
-            SELECT COUNT(*) AS total
-            FROM postulaciones
-            WHERE id_trabajo = $1
+            SELECT COUNT(*)::int AS total
+            FROM postulaciones p
+            WHERE p.id_trabajo = $1
+              AND ${FILTRO_POSTULANTES_VISIBLES}
         `;
 
         return await this.db.queryOne(sql, [idTrabajo]);
@@ -147,13 +146,13 @@ export default class PostulacionesRepository {
                 $2,
                 $3,
                 $4,
-                NOW()
+                ${AHORA}
             )
             ON CONFLICT (id_trabajo, id_trabajador) DO UPDATE
             SET
                 precio_propuesto   = EXCLUDED.precio_propuesto,
                 estado             = 'pendiente',
-                postulado_en       = NOW(),
+                postulado_en       = ${AHORA},
                 rechazo_automatico = FALSE,
                 reconfirmar_hasta  = NULL
             WHERE postulaciones.estado = 'retirado'
@@ -217,7 +216,7 @@ export default class PostulacionesRepository {
 
             await txDb.queryAll(
                 `INSERT INTO contratos (id_trabajo, id_postulacion, id_contratante, id_trabajador, precio_acordado, estado, iniciado_en)
-                 VALUES ($1, $2, $3, $4, $5, 'activo', NOW())`,
+                 VALUES ($1, $2, $3, $4, $5, 'activo', ${AHORA})`,
                 [idTrabajo, idPostulacion, idContratante, idTrabajador, precioAcordado]
             );
 
@@ -253,7 +252,7 @@ export default class PostulacionesRepository {
             );
 
             await txDb.queryAll(
-                `UPDATE trabajos SET estado = 'en_espera', actualizado_en = NOW()
+                `UPDATE trabajos SET estado = 'en_espera', actualizado_en = ${AHORA}
                  WHERE id = $1 AND estado = 'activa'`,
                 [postulacion.id_trabajo]
             );
@@ -290,7 +289,7 @@ export default class PostulacionesRepository {
             WITH vencidas AS (
                 UPDATE postulaciones
                 SET estado = 'retirado', reconfirmar_hasta = NULL
-                WHERE estado = 'por_reconfirmar' AND reconfirmar_hasta < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')
+                WHERE estado = 'por_reconfirmar' AND reconfirmar_hasta < ${AHORA}
                 RETURNING id
             )
             UPDATE notificaciones n

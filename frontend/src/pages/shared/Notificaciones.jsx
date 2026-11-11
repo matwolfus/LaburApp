@@ -219,8 +219,6 @@ export default function Notificaciones() {
         </>
       )}
 
-      <p className="notif-footnote">Las notificaciones se borran tras 30 días.</p>
-
     </div>
   );
 }

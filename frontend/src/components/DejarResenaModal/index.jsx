@@ -93,6 +93,7 @@ export default function DejarResenaModal({ open, jobId, onClose, onSubmitted, on
         </label>
         <textarea
           id="comentario-resena"
+          maxLength={1000}
           className={styles.textarea}
           placeholder="Contá cómo fue tu experiencia..."
           value={comentario}

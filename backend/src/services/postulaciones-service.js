@@ -1,4 +1,5 @@
 import PostulacionesRepository from './../repositories/postulaciones-repository.js';
+import { HttpError } from '../helpers/http-error.js';
 
 export default class PostulacionesService {
 
@@ -110,21 +111,32 @@ export default class PostulacionesService {
     cancelarAsync = async (postulacion, estadoTrabajo) => {
 
         if (postulacion.estado === 'retirado') {
-            const err = new Error('Esta postulación ya fue cancelada');
-            err.status = 409;
-            throw err;
+            throw new HttpError(409, 'Esta postulación ya fue cancelada');
         }
 
-        if (!['pendiente', 'aceptado', 'por_reconfirmar'].includes(postulacion.estado)) {
-            const err = new Error(`No se puede cancelar una postulación en estado '${postulacion.estado}'`);
-            err.status = 400;
-            throw err;
+        // Estados del trabajo en los que tiene sentido cancelar cada tipo de
+        // postulación. Fuera de esto (trabajo cancelado, vencido, finalizado o
+        // en espera) no se cancela: el aviso al contratante sería incorrecto
+        // (ej. "podés reabrir el trabajo" sobre un trabajo ya cancelado).
+        const estadosTrabajoValidos = {
+            pendiente:       ['abierto', 'proxima'],
+            por_reconfirmar: ['abierto', 'proxima'],
+            aceptado:        ['activa'],
+        }[postulacion.estado];
+
+        if (!estadosTrabajoValidos) {
+            throw new HttpError(400, `No se puede cancelar una postulación en estado '${postulacion.estado}'`);
         }
 
-        if (estadoTrabajo === 'finalizado') {
-            const err = new Error('El trabajo ya fue completado');
-            err.status = 400;
-            throw err;
+        if (!estadosTrabajoValidos.includes(estadoTrabajo)) {
+            const motivo = {
+                finalizado: 'ya fue completado',
+                cancelado:  'fue cancelado',
+                vencido:    'venció',
+                en_espera:  'está en espera',
+            }[estadoTrabajo] ?? 'ya no admite cambios';
+
+            throw new HttpError(409, `No se puede cancelar: el trabajo ${motivo}`);
         }
 
         return await this.repository.cancelarAsync(postulacion);
@@ -133,15 +145,11 @@ export default class PostulacionesService {
     reconfirmarAsync = async (postulacion, estadoTrabajo, sigue) => {
 
         if (postulacion.estado !== 'por_reconfirmar') {
-            const err = new Error('Esta postulación ya no está esperando confirmación');
-            err.status = 409;
-            throw err;
+            throw new HttpError(409, 'Esta postulación ya no está esperando confirmación');
         }
 
         if (sigue && estadoTrabajo !== 'abierto') {
-            const err = new Error('El trabajo ya no está disponible');
-            err.status = 400;
-            throw err;
+            throw new HttpError(400, 'El trabajo ya no está disponible');
         }
 
         return await this.repository.reconfirmarAsync(postulacion.id, sigue);

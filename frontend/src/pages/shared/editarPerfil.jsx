@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, UserCheck, Eye, ArrowLeft, Camera, User, Phone, Award, Briefcase } from "lucide-react";
-import { uploadFotos, actualizarMisCategorias, getCategorias, BASE_URL } from "../../services/api";
+import { uploadFotos, actualizarMisCategorias, getCategorias, getMiUsuario, actualizarPerfil } from "../../services/api";
 import UbicacionSelector from "../../components/UbicacionSelector";
 import { resizeImage } from "../../utils/resizeImage";
 import styles from "../../styles/editarPerfil.module.css";
@@ -75,14 +75,11 @@ export default function EditarPerfil() {
                     return;
                 }
 
-                const [resPerfil, dataCategorias] = await Promise.all([
+                // Un 401 (sesión vencida) lo maneja api.js: borra la sesión y
+                // manda al login. Acá solo queda mostrar el resto de los errores.
+                const [dataPerfil, dataCategorias] = await Promise.all([
 
-                    fetch(`${BASE_URL}/usuarios/me`, {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }),
+                    getMiUsuario(),
 
                     getCategorias().catch((err) => {
                         console.error("No se pudieron cargar las categorías:", err);
@@ -92,30 +89,6 @@ export default function EditarPerfil() {
                 ]);
 
                 setCategorias(dataCategorias);
-
-                // =====================================
-                // PERFIL
-                // =====================================
-
-                if (resPerfil.status === 401) {
-                    localStorage.removeItem("token");
-                    navigate("/login");
-                    return;
-                }
-
-                if (resPerfil.status === 404) {
-                    setError("Usuario no encontrado.");
-                    return;
-                }
-
-                if (!resPerfil.ok) {
-                    setError(
-                        "Ocurrió un error al cargar los datos del perfil."
-                    );
-                    return;
-                }
-
-                const dataPerfil = await resPerfil.json();
 
                 // Cargar datos recibidos por la API
 
@@ -155,12 +128,14 @@ export default function EditarPerfil() {
             } catch (err) {
 
                 console.error(
-                    "Error al conectar con el servidor:",
+                    "Error al cargar el perfil:",
                     err
                 );
 
                 setError(
-                    "No se pudo conectar con el servidor."
+                    err.status === 404
+                        ? "Usuario no encontrado."
+                        : err.message || "Ocurrió un error al cargar los datos del perfil."
                 );
 
             } finally {
@@ -266,77 +241,26 @@ export default function EditarPerfil() {
 
         try {
 
-            const token = localStorage.getItem("token");
+            await actualizarPerfil({
 
-            const response = await fetch(
-                `${BASE_URL}/usuarios/me`,
-                {
-                    method: "PUT",
+                nombreCompleto,
 
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
+                telefono,
 
-                    body: JSON.stringify({
+                biografia_contratante:
+                    biografiaContratante,
 
-                        nombreCompleto,
+                biografia_trabajador:
+                    biografiaTrabajador,
 
-                        telefono,
+                idLocalidad:
+                    ubicacion.idLocalidad
+                        ? Number(ubicacion.idLocalidad)
+                        : null,
 
-                        biografia_contratante:
-                            biografiaContratante,
+                avatar
 
-                        biografia_trabajador:
-                            biografiaTrabajador,
-
-                        idLocalidad:
-                            ubicacion.idLocalidad
-                                ? Number(ubicacion.idLocalidad)
-                                : null,
-
-                        avatar
-
-                    })
-                }
-            );
-
-            if (response.status === 401) {
-
-                localStorage.removeItem("token");
-                navigate("/login");
-
-                return;
-            }
-
-            if (response.status === 400) {
-
-                setError(
-                    "Los datos ingresados no son válidos."
-                );
-
-                return;
-            }
-
-            if (response.status === 404) {
-
-                setError(
-                    "Usuario no encontrado."
-                );
-
-                return;
-            }
-
-            if (!response.ok) {
-
-                setError(
-                    "Ocurrió un error. Intentá nuevamente."
-                );
-
-                return;
-            }
-
-            await response.json();
+            });
 
             try {
                 await actualizarMisCategorias(categoriaIdsSeleccionadas);
@@ -357,8 +281,9 @@ export default function EditarPerfil() {
                 err
             );
 
+            // El backend manda el motivo en el mensaje (ej. foto inválida).
             setError(
-                "No se pudo conectar con el servidor."
+                err.message || "Ocurrió un error. Intentá nuevamente."
             );
 
         } finally {
@@ -547,6 +472,7 @@ export default function EditarPerfil() {
                                 <User size={18} className={styles.inputIcon} />
                                 <input
                                     id="nombre"
+                                    maxLength={120}
                                     type="text"
                                     value={nombreCompleto}
                                     onChange={(e) =>
@@ -639,6 +565,7 @@ export default function EditarPerfil() {
 
                             <textarea
                                 id="biografiaContratante"
+                                maxLength={1000}
                                 placeholder="Contá qué tipo de trabajos solés publicar..."
                                 value={biografiaContratante}
                                 onChange={(e) =>
@@ -658,6 +585,7 @@ export default function EditarPerfil() {
 
                             <textarea
                                 id="biografiaTrabajador"
+                                maxLength={1000}
                                 placeholder="Contá tu experiencia y en qué sos bueno..."
                                 value={biografiaTrabajador}
                                 onChange={(e) =>

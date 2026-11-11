@@ -13,6 +13,29 @@ const ESTADO_LABEL = {
   por_reconfirmar: 'Confirmá tu interés',
 };
 
+// Una postulación aceptada muestra el estado del trabajo: "Aceptado" no dice
+// si ya se hizo o si el contratador lo canceló.
+const ESTADO_TRABAJO_ACEPTADO_LABEL = {
+  finalizado: 'Completado',
+  cancelado: 'Trabajo cancelado',
+};
+
+function labelEstado(p) {
+  if (p.estado === 'aceptado' && ESTADO_TRABAJO_ACEPTADO_LABEL[p.estado_trabajo]) {
+    return ESTADO_TRABAJO_ACEPTADO_LABEL[p.estado_trabajo];
+  }
+  return ESTADO_LABEL[p.estado] ?? p.estado;
+}
+
+// Mismas reglas que PostulacionesService.cancelarAsync en el backend: una
+// pendiente se cancela mientras el trabajo siga abierto; una aceptada,
+// mientras el trabajo esté activo.
+function puedeCancelar(p) {
+  if (p.estado === 'pendiente') return ['abierto', 'proxima'].includes(p.estado_trabajo);
+  if (p.estado === 'aceptado') return p.estado_trabajo === 'activa';
+  return false;
+}
+
 // Estados en los que el chat con el contratante está abierto.
 const CHAT_ABIERTO = ['pendiente', 'aceptado', 'por_reconfirmar'];
 
@@ -74,12 +97,16 @@ export default function EstadoTrabajos() {
         <div className="job-card__info">
           <h3 className="job-card__title">{p.titulo_trabajo}</h3>
           <p className="job-card__date">
-            {p.categoria ? `${p.categoria} · ` : ''}${Number(p.precio_propuesto).toLocaleString('es-AR')}
+            {p.categoria ? `${p.categoria} · ` : ''}
+            {/* precio_propuesto null = se postuló al precio publicado */}
+            {(p.precio_propuesto ?? p.presupuesto_trabajo) != null
+              ? `$${Number(p.precio_propuesto ?? p.presupuesto_trabajo).toLocaleString('es-AR')}`
+              : 'A convenir'}
           </p>
         </div>
       </div>
       <div className="job-card__bottom">
-        <span className="job-card__count">{ESTADO_LABEL[p.estado] ?? p.estado}</span>
+        <span className="job-card__count">{labelEstado(p)}</span>
         <div className="job-card__actions">
           <button className="job-card__btn job-card__btn--outline" onClick={() => navigate(`/trabajador/trabajos/${p.id_trabajo}`)}>
             Ver detalle
@@ -89,7 +116,7 @@ export default function EstadoTrabajos() {
               Chat
             </button>
           )}
-          {(p.estado === 'pendiente' || (p.estado === 'aceptado' && p.estado_trabajo !== 'finalizado')) && (
+          {puedeCancelar(p) && (
             <button className="job-card__btn" onClick={() => setCancelarPostulacion(p)}>
               Cancelar
             </button>

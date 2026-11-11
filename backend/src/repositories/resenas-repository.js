@@ -1,5 +1,6 @@
 // backend/src/repositories/resenas-repository.js
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
 
 export default class ResenasRepository {
   constructor() {
@@ -66,7 +67,7 @@ export default class ResenasRepository {
   async crear({ idContrato, idAutor, idReceptor, esContratante, calificacion, comentario }) {
     const sql = `
       INSERT INTO resenas (id_contrato, id_autor, id_receptor, es_contratante, calificacion, comentario, creado_en)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, ${AHORA})
       RETURNING id
     `;
     return await this.db.queryReturnId(sql, [idContrato, idAutor, idReceptor, esContratante, calificacion, comentario ?? null]);

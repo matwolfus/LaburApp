@@ -1,5 +1,6 @@
-import dotenv from 'dotenv';
-dotenv.config();
+// Tiene que ser el primer import: los imports de ES modules se evalúan antes que
+// cualquier línea del archivo, así que un dotenv.config() más abajo llega tarde.
+import 'dotenv/config';
 
 import express from 'express';
 import cors from 'cors';
@@ -14,6 +15,7 @@ import notificacionesRouter from './controllers/notificaciones-controller.js';
 import resenasRouter from './controllers/resenas-controller.js';
 import mensajesRouter from './controllers/mensajes-controller.js';
 import { UPLOADS_DIR } from './middlewares/upload-middleware.js';
+import { errorHandler, notFoundHandler } from './middlewares/error-middleware.js';
 
 const app  = express();
 const port = process.env.PORT || 3000;
@@ -42,6 +44,10 @@ app.use('/api/notificaciones', notificacionesRouter);
 app.use('/api/resenas', resenasRouter);
 
 app.use('/api/mensajes', mensajesRouter);
+
+// Siempre al final: 404 en JSON y el manejador central de errores.
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(port, () => console.log(`LaburApp backend running at http://localhost:${port}`));
 

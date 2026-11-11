@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './WorkerSearchCard.module.css';
 
@@ -7,13 +6,12 @@ const WorkerSearchCard = ({
   name,
   photo_url,
   description,
-  rating = 0,
+  rating = null, // null = todavía no tiene reseñas
   localidad = null,
   provincia = null,
   idPostulacionChat = null,
 }) => {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(false);
 
   return (
     <article className={styles.card}>
@@ -39,29 +37,23 @@ const WorkerSearchCard = ({
         <div className={styles.info}>
           <div className={styles.nameRow}>
             <h2 className={styles.name}>{name}</h2>
-            <span className={styles.verified} aria-label="Perfil verificado">✓</span>
           </div>
 
           <div className={styles.ratingRow}>
-            <span className={styles.star}>★</span>
-            <span className={styles.ratingValue}>{Number(rating).toFixed(1)}</span>
+            {rating != null ? (
+              <>
+                <span className={styles.star}>★</span>
+                <span className={styles.ratingValue}>{Number(rating).toFixed(1)}</span>
+              </>
+            ) : (
+              <span className={styles.ratingValue}>Sin reseñas</span>
+            )}
           </div>
 
           {(localidad || provincia) && (
             <p className={styles.location}>📍 {[localidad, provincia].filter(Boolean).join(', ')}</p>
           )}
         </div>
-
-        {/* CORAZÓN */}
-        <button
-          type="button"
-          className={`${styles.favorite} ${liked ? styles.favoriteActive : ''}`}
-          onClick={() => setLiked(!liked)}
-          aria-label={liked ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-          aria-pressed={liked}
-        >
-          {liked ? '♥' : '♡'}
-        </button>
 
       </div>
 

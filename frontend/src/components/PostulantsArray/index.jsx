@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import PostulantCard from '../PostulantCard'
+import ConfirmModal from '../ConfirmModal'
 import styles from './PostulantsArray.module.css'
 import { getPostulantesByTrabajo, aceptarPostulacion } from '../../services/api';
 
@@ -9,12 +10,15 @@ const mapPostulante = (p) => ({
   idTrabajador: p.id_trabajador,
   name: p.nombre_completo,
   location: [p.localidad, p.provincia].filter(Boolean).join(', '),
-  rating: parseFloat(p.prom_calif_trabajador) || 0,
-  reviews: parseInt(p.count_resenas) || 0,
+  // Calificación como trabajador, calculada en vivo en el backend (null = sin reseñas).
+  rating: p.calificacion == null ? null : Number(p.calificacion),
+  reviews: Number(p.count_resenas) || 0,
   price: p.precio_propuesto,
   avatar: p.url_avatar,
   estado: p.estado,
-  badges: ['verificado'],
+  // Sin insignias por ahora: antes se mostraba "Verificado" a todos, sin
+  // ninguna verificación real detrás.
+  badges: [],
 });
 
 const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
@@ -25,6 +29,9 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
   const [postulantes, setPostulantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Postulante con precio distinto al publicado, esperando confirmación.
+  const [porConfirmar, setPorConfirmar] = useState(null);
+  const [aceptando, setAceptando] = useState(false);
 
   const fetchPostulantes = useCallback(() => {
     setLoading(true);
@@ -38,9 +45,23 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
     fetchPostulantes();
   }, [fetchPostulantes]);
 
-  const handleAceptar = async (id) => {
+  const aceptar = async (id) => {
     setError(null);
+    setAceptando(true);
+    try {
+      await aceptarPostulacion(id);
+      // Refetch: el aceptado pasa a 'aceptado' y el resto de pendientes de
+      // esta changa pasan a 'rechazado' automáticamente en el backend.
+      await fetchPostulantes();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setAceptando(false);
+      setPorConfirmar(null);
+    }
+  };
 
+  const handleAceptar = (id) => {
     // Si propuso un precio distinto al publicado, se confirma explícitamente
     // antes de aceptar (el precio propuesto es el que queda acordado en el
     // contrato, no el publicado originalmente).
@@ -51,21 +72,13 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
       Number(postulante.price) !== Number(jobBudget);
 
     if (precioDistinto) {
-      const confirmado = window.confirm(
-        `${postulante.name} propuso $${Number(postulante.price).toLocaleString('es-AR')}, distinto al precio publicado ($${Number(jobBudget).toLocaleString('es-AR')}). ¿Aceptar de todos modos por el precio propuesto?`
-      );
-      if (!confirmado) return;
+      setPorConfirmar(postulante);
+      return;
     }
-
-    try {
-      await aceptarPostulacion(id);
-      // Refetch: el aceptado pasa a 'aceptado' y el resto de pendientes de
-      // esta changa pasan a 'rechazado' automáticamente en el backend.
-      await fetchPostulantes();
-    } catch (err) {
-      setError(err.message);
-    }
+    aceptar(id);
   };
+
+  const formatPesos = (n) => `$${Number(n).toLocaleString('es-AR')}`;
 
   if (!loading && postulantes.length === 0) {
     return (
@@ -82,13 +95,25 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
           <span className={styles.label}>Postulados</span>
           <span className={styles.count}>{postulantes.length}</span>
         </div>
-        <button className={styles.filterBtn}>⇅ Filtrar</button>
       </div>
       {loading && <p className={styles.msg}>Cargando...</p>}
       {error && <p className={styles.msg}>{error}</p>}
       {postulantes.map(p => (
         <PostulantCard key={p.id} postulant={p} onAceptar={handleAceptar} puedeAceptar={puedeAceptar} />
       ))}
+
+      <ConfirmModal
+        open={porConfirmar != null}
+        title="El precio es distinto al publicado"
+        message={porConfirmar
+          ? `${porConfirmar.name} propuso ${formatPesos(porConfirmar.price)} y vos publicaste ${formatPesos(jobBudget)}. Si lo aceptás, el precio acordado es el que propuso.`
+          : ''}
+        confirmLabel={porConfirmar ? `Aceptar por ${formatPesos(porConfirmar.price)}` : 'Aceptar'}
+        cancelLabel="Volver"
+        confirming={aceptando}
+        onConfirm={() => aceptar(porConfirmar.id)}
+        onCancel={() => setPorConfirmar(null)}
+      />
     </div>
   );
 };

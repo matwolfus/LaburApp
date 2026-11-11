@@ -1,4 +1,5 @@
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
 
 // La tabla `notificaciones` guarda el detalle variable (titulo/cuerpo/id_referencia)
 // en una sola columna `datos jsonb`, en vez de columnas separadas. Este repository
@@ -61,7 +62,7 @@ export default class NotificacionesRepository {
                 $2,
                 $3,
                 FALSE,
-                NOW()
+                ${AHORA}
             )
             RETURNING id
         `;

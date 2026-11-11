@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { getCategoryIcon } from '../utils/categoryIcons';
 
 //El componente recibe un objeto job con todos los datos de un trabajo.
-export default function JobCard({ job }) {
+// estadoLabel (opcional): etiqueta para trabajos cerrados ("Completado", "Vencido"...).
+export default function JobCard({ job, estadoLabel = null }) {
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
 
@@ -53,6 +54,7 @@ export default function JobCard({ job }) {
             <span className="job-card__date-icon">🕐</span>
             {formattedDate}{formattedTime ? ` - ${formattedTime} hs` : ''}
           </p>
+          {estadoLabel && <p className="job-card__date">{estadoLabel}</p>}
         </div>
       </div>
  

@@ -8,23 +8,20 @@ import styles from './CancelarPostulacionModal.module.css';
 // Flujo completo de "Cancelar postulación" (confirmar -> éxito), reusado
 // desde JobDetail y EstadoTrabajos en vez de window.confirm().
 //
-// El campo "Motivo de cancelación" es solo visual por ahora: la tabla
-// postulaciones no tiene ninguna columna para guardarlo. Si más adelante se
-// quiere persistir, hay que agregar esa columna y mandar `motivo` en el
-// body de cancelarPostulacion (que hoy solo recibe el id).
+// Antes tenía un campo "Motivo de cancelación" que no se guardaba en ningún
+// lado y avisos sobre una "reputación" que la app no tiene: se sacaron para
+// no prometer cosas que no existen.
 //
 // aceptada: si la postulación ya estaba aceptada, el trabajo queda en
 // espera hasta que el contratante lo reabra (el texto lo avisa).
 export default function CancelarPostulacionModal({ open, postulacionId, aceptada = false, onClose, onCancelled }) {
   const [step, setStep] = useState('confirm'); // 'confirm' | 'success'
-  const [motivo, setMotivo] = useState('');
   const [entendido, setEntendido] = useState(false);
   const [cancelando, setCancelando] = useState(false);
   const [error, setError] = useState(null);
 
   const resetState = () => {
     setStep('confirm');
-    setMotivo('');
     setEntendido(false);
     setError(null);
   };
@@ -76,20 +73,8 @@ export default function CancelarPostulacionModal({ open, postulacionId, aceptada
           {aceptada && (
             <p>Ya te habían aceptado: el trabajo queda en espera hasta que el contratante lo reabra.</p>
           )}
-          <p>Atención, si estás a menos de 24 horas de la tarea puede afectar a tu reputación en la plataforma</p>
+          <p>El contratante va a recibir un aviso y no vas a poder deshacer la cancelación.</p>
         </div>
-
-        <label className={styles.fieldLabel} htmlFor="motivo-cancelacion">
-          Motivo de cancelación (opcional)
-        </label>
-        <textarea
-          id="motivo-cancelacion"
-          className={styles.textarea}
-          placeholder="Explicá brevemente por qué no podés realizar el trabajo..."
-          value={motivo}
-          onChange={(e) => setMotivo(e.target.value)}
-          rows={3}
-        />
 
         <label className={styles.checkboxRow}>
           <input
@@ -97,7 +82,7 @@ export default function CancelarPostulacionModal({ open, postulacionId, aceptada
             checked={entendido}
             onChange={(e) => setEntendido(e.target.checked)}
           />
-          <span>Entiendo que esto puede afectar mi reputación en la app</span>
+          <span>Entiendo que la cancelación no se puede deshacer</span>
         </label>
 
         {error && <p className={styles.error}>{error}</p>}

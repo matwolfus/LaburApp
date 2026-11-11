@@ -1,4 +1,6 @@
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
+import { cantidadComoTrabajador, promedioComoTrabajador } from './sql-calificaciones.js';
 
 export default class UsuariosRepository {
 
@@ -11,18 +13,23 @@ export default class UsuariosRepository {
     async updateUltimoRol(idUsuario, rol) {
         const sql = `
             UPDATE usuarios
-            SET ultimo_rol = $2, actualizado_en = NOW()
+            SET ultimo_rol = $2, actualizado_en = ${AHORA}
             WHERE id = $1
             RETURNING id, ultimo_rol AS rol
         `;
         return await this.db.queryOne(sql, [idUsuario, rol]);
     }
 
+    // Busca sin distinguir mayúsculas: hay cuentas viejas guardadas con
+    // mayúsculas (antes no se normalizaba). Si hubiera dos que solo difieren
+    // en mayúsculas, gana la que coincide exacto con el email ya normalizado.
     async getByEmail(email) {
         const sql = `
             SELECT id, email, contrasena, ultimo_rol AS rol
             FROM usuarios
-            WHERE email = $1
+            WHERE lower(trim(email)) = lower(trim($1))
+            ORDER BY (email = $1) DESC, id
+            LIMIT 1
         `;
         return await this.db.queryOne(sql, [email]);
     }
@@ -38,7 +45,7 @@ export default class UsuariosRepository {
                 creado_en,
                 actualizado_en
             )
-            VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+            VALUES ($1, $2, $3, $4, $5, ${AHORA}, ${AHORA})
             RETURNING id
         `;
 
@@ -67,16 +74,18 @@ export default class UsuariosRepository {
 
     // Trabajadores recomendados para la home.
     async getRecommendedWorkers(limit = 10) {
+        // rating: NULL si todavía no tiene reseñas (el front muestra "Sin reseñas").
         const sql = `
             SELECT
-                id,
-                nombre_completo AS name,
-                url_avatar AS photo_url,
-                biografia_trabajador AS description,
-                COALESCE(prom_calif_trabajador, 0)::float AS rating
-            FROM usuarios
-            WHERE biografia_trabajador IS NOT NULL
-            ORDER BY rating DESC
+                u.id,
+                u.nombre_completo AS name,
+                u.url_avatar AS photo_url,
+                u.biografia_trabajador AS description,
+                ${promedioComoTrabajador('u.id')} AS rating,
+                ${cantidadComoTrabajador('u.id')} AS reviews
+            FROM usuarios u
+            WHERE u.biografia_trabajador IS NOT NULL
+            ORDER BY rating DESC NULLS LAST, reviews DESC
             LIMIT $1
         `;
 
@@ -131,15 +140,22 @@ export default class UsuariosRepository {
                 u.nombre_completo                           AS name,
                 u.url_avatar                                AS photo_url,
                 u.biografia_trabajador                      AS description,
-                COALESCE(u.prom_calif_trabajador, 0)::float AS rating,
+                ${promedioComoTrabajador('u.id')}           AS rating,
+                ${cantidadComoTrabajador('u.id')}           AS reviews,
                 l.nombre                                    AS localidad,
                 pr.nombre                                   AS provincia
             FROM usuarios u
             LEFT JOIN localidades l ON l.id = u.id_localidad
             LEFT JOIN provincias pr ON pr.id = l.id_provincia
-            WHERE u.ultimo_rol = 'trabajador'
+            -- "Se ofrece como trabajador": tiene alguna categoría o biografía de
+            -- trabajador. No se usa ultimo_rol (el modo activo): si no, un
+            -- trabajador que pasa a modo contratador desaparecía del buscador.
+            WHERE (
+                u.biografia_trabajador IS NOT NULL
+                OR EXISTS (SELECT 1 FROM usuario_categoria uc0 WHERE uc0.id_usuario = u.id)
+            )
             ${filtros.join('\n            ')}
-            ORDER BY rating DESC
+            ORDER BY rating DESC NULLS LAST, reviews DESC
         `;
         return await this.db.queryAll(sql, values);
     }
@@ -196,7 +212,8 @@ export default class UsuariosRepository {
         // Se calcula en vivo con AVG en vez de leer prom_calif_trabajador/
         // prom_calif_contratante de la tabla usuarios: esas columnas existen
         // pero nunca se escriben (no hay trigger ni servicio que las
-        // mantenga), así que quedarían siempre en su valor default/viejo.
+        // mantenga). Misma regla que sql-calificaciones.js (el resto de las
+        // pantallas): si cambia acá, cambiar allá.
         const resenasStats = await this.db.queryOne(`
             SELECT
 
@@ -247,6 +264,8 @@ export default class UsuariosRepository {
                 ON c.id = t.id_categoria
 
             WHERE co.id_trabajador = $1
+              -- Solo contratos que se cumplieron: uno cancelado no es "trabajó en".
+              AND co.estado = 'completado'
 
             ORDER BY c.nombre;
         `, [idUsuario]);
@@ -264,12 +283,15 @@ export default class UsuariosRepository {
                 ON c.id = t.id_categoria
 
             WHERE co.id_contratante = $1
+              AND co.estado = 'completado'
 
             ORDER BY c.nombre;
         `, [idUsuario]);
 
         // Insignias: categorías en las que el usuario COMPLETÓ trabajos como
-        // trabajador (trabajo finalizado). Solo lectura, con id para el front.
+        // trabajador. Se filtra por el CONTRATO completado, no solo por el
+        // trabajo finalizado: si el trabajador aceptado canceló y el trabajo lo
+        // terminó otro, su contrato quedó 'cancelado' y la insignia no le toca.
         const insignias = await this.db.queryAll(`
             SELECT DISTINCT
                 c.id,
@@ -284,7 +306,7 @@ export default class UsuariosRepository {
                 ON c.id = t.id_categoria
 
             WHERE co.id_trabajador = $1
-              AND t.estado = 'finalizado'
+              AND co.estado = 'completado'
 
             ORDER BY c.nombre;
         `, [idUsuario]);
@@ -414,7 +436,7 @@ export default class UsuariosRepository {
                 biografia_trabajador = $4,
                 id_localidad = $5,
                 url_avatar = $6,
-                actualizado_en = NOW()
+                actualizado_en = ${AHORA}
             WHERE id = $7
             RETURNING
                 id,

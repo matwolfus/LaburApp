@@ -1,5 +1,6 @@
 // backend/src/repositories/mensajes-repository.js
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
 
 // Estados de postulación en los que el chat admite mensajes nuevos. En
 // 'retirado' / 'rechazado' el historial se puede leer pero no escribir.
@@ -101,7 +102,7 @@ export default class MensajesRepository {
         (SELECT c.id FROM contratos c WHERE c.id_postulacion = $1 AND c.estado = 'activo' ORDER BY c.creado_en DESC LIMIT 1),
         $2,
         $3,
-        NOW()
+        ${AHORA}
       )
       RETURNING id, enviado_en
     `;
@@ -111,7 +112,7 @@ export default class MensajesRepository {
   // Marca como leídos los mensajes de LA OTRA persona (nunca los propios).
   async marcarLeidos(idPostulacion, idUsuario) {
     await this.db.queryAll(
-      `UPDATE mensajes SET leido_en = NOW()
+      `UPDATE mensajes SET leido_en = ${AHORA}
        WHERE id_postulacion = $1 AND id_remitente <> $2 AND leido_en IS NULL`,
       [idPostulacion, idUsuario]
     );

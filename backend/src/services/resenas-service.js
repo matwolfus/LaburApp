@@ -1,5 +1,7 @@
 // backend/src/services/resenas-service.js
 import ResenasRepository from '../repositories/resenas-repository.js';
+import { badRequest, conflict, forbidden } from '../helpers/http-error.js';
+import { LIMITES, textoOpcional } from '../helpers/validaciones.js';
 
 export default class ResenasService {
   constructor() {
@@ -16,21 +18,23 @@ export default class ResenasService {
   async crearResenaAsync(idTrabajo, idUsuario, calificacion, comentario) {
     const calificacionNum = Number(calificacion);
     if (!Number.isInteger(calificacionNum) || calificacionNum < 1 || calificacionNum > 5) {
-      throw new Error('La calificación tiene que ser un número entero entre 1 y 5');
+      throw badRequest('La calificación tiene que ser un número entero entre 1 y 5');
     }
+
+    const comentarioOk = textoOpcional(comentario, 'El comentario', LIMITES.COMENTARIO_RESENA);
 
     const elegibilidad = await this.repository.getElegibilidad(idTrabajo, idUsuario);
 
     if (elegibilidad.idReceptor === null) {
-      throw new Error('No participaste de este trabajo');
+      throw forbidden('No participaste de este trabajo');
     }
 
     if (elegibilidad.yaReseño) {
-      throw new Error('Ya dejaste tu reseña para este trabajo');
+      throw conflict('Ya dejaste tu reseña para este trabajo');
     }
 
     if (!elegibilidad.puedeResenar) {
-      throw new Error('Este trabajo todavía no está completado');
+      throw badRequest('Este trabajo todavía no está completado');
     }
 
     try {
@@ -40,7 +44,7 @@ export default class ResenasService {
         idReceptor: elegibilidad.idReceptor,
         esContratante: elegibilidad.esContratante,
         calificacion: calificacionNum,
-        comentario,
+        comentario: comentarioOk,
       });
       return { id, idReceptor: elegibilidad.idReceptor };
     } catch (err) {
@@ -49,7 +53,7 @@ export default class ResenasService {
       // reseñaste" de cualquier otro error real (ej. de conexión), que no
       // debe disfrazarse de "ya reseñaste".
       if (err.code === '23505') {
-        throw new Error('Ya dejaste tu reseña para este trabajo');
+        throw conflict('Ya dejaste tu reseña para este trabajo');
       }
       throw err;
     }

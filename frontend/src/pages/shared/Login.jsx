@@ -5,10 +5,12 @@ import { useAuth } from "../../context/useAuth"
 import styles from "../../styles/Login.module.css"
 
 const ERROR_MESSAGES = {
+  INVALID_EMAIL: "El email no es válido.",
   EMAIL_NOT_FOUND: "No existe ninguna cuenta con ese email.",
   INVALID_PASSWORD: "La contraseña es incorrecta.",
-  UNKNOWN: "Ocurrió un error. Intentá de nuevo.",
 }
+
+const ERROR_DESCONOCIDO = "Ocurrió un error. Intentá de nuevo."
 
 const IconBriefcase = () => (
   <svg viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
@@ -75,10 +77,12 @@ export default function Login() {
         hydrateModo(data.rol)
         navigate(data.rol === "trabajador" ? "/trabajador/inicio" : "/inicio")
       } else {
-        setApiError(data.errorCode ?? "UNKNOWN")
+        setApiError(ERROR_MESSAGES[data.errorCode] ?? data.error ?? ERROR_DESCONOCIDO)
       }
-    } catch {
-      setApiError("UNKNOWN")
+    } catch (err) {
+      // Sin conexión o error del servidor: se muestra el motivo real
+      // ("No se pudo conectar con el servidor...") en vez de uno genérico.
+      setApiError(err.message || ERROR_DESCONOCIDO)
     } finally {
       setLoading(false)
     }
@@ -137,12 +141,8 @@ export default function Login() {
         </button>
       </div>
 
-      <div className={styles.forgotWrapper}>
-        <button type="button" className={styles.forgotBtn}>¿Olvidaste tu contraseña?</button>
-      </div>
-
       {apiError && (
-        <p className={styles.errorMsg}>{ERROR_MESSAGES[apiError] ?? ERROR_MESSAGES.UNKNOWN}</p>
+        <p className={styles.errorMsg}>{apiError}</p>
       )}
 
       <button

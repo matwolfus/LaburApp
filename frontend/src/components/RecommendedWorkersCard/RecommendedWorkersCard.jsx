@@ -8,7 +8,9 @@ const RecommendedCard = ({ person }) => {
   return (
     <div className={styles.card}>
       <div className={styles.avatarWrapper}>
-        <span className={styles.rating}>⭐ {rating.toFixed(1)}</span>
+        <span className={styles.rating}>
+          {rating != null ? `⭐ ${Number(rating).toFixed(1)}` : 'Nuevo'}
+        </span>
         <img src={photo_url} alt={name} className={styles.avatarImg} />
       </div>
       <p className={styles.name}>{name}</p>
