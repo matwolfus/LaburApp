@@ -15,5 +15,39 @@ export const recibePostulaciones = (estadoTrabajo) => estadoTrabajo === 'abierto
 // Estados de la postulación en los que el chat sigue abierto para escribir.
 export const ESTADOS_CHAT_ABIERTO = ['pendiente', 'aceptado', 'por_reconfirmar'];
 
+// Texto de cada estado de postulación (vista del trabajador).
+export const ESTADO_POSTULACION_LABEL = {
+  pendiente: 'Pendiente',
+  aceptado: 'Aceptado',
+  rechazado: 'Rechazado',
+  retirado: 'Retirado',
+  por_reconfirmar: 'Confirmá tu interés',
+};
+
+// Una postulación aceptada muestra el estado del trabajo: "Aceptado" no dice
+// si ya se hizo o si el contratador lo canceló.
+const ESTADO_TRABAJO_ACEPTADO_LABEL = {
+  finalizado: 'Completado',
+  cancelado: 'Trabajo cancelado',
+};
+
+// p: postulación con `estado` y `estado_trabajo` (GET /postulaciones/mias).
+export function labelEstadoPostulacion(p) {
+  if (p.estado === 'aceptado' && ESTADO_TRABAJO_ACEPTADO_LABEL[p.estado_trabajo]) {
+    return ESTADO_TRABAJO_ACEPTADO_LABEL[p.estado_trabajo];
+  }
+  return ESTADO_POSTULACION_LABEL[p.estado] ?? p.estado;
+}
+
+// Mismas reglas que exigirPuedeCancelarPostulacion() del backend: una
+// pendiente se cancela mientras el trabajo siga abierto; una aceptada,
+// mientras el trabajo esté activo. (Una por_reconfirmar también se puede
+// cancelar, pero para eso ya está el botón "Ya no me interesa".)
+export function puedeCancelarPostulacion(p) {
+  if (p.estado === 'pendiente') return recibePostulaciones(p.estado_trabajo);
+  if (p.estado === 'aceptado') return p.estado_trabajo === 'activa';
+  return false;
+}
+
 // Días que tiene un postulante para reconfirmar cuando se reabre un trabajo.
 export const PLAZO_RECONFIRMACION_DIAS = 2;

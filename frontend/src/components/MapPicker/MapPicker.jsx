@@ -1,18 +1,8 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import "../../utils/leafletIcono";
 import styles from "./MapPicker.module.css";
-
-// Vite no resuelve los paths default de los íconos de Leaflet sin esto.
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-});
 
 const FALLBACK_CENTER = { lat: -34.6037, lng: -58.3816 }; // Buenos Aires
 

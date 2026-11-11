@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
 import { getMensajes, getChatInfo, enviarMensaje } from '../../services/api';
+import Avatar from '../../components/Avatar';
 import styles from './ChatIndividual.module.css';
 
 const POLL_INTERVAL_MS = 3500;
@@ -118,11 +119,14 @@ export default function ChatIndividual() {
           disabled={!otro?.id}
           aria-label={otro?.nombre ? `Ver perfil de ${otro.nombre}` : 'Ver perfil'}
         >
-          {otro?.avatar ? (
-            <img src={otro.avatar} alt={otro.nombre} className={styles.headerAvatar} />
-          ) : (
-            <div className={styles.headerAvatarFallback}>{otro?.nombre?.charAt(0)?.toUpperCase() || '?'}</div>
-          )}
+          <Avatar
+            src={otro?.avatar}
+            nombre={otro?.nombre}
+            alt={otro?.nombre}
+            className={styles.headerAvatar}
+            fallbackClassName={styles.headerAvatarFallback}
+            fallbackTag="span"
+          />
           <div className={styles.headerInfo}>
             <span className={styles.headerNombre}>{otro?.nombre || 'Chat'}</span>
             {otro?.tituloTrabajo && <span className={styles.headerTrabajo}>{otro.tituloTrabajo}</span>}

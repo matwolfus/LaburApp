@@ -8,8 +8,10 @@ import PostularmeModal from '../PostularmeModal';
 import DejarResenaModal from '../DejarResenaModal';
 import ReabrirTrabajoModal from '../ReabrirTrabajoModal';
 import ConfirmModal from '../ConfirmModal';
+import Avatar from '../Avatar';
+import { formatFechaCorta, formatFechaTrabajo, formatPesos } from '../../utils/formato';
 import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena, reconfirmarPostulacion } from '../../services/api';
-import { getCategoryIcon } from '../../utils/categoryIcons';
+import IconoCategoria from '../IconoCategoria';
 import { recibePostulaciones } from '../../constants/dominio';
 import styles from './JobDetail.module.css';
 
@@ -27,33 +29,12 @@ function estadoLabel(estado) {
   return ESTADO_LABELS[estado] ?? 'Finalizado';
 }
 
-function formatFecha(scheduledAt) {
-  if (!scheduledAt) return null;
-  const date = new Date(scheduledAt);
-  const tieneHorario = date.getHours() !== 0 || date.getMinutes() !== 0;
-  const fecha = date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
-  const hora = tieneHorario ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : null;
-  return hora ? `${fecha} - ${hora} hs` : fecha;
-}
-
-// Versión corta para la tarjeta flotante (ej. "vie. 13 mar.").
-function formatFechaCorta(scheduledAt) {
-  if (!scheduledAt) return 'A coordinar';
-  const date = new Date(scheduledAt);
-  return date.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' });
-}
-
 function formatDuracion(minutos) {
   if (!minutos) return null;
   const n = Number(minutos);
   if (n < 60) return `${n} minutos`;
   const horas = n / 60;
   return `${horas % 1 === 0 ? horas : horas.toFixed(1)} ${horas === 1 ? 'hora' : 'horas'}`;
-}
-
-function formatPresupuesto(budget) {
-  if (budget == null) return null;
-  return Number(budget).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 }
 
 const JobDetail = ({ jobId, isOwner = true }) => {
@@ -81,7 +62,6 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const [actionError, setActionError] = useState(null);
   // Acción del dueño esperando confirmación: null | 'completar' | 'cancelar'.
   const [confirmacion, setConfirmacion] = useState(null);
-  const [employerAvatarError, setEmployerAvatarError] = useState(false);
 
   // Elegibilidad para dejar reseña: solo aplica una vez que el trabajo está
   // finalizado, para cualquiera de los dos lados (contratador o trabajador).
@@ -191,8 +171,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
 
   const mainImage = job.images?.[0]?.url;
   const showImage = mainImage && !imgError;
-  const CategoryIcon = getCategoryIcon(job.category);
-  const fecha = formatFecha(job.scheduled_at);
+  const fecha = formatFechaTrabajo(job.scheduled_at);
   const duracion = formatDuracion(job.duration);
   // Precedencia: precio ya acordado (contrato activo) > precio que el propio
   // trabajador propuso (postulación pendiente) > presupuesto publicado.
@@ -200,8 +179,8 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   // trabajador se hubiera postulado o lo hubieran contratado por otro monto.
   const precioEfectivo = job.contract_price ?? job.my_proposed_price ?? job.budget;
   const precioDistintoAlPublicado = precioEfectivo != null && job.budget != null && Number(precioEfectivo) !== Number(job.budget);
-  const presupuesto = formatPresupuesto(precioEfectivo);
-  const presupuestoPublicadoOriginal = precioDistintoAlPublicado ? formatPresupuesto(job.budget) : null;
+  const presupuesto = precioEfectivo != null ? formatPesos(precioEfectivo) : null;
+  const presupuestoPublicadoOriginal = precioDistintoAlPublicado ? formatPesos(job.budget) : null;
   const applicantsCount = Number(job.applicants_count) || 0;
   const aceptaPostulaciones = recibePostulaciones(job.estado);
   // Chat: el contratante habla con el trabajador aceptado; el trabajador,
@@ -227,7 +206,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             />
           ) : (
             <div className={styles.heroPlaceholder} aria-hidden="true">
-              <CategoryIcon size={40} strokeWidth={2} />
+              <IconoCategoria categoria={job.category} size={40} strokeWidth={2} />
             </div>
           )}
           <div className={styles.heroOverlay}>
@@ -250,7 +229,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
           </div>
           <div className={styles.summaryDivider} />
           <div className={styles.summaryItem}>
-            <span className={styles.summaryValue}>{formatFechaCorta(job.scheduled_at)}</span>
+            <span className={styles.summaryValue}>{formatFechaCorta(job.scheduled_at) ?? 'A coordinar'}</span>
             <span className={styles.summaryLabel}>Cuándo</span>
           </div>
           <div className={styles.summaryDivider} />
@@ -276,16 +255,13 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             onClick={() => navigate(`/perfil/${job.id_contratante}`)}
             aria-label={`Ver perfil de ${job.employer_name}`}
           >
-            {job.employer_avatar && !employerAvatarError ? (
-              <img
-                className={styles.employerAvatar}
-                src={job.employer_avatar}
-                alt={job.employer_name}
-                onError={() => setEmployerAvatarError(true)}
-              />
-            ) : (
-              <div className={styles.employerAvatarFallback}>{job.employer_name.charAt(0).toUpperCase()}</div>
-            )}
+            <Avatar
+              src={job.employer_avatar}
+              nombre={job.employer_name}
+              alt={job.employer_name}
+              className={styles.employerAvatar}
+              fallbackClassName={styles.employerAvatarFallback}
+            />
             <div className={styles.employerInfo}>
               <p className={styles.employerName}>{job.employer_name}</p>
               {job.employer_rating != null && (

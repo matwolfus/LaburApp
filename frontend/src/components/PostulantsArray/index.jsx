@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import PostulantCard from '../PostulantCard'
 import ConfirmModal from '../ConfirmModal'
 import { recibePostulaciones } from '../../constants/dominio'
+import { formatPesos } from '../../utils/formato'
 import styles from './PostulantsArray.module.css'
 import { getPostulantesByTrabajo, aceptarPostulacion } from '../../services/api';
 
@@ -34,8 +35,9 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
   const [porConfirmar, setPorConfirmar] = useState(null);
   const [aceptando, setAceptando] = useState(false);
 
+  // `loading` arranca en true y no se vuelve a prender en los refetch (tras
+  // aceptar, la lista se actualiza en el lugar sin mostrar "Cargando...").
   const fetchPostulantes = useCallback(() => {
-    setLoading(true);
     return getPostulantesByTrabajo(jobId)
       .then(data => setPostulantes(data.map(mapPostulante)))
       .catch(console.error)
@@ -79,7 +81,6 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
     aceptar(id);
   };
 
-  const formatPesos = (n) => `$${Number(n).toLocaleString('es-AR')}`;
 
   if (!loading && postulantes.length === 0) {
     return (

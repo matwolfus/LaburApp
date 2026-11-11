@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import Avatar from "../Avatar";
 import styles from "./RecommendedWorkersCard.module.css";
 
 const RecommendedCard = ({ person }) => {
@@ -11,7 +12,7 @@ const RecommendedCard = ({ person }) => {
         <span className={styles.rating}>
           {rating != null ? `⭐ ${Number(rating).toFixed(1)}` : 'Nuevo'}
         </span>
-        <img src={photo_url} alt={name} className={styles.avatarImg} />
+        <Avatar src={photo_url} nombre={name} alt={name} className={styles.avatarImg} />
       </div>
       <p className={styles.name}>{name}</p>
       <p className={styles.description}>{description}</p>

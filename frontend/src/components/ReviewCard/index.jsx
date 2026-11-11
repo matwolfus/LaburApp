@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Avatar from "../Avatar";
 import styles from "./ReviewCard.module.css";
 
 export default function ReviewCard({ review }) {
 
     const navigate = useNavigate();
-    const [avatarError, setAvatarError] = useState(false);
 
     const autorId = review?.autor?.id;
     const abrirPerfilAutor = () => {
@@ -34,24 +33,13 @@ export default function ReviewCard({ review }) {
                 style={autorId ? { cursor: "pointer" } : undefined}
             >
 
-                {review?.autor?.avatar && !avatarError ? (
-
-                    <img
-                        src={review.autor.avatar}
-                        alt={`Foto de ${review.autor.nombre}`}
-                        className={styles.avatar}
-                        onError={() => setAvatarError(true)}
-                    />
-
-                ) : (
-
-                    <div className={styles.avatarPlaceholder}>
-                        {review?.autor?.nombre
-                            ?.charAt(0)
-                            ?.toUpperCase() || "U"}
-                    </div>
-
-                )}
+                <Avatar
+                    src={review?.autor?.avatar}
+                    nombre={review?.autor?.nombre}
+                    className={styles.avatar}
+                    fallbackClassName={styles.avatarPlaceholder}
+                    fallback="U"
+                />
 
                 <div className={styles.info}>
 

@@ -2,25 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryCard from "../../components/CategoryCard/CategoryCard.jsx";
 import JobSearchCard from "../../components/JobSearchCard/index.jsx";
+import PostulacionCard from "../../components/PostulacionCard";
 import { getCategorias, getMiUsuario, buscarTrabajos, getMisPostulaciones } from "../../services/api";
 // Reusa el CSS module de InicioContratador: mismas clases genéricas
 // (homeScreen/content/sectionTitle/etc.), el layout de este Home es
 // estructuralmente igual, solo cambian los datos.
 import styles from "../../styles/InicioContratador.module.css";
-import "../../styles/ofertas.css";
-
-const ESTADO_LABEL = {
-  pendiente: "Pendiente",
-  aceptado: "Aceptado",
-  rechazado: "Rechazado",
-  retirado: "Retirado",
-  por_reconfirmar: "Confirmá tu interés",
-};
-
-const etiquetaPostulacion = (p) =>
-  p.estado === "aceptado" && p.estado_trabajo === "finalizado"
-    ? "Completado"
-    : ESTADO_LABEL[p.estado] ?? p.estado;
 
 export default function HomeTrabajador() {
   const [user, setUser] = useState(null);
@@ -132,32 +119,7 @@ export default function HomeTrabajador() {
           ) : (
             <div className={styles.jobsList}>
               {postulaciones.slice(0, 3).map((p) => (
-                <div className="job-card" key={p.id}>
-                  <div className="job-card__top">
-                    {p.image_url ? (
-                      <img className="job-card__image" src={p.image_url} alt={p.titulo_trabajo} />
-                    ) : (
-                      <div className="job-card__image job-card__image--placeholder" aria-hidden="true">🧰</div>
-                    )}
-                    <div className="job-card__info">
-                      <h3 className="job-card__title">{p.titulo_trabajo}</h3>
-                      <p className="job-card__date">
-                        {p.categoria ? `${p.categoria} · ` : ""}${Number(p.precio_propuesto).toLocaleString("es-AR")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="job-card__bottom">
-                    <span className="job-card__count">{etiquetaPostulacion(p)}</span>
-                    <div className="job-card__actions">
-                      <button
-                        className="job-card__btn job-card__btn--outline"
-                        onClick={() => navigate(`/trabajador/trabajos/${p.id_trabajo}`)}
-                      >
-                        Ver detalle
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <PostulacionCard key={p.id} postulacion={p} />
               ))}
             </div>
           )}

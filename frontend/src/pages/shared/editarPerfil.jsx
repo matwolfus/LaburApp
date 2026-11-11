@@ -5,6 +5,7 @@ import { uploadFotos, actualizarMisCategorias, getCategorias, getMiUsuario, actu
 import UbicacionSelector from "../../components/UbicacionSelector";
 import { resizeImage } from "../../utils/resizeImage";
 import { ACCEPT_IMAGENES, TIPOS_IMAGEN } from "../../constants/dominio";
+import Avatar from "../../components/Avatar";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -413,17 +414,15 @@ export default function EditarPerfil() {
                             disabled={uploadingAvatar}
                             aria-label={avatar ? "Cambiar foto de perfil" : "Elegir foto de perfil"}
                         >
-                            {(avatarPreview || avatar) ? (
-                                <img
-                                    src={avatarPreview || avatar}
-                                    alt="Foto de perfil"
-                                    className={styles.avatarPreview}
-                                />
-                            ) : (
-                                <span className={styles.avatarPlaceholder}>
-                                    {nombreCompleto?.charAt(0)?.toUpperCase() || <User size={40} />}
-                                </span>
-                            )}
+                            <Avatar
+                                src={avatarPreview || avatar}
+                                nombre={nombreCompleto}
+                                alt="Foto de perfil"
+                                className={styles.avatarPreview}
+                                fallbackClassName={styles.avatarPlaceholder}
+                                fallbackTag="span"
+                                fallback={<User size={40} />}
+                            />
                             <span className={styles.avatarBadge}>
                                 <Camera size={16} />
                             </span>
