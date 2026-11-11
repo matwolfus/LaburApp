@@ -110,7 +110,7 @@ export default class UsuariosRepository {
         });
     }
 
-    // Trabajadores para la pantalla "Buscar" del contratante. Filtros
+    // Trabajadores para la pantalla "Buscar" del contratador. Filtros
     // opcionales y combinables: categoría (oficio que ofrece), provincia y
     // localidad (zona de trabajo = localidad de su perfil). Con filtro de
     // ubicación, los perfiles sin localidad cargada no aparecen.

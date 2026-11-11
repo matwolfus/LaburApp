@@ -97,3 +97,21 @@ src/
 - Las fechas se guardan en hora argentina sin zona horaria: usar `AHORA`
   (`repositories/sql-fechas.js`) en vez de `NOW()`.
 - Los estados válidos y sus transiciones están en `domain/estados.js`.
+
+## Vocabulario
+
+Para que la app y el código hablen igual:
+
+| Usar | En vez de | Qué es |
+|---|---|---|
+| **trabajo** | tarea, changa, oferta | Lo que publica un contratador. "Ofertas" es solo el nombre de la sección donde el contratador ve los suyos |
+| **contratador** | contratante, employer | El que publica trabajos y elige postulantes |
+| **trabajador** | | El que se postula |
+| **postulación** | | Un trabajador ofreciéndose para un trabajo (con su precio) |
+| **contrato** | | Se crea al aceptar una postulación |
+
+Excepciones por compatibilidad: algunos nombres de la base y de la API usan
+otros términos y no se renombraron para no romper datos ni el front:
+`id_contratante`, `es_contratante`, `biografia_contratante`, `employer_*` en el
+detalle de un trabajo. También los estados: un trabajo con trabajador
+aceptado está `activa` y su contrato `activo` (ver `domain/estados.js`).

@@ -38,7 +38,7 @@ const PrioritySelector = ({ value, onChange }) => {
       </div>
 
       <p className={styles.helperText}>
-        ⓘ Las tareas urgentes tienen mayor visibilidad
+        ⓘ Los trabajos urgentes tienen mayor visibilidad
       </p>
     </div>
   );

@@ -65,7 +65,7 @@ export default function FotosTrabajoEditor({ existentes, nuevas, onExistentesCha
           <p className={styles.photosTitle}>
             Agregar fotos <span className={styles.optional}>(Opcional)</span>
           </p>
-          <p className={styles.photosSubtitle}>Mostrá lo que necesitás para recibir mejores ofertas</p>
+          <p className={styles.photosSubtitle}>Mostrá lo que necesitás para recibir mejores propuestas</p>
         </div>
       </div>
 

@@ -9,7 +9,7 @@ export default class TrabajosRepository {
     this.db = new Db();
   }
 
-  // Todas las ofertas de un contratante (cualquier estado) para la pantalla "Ofertas".
+  // Todas las ofertas de un contratador (cualquier estado) para la pantalla "Ofertas".
   // Incluye 'estado' para que el frontend agrupe en secciones. Subconsultas en vez de
   // JOIN + GROUP BY para no inflar el COUNT por el cruce con imagenes_trabajo.
   async getAllJobsByEmployer(employerId) {
@@ -43,7 +43,7 @@ export default class TrabajosRepository {
     return await this.db.queryAll(sql, [employerId]);
   }
 
-  // Trabajos de un contratante para la home ("Tus Trabajos").
+  // Trabajos de un contratador para la home ("Tus Trabajos").
   // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado, category }.
   // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
   async getJobsByEmployer(employerId) {
@@ -89,7 +89,7 @@ export default class TrabajosRepository {
   }
 
    // Trabajos abiertos para que un trabajador los descubra (Home / Buscar).
-  // Sin auth -> NO joinea usuarios (no exponer datos del contratante a
+  // Sin auth -> NO joinea usuarios (no exponer datos del contratador a
   // cualquiera sin loguearse). Filtros opcionales y combinables: categoría,
   // provincia y localidad. Sin filtros trae todos los abiertos (feed del Home).
   // idExcluirContratante: el usuario logueado, para no mostrarle como

@@ -37,7 +37,7 @@ export default function Ofertas() {
   // 'abierto' = publicada y buscando candidatos.
   const upcomingJobs = jobs.filter((job) => job.estado === 'abierto');
   const activeJobs = jobs.filter((job) => job.estado === 'activa');
-  // El trabajador aceptado canceló: esperan que el contratante los reabra.
+  // El trabajador aceptado canceló: esperan que el contratador los reabra.
   const enEsperaJobs = jobs.filter((job) => job.estado === 'en_espera');
   // Trabajos cerrados. Antes no aparecían en ninguna sección: un trabajo
   // vencido, finalizado o cancelado desaparecía de "Ofertas". Más recientes primero.

@@ -80,7 +80,7 @@ export default class TrabajosService {
   // ALTA Y EDICIÓN
   // =========================================================
 
-  // "Publicar tarea". El trabajo y sus fotos se guardan juntos.
+  // "Publicar trabajo". El trabajo y sus fotos se guardan juntos.
   async createJobAsync(entity, imagenes = []) {
     this.#validateJobFields(entity, imagenes);
 

@@ -11,7 +11,7 @@ const BADGE_CONFIG = {
 
 // Valores de `estado` restringidos por CHECK constraint en la tabla postulaciones:
 // 'pendiente' | 'aceptado' | 'rechazado' | 'retirado' | 'por_reconfirmar'
-// (las dos últimas no llegan acá: el backend no las lista al contratante).
+// (las dos últimas no llegan acá: el backend no las lista al contratador).
 const ESTADO_CONFIG = {
   aceptado:  { label: 'Aceptado',  className: styles.badgeAceptada },
   rechazado: { label: 'Rechazado', className: styles.badgeRechazada },

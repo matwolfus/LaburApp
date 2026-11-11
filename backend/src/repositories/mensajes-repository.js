@@ -11,7 +11,7 @@ export default class MensajesRepository {
   }
 
   // Lista de conversaciones del usuario: un chat por postulación de la que
-  // participa (como contratante dueño del trabajo o como trabajador que se
+  // participa (como contratador dueño del trabajo o como trabajador que se
   // postuló), con el último mensaje, cantidad de no leídos, y datos de la
   // otra persona / del trabajo. Incluye las postulaciones aceptadas aunque
   // no tengan mensajes todavía (para poder arrancar la conversación).
@@ -118,7 +118,7 @@ export default class MensajesRepository {
   }
 
   // Para que el service valide que idUsuario participa del chat (es el
-  // contratante dueño del trabajo o el trabajador de la postulación) antes
+  // contratador dueño del trabajo o el trabajador de la postulación) antes
   // de mostrarle/dejarlo escribir mensajes.
   async getParticipantes(idPostulacion) {
     return await this.db.queryOne(

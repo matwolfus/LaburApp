@@ -47,7 +47,7 @@ router.get('/contratador', authMiddleware, async (req, res) => {
   res.json(await service.getJobsByEmployerAsync(req.userId));
 });
 
-// POST /api/trabajos -> "Publicar tarea".
+// POST /api/trabajos -> "Publicar trabajo".
 router.post('/', authMiddleware, async (req, res) => {
   const b = req.body ?? {};
   const id = await service.createJobAsync(trabajoDesdeBody(b, req.userId), b.imagenes ?? []);

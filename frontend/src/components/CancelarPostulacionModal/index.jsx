@@ -13,7 +13,7 @@ import styles from './CancelarPostulacionModal.module.css';
 // no prometer cosas que no existen.
 //
 // aceptada: si la postulación ya estaba aceptada, el trabajo queda en
-// espera hasta que el contratante lo reabra (el texto lo avisa).
+// espera hasta que el contratador lo reabra (el texto lo avisa).
 export default function CancelarPostulacionModal({ open, postulacionId, aceptada = false, onClose, onCancelled }) {
   const [step, setStep] = useState('confirm'); // 'confirm' | 'success'
   const [entendido, setEntendido] = useState(false);
@@ -71,9 +71,9 @@ export default function CancelarPostulacionModal({ open, postulacionId, aceptada
 
         <div className={styles.alertBox}>
           {aceptada && (
-            <p>Ya te habían aceptado: el trabajo queda en espera hasta que el contratante lo reabra.</p>
+            <p>Ya te habían aceptado: el trabajo queda en espera hasta que el contratador lo reabra.</p>
           )}
-          <p>El contratante va a recibir un aviso y no vas a poder deshacer la cancelación.</p>
+          <p>El contratador va a recibir un aviso y no vas a poder deshacer la cancelación.</p>
         </div>
 
         <label className={styles.checkboxRow}>

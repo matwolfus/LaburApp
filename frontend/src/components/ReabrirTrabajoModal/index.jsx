@@ -8,7 +8,7 @@ import { PLAZO_RECONFIRMACION_DIAS } from '../../constants/dominio';
 import styles from './ReabrirTrabajoModal.module.css';
 
 // El trabajador aceptado canceló y el trabajo quedó en espera: el
-// contratante lo reabre eligiendo una fecha nueva. Los postulantes que el
+// contratador lo reabre eligiendo una fecha nueva. Los postulantes que el
 // sistema había rechazado reciben un aviso para confirmar si siguen
 // interesados (tienen PLAZO_RECONFIRMACION_DIAS días).
 export default function ReabrirTrabajoModal({ open, jobId, onClose, onReopened }) {

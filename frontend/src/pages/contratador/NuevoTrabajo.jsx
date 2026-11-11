@@ -130,7 +130,7 @@ export default function NuevoTrabajo() {
         navigate("/inicio");
       }
     } catch (err) {
-      setError(err.message || (isEdit ? "Error al guardar los cambios" : "Error al publicar la tarea"));
+      setError(err.message || (isEdit ? "Error al guardar los cambios" : "Error al publicar el trabajo"));
     } finally {
       setSubmitting(false);
       setSubiendoFotos(false);

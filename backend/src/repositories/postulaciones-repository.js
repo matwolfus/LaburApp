@@ -8,7 +8,7 @@ import { AHORA } from './sql-fechas.js';
 import { cantidadComoTrabajador, promedioComoTrabajador } from './sql-calificaciones.js';
 import { PLAZO_RECONFIRMACION_DIAS } from '../domain/estados.js';
 
-// Postulaciones que el contratante ve como "postulantes": las retiradas y
+// Postulaciones que el contratador ve como "postulantes": las retiradas y
 // las que esperan reconfirmación no cuentan (no se pueden aceptar). La usan
 // la lista de postulantes y todos los conteos, para que coincidan.
 export const FILTRO_POSTULANTES_VISIBLES = "p.estado NOT IN ('retirado', 'por_reconfirmar')";
