@@ -1,0 +1,1432 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict jlhVFXsXK2givG25kYcRB5VEfDSWKqrBl9OWUJYuv8TvzvkmpJiZVDvvtWZcRzI
+
+-- Dumped from database version 17.6
+-- Dumped by pg_dump version 17.6
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA public;
+
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: categorias; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.categorias (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL,
+    url_avatar character varying
+);
+
+
+--
+-- Name: categorias_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.categorias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: categorias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.categorias_id_seq OWNED BY public.categorias.id;
+
+
+--
+-- Name: contratos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.contratos (
+    id integer NOT NULL,
+    id_trabajo integer NOT NULL,
+    id_postulacion integer NOT NULL,
+    id_contratante integer NOT NULL,
+    id_trabajador integer NOT NULL,
+    precio_acordado numeric(10,2) NOT NULL,
+    estado character varying(20) DEFAULT 'activo'::character varying NOT NULL,
+    iniciado_en timestamp without time zone,
+    completado_en timestamp without time zone,
+    creado_en timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT contratos_estado_check CHECK (((estado)::text = ANY ((ARRAY['activo'::character varying, 'completado'::character varying, 'en_disputa'::character varying, 'cancelado'::character varying])::text[])))
+);
+
+
+--
+-- Name: contratos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.contratos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: contratos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.contratos_id_seq OWNED BY public.contratos.id;
+
+
+--
+-- Name: imagenes_trabajo; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.imagenes_trabajo (
+    id integer NOT NULL,
+    id_trabajo integer NOT NULL,
+    url_imagen character varying(500) NOT NULL,
+    orden integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: imagenes_trabajo_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.imagenes_trabajo_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: imagenes_trabajo_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.imagenes_trabajo_id_seq OWNED BY public.imagenes_trabajo.id;
+
+
+--
+-- Name: localidades; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.localidades (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL,
+    id_provincia integer NOT NULL
+);
+
+
+--
+-- Name: localidades_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.localidades_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: localidades_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.localidades_id_seq OWNED BY public.localidades.id;
+
+
+--
+-- Name: mensajes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mensajes (
+    id integer NOT NULL,
+    id_contrato integer,
+    id_remitente integer NOT NULL,
+    cuerpo text NOT NULL,
+    enviado_en timestamp without time zone DEFAULT now() NOT NULL,
+    leido_en timestamp without time zone,
+    id_postulacion integer NOT NULL
+);
+
+
+--
+-- Name: mensajes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mensajes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mensajes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mensajes_id_seq OWNED BY public.mensajes.id;
+
+
+--
+-- Name: notificaciones; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notificaciones (
+    id integer NOT NULL,
+    id_usuario integer NOT NULL,
+    tipo character varying(50) NOT NULL,
+    datos jsonb,
+    leido boolean DEFAULT false NOT NULL,
+    creado_en timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: notificaciones_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notificaciones_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notificaciones_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notificaciones_id_seq OWNED BY public.notificaciones.id;
+
+
+--
+-- Name: postulaciones; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.postulaciones (
+    id integer NOT NULL,
+    id_trabajo integer NOT NULL,
+    id_trabajador integer NOT NULL,
+    precio_propuesto numeric(10,2),
+    estado character varying(20) DEFAULT 'pendiente'::character varying NOT NULL,
+    postulado_en timestamp without time zone DEFAULT now() NOT NULL,
+    rechazo_automatico boolean DEFAULT false NOT NULL,
+    reconfirmar_hasta timestamp without time zone,
+    CONSTRAINT postulaciones_estado_check CHECK (((estado)::text = ANY ((ARRAY['pendiente'::character varying, 'aceptado'::character varying, 'rechazado'::character varying, 'retirado'::character varying, 'por_reconfirmar'::character varying])::text[])))
+);
+
+
+--
+-- Name: postulaciones_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.postulaciones_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: postulaciones_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.postulaciones_id_seq OWNED BY public.postulaciones.id;
+
+
+--
+-- Name: provincias; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.provincias (
+    id integer NOT NULL,
+    nombre character varying(100) NOT NULL
+);
+
+
+--
+-- Name: provincias_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.provincias_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: provincias_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.provincias_id_seq OWNED BY public.provincias.id;
+
+
+--
+-- Name: resenas; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.resenas (
+    id integer NOT NULL,
+    id_contrato integer NOT NULL,
+    id_autor integer NOT NULL,
+    id_receptor integer NOT NULL,
+    es_contratante boolean NOT NULL,
+    calificacion smallint NOT NULL,
+    comentario text,
+    creado_en timestamp without time zone DEFAULT now() NOT NULL,
+    CONSTRAINT resenas_calificacion_check CHECK (((calificacion >= 1) AND (calificacion <= 5)))
+);
+
+
+--
+-- Name: resenas_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.resenas_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: resenas_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.resenas_id_seq OWNED BY public.resenas.id;
+
+
+--
+-- Name: trabajos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trabajos (
+    id integer NOT NULL,
+    id_contratante integer NOT NULL,
+    id_categoria integer NOT NULL,
+    titulo character varying(255) NOT NULL,
+    descripcion text,
+    id_localidad integer,
+    presupuesto numeric(10,2),
+    estado character varying(20) DEFAULT 'abierto'::character varying NOT NULL,
+    programado_para timestamp without time zone,
+    creado_en timestamp without time zone DEFAULT now() NOT NULL,
+    actualizado_en timestamp without time zone DEFAULT now() NOT NULL,
+    prioridad character varying(20) DEFAULT 'normal'::character varying NOT NULL,
+    duracion character varying(50),
+    direccion character varying(255),
+    lat double precision,
+    lng double precision
+);
+
+
+--
+-- Name: trabajos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trabajos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trabajos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trabajos_id_seq OWNED BY public.trabajos.id;
+
+
+--
+-- Name: usuario_categoria; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.usuario_categoria (
+    id_usuario integer NOT NULL,
+    id_categoria integer NOT NULL
+);
+
+
+--
+-- Name: usuarios; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.usuarios (
+    id integer NOT NULL,
+    nombre_completo character varying(120) NOT NULL,
+    email character varying(255) NOT NULL,
+    telefono character varying(20),
+    contrasena character varying(255),
+    url_avatar character varying(500),
+    biografia_trabajador text,
+    id_localidad integer,
+    prom_calif_trabajador numeric(3,2),
+    prom_calif_contratante numeric(3,2),
+    creado_en timestamp without time zone DEFAULT now() NOT NULL,
+    actualizado_en timestamp without time zone DEFAULT now() NOT NULL,
+    ultimo_rol character varying(20) DEFAULT 'trabajador'::character varying NOT NULL,
+    dni_frente_url character varying(500),
+    dni_reverso_url character varying(500),
+    verificado boolean DEFAULT false NOT NULL,
+    biografia_contratante text,
+    CONSTRAINT usuarios_rol_check CHECK (((ultimo_rol)::text = ANY ((ARRAY['contratador'::character varying, 'trabajador'::character varying])::text[])))
+);
+
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.usuarios_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.usuarios_id_seq OWNED BY public.usuarios.id;
+
+
+--
+-- Name: categorias id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.categorias ALTER COLUMN id SET DEFAULT nextval('public.categorias_id_seq'::regclass);
+
+
+--
+-- Name: contratos id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contratos ALTER COLUMN id SET DEFAULT nextval('public.contratos_id_seq'::regclass);
+
+
+--
+-- Name: imagenes_trabajo id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.imagenes_trabajo ALTER COLUMN id SET DEFAULT nextval('public.imagenes_trabajo_id_seq'::regclass);
+
+
+--
+-- Name: localidades id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.localidades ALTER COLUMN id SET DEFAULT nextval('public.localidades_id_seq'::regclass);
+
+
+--
+-- Name: mensajes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mensajes ALTER COLUMN id SET DEFAULT nextval('public.mensajes_id_seq'::regclass);
+
+
+--
+-- Name: notificaciones id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notificaciones ALTER COLUMN id SET DEFAULT nextval('public.notificaciones_id_seq'::regclass);
+
+
+--
+-- Name: postulaciones id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postulaciones ALTER COLUMN id SET DEFAULT nextval('public.postulaciones_id_seq'::regclass);
+
+
+--
+-- Name: provincias id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.provincias ALTER COLUMN id SET DEFAULT nextval('public.provincias_id_seq'::regclass);
+
+
+--
+-- Name: resenas id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resenas ALTER COLUMN id SET DEFAULT nextval('public.resenas_id_seq'::regclass);
+
+
+--
+-- Name: trabajos id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trabajos ALTER COLUMN id SET DEFAULT nextval('public.trabajos_id_seq'::regclass);
+
+
+--
+-- Name: usuarios id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios ALTER COLUMN id SET DEFAULT nextval('public.usuarios_id_seq'::regclass);
+
+
+--
+-- Data for Name: categorias; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.categorias (id, nombre, url_avatar) FROM stdin;
+1	Mascotas	\N
+2	Cuidado	\N
+3	Clases	\N
+4	Limpieza	\N
+\.
+
+
+--
+-- Data for Name: contratos; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.contratos (id, id_trabajo, id_postulacion, id_contratante, id_trabajador, precio_acordado, estado, iniciado_en, completado_en, creado_en) FROM stdin;
+2	22	19	29	63	100000.00	completado	2026-09-14 14:59:00.138733	2026-09-28 14:39:58.535527	2026-09-14 14:59:00.138733
+3	22	19	29	63	100000.00	completado	2026-09-14 14:59:00.614048	2026-09-28 14:39:58.535527	2026-09-14 14:59:00.614048
+4	33	36	29	66	444.00	completado	2026-09-28 14:37:07.104771	2026-09-28 14:40:07.000574	2026-09-28 14:37:07.104771
+7	39	39	63	66	5000.00	completado	2026-09-28 21:26:47.828381	2026-09-28 21:26:57.750228	2026-09-28 21:26:47.828381
+6	34	37	29	66	44.00	completado	2026-09-28 20:48:33.322892	2026-09-28 21:32:21.11731	2026-09-28 20:48:33.322892
+8	44	47	69	29	40000.00	activo	2026-10-02 12:55:44.296043	\N	2026-10-02 12:55:44.296043
+9	45	48	69	70	11.00	activo	2026-10-02 12:56:56.884968	\N	2026-10-02 12:56:56.884968
+10	47	52	29	69	10000.00	activo	2026-10-16 11:26:23.715261	\N	2026-10-16 11:26:23.715261
+11	48	53	29	73	10000.00	activo	2026-10-19 14:36:49.160073	\N	2026-10-19 14:36:49.160073
+\.
+
+
+--
+-- Data for Name: imagenes_trabajo; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.imagenes_trabajo (id, id_trabajo, url_imagen, orden) FROM stdin;
+1	1	https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400&h=400&fit=crop	1
+2	3	https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&h=400&fit=crop	0
+3	3	https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400&h=400&fit=crop	1
+5	8	http://localhost:3000/uploads/1782748265270-acc55664f3d9.webp	0
+6	13	http://localhost:3000/uploads/1783089803757-06695d3a1d56.jfif	0
+7	14	http://localhost:3000/uploads/1783090426828-bfb5215347d9.jfif	0
+8	16	http://localhost:3000/uploads/1783091301871-481f9325cdc0.jfif	0
+20	22	http://localhost:3000/uploads/1786707570812-f61a4af6835e.jpg	0
+22	29	http://localhost:3000/uploads/1786712001055-ad5cc710e74d.jpg	0
+24	38	https://bohmjgbrhpjliilweene.supabase.co/storage/v1/object/public/prueba/1790628476965-7a49fb9a785d.png	0
+\.
+
+
+--
+-- Data for Name: localidades; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.localidades (id, nombre, id_provincia) FROM stdin;
+1	Palermo	1
+3	Núñez	1
+4	La Boca	1
+5	Coghlan	1
+6	Villa Devoto	1
+7	Villa Real	1
+8	Villa Pueyrredón	1
+9	Villa Crespo	1
+10	San Cristóbal	1
+11	Belgrano	1
+12	Barracas	1
+13	Parque Chacabuco	1
+14	Monte Castro	1
+15	Floresta	1
+16	Villa Riachuelo	1
+17	Chacarita	1
+18	Versalles	1
+19	Caballito	1
+20	Parque Patricios	1
+21	Vélez Sarsfield	1
+22	Boedo	1
+23	Liniers	1
+24	Villa Soldati	1
+25	Villa del Parque	1
+26	Villa Urquiza	1
+27	Villa Santa Rita	1
+28	Saavedra	1
+29	Montserrat	1
+30	Villa Ortúzar	1
+31	Agronomía	1
+32	Balvanera	1
+33	Flores	1
+34	Puerto Madero	1
+35	Nueva Pompeya	1
+36	La Paternal	1
+37	Constitución	1
+38	Parque Chas	1
+39	Mataderos	1
+40	San Nicolás	1
+41	Villa Luro	1
+42	Villa General Mitre	1
+43	Almagro	1
+44	Parque Avellaneda	1
+45	Recoleta	1
+46	Colegiales	1
+47	San Telmo	1
+48	Villa Lugano	1
+49	Retiro	1
+\.
+
+
+--
+-- Data for Name: mensajes; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.mensajes (id, id_contrato, id_remitente, cuerpo, enviado_en, leido_en, id_postulacion) FROM stdin;
+4	6	29	ohla	2026-09-28 22:02:48.602287	2026-09-29 16:56:01.44393	37
+5	6	29	como andas	2026-09-28 22:02:51.204133	2026-09-29 16:56:01.44393	37
+8	7	66	facha	2026-09-29 16:56:24.20196	\N	39
+9	7	66	se manda el doble	2026-09-29 16:56:31.880386	\N	39
+10	7	66	ayuda	2026-09-29 16:56:37.152228	\N	39
+11	7	66	facha	2026-09-29 16:56:39.231408	\N	39
+6	6	66	todo bien por suerte	2026-09-29 16:56:09.018476	2026-09-29 18:48:28.076546	37
+7	6	66	vos?	2026-09-29 16:56:14.114359	2026-09-29 18:48:28.076546	37
+12	6	29	biem bien	2026-09-29 19:13:54.205968	2026-09-30 11:53:48.413559	37
+14	9	70	Hola me aceptaste ?	2026-10-02 12:57:38.087646	2026-10-02 12:57:46.376663	48
+15	9	69	Hola	2026-10-02 12:57:51.308286	2026-10-02 12:57:53.769288	48
+16	8	69	aaa	2026-10-02 13:07:10.914151	2026-10-02 13:07:20.830197	47
+13	6	66	me alegro fer, escuchame tengo un laburito para vos	2026-09-30 11:54:16.175863	2026-10-09 12:53:26.313289	37
+17	\N	29	Hola	2026-10-09 13:00:47.342493	2026-10-09 13:00:54.053915	51
+18	10	29	HOLA	2026-10-16 11:26:29.780144	2026-10-16 12:43:21.777832	52
+19	10	69	HO0LA	2026-10-16 12:43:24.131267	2026-10-16 12:43:24.764528	52
+20	\N	73	a	2026-10-19 13:25:44.734721	2026-10-19 13:25:50.947331	53
+21	11	29	a	2026-10-19 14:36:53.632723	\N	53
+\.
+
+
+--
+-- Data for Name: notificaciones; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.notificaciones (id, id_usuario, tipo, datos, leido, creado_en) FROM stdin;
+17	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"clase para mi hijo\\"", "id_trabajo": 22, "id_referencia": 63, "id_postulacion": 19}	t	2026-09-10 23:54:56.240251
+22	21	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"llimpia mi casa\\"", "id_trabajo": 19, "id_referencia": 63, "id_postulacion": 25}	f	2026-09-11 01:40:56.15778
+23	9	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"hola\\"", "id_trabajo": 17, "id_referencia": 63, "id_postulacion": 27}	f	2026-09-11 01:49:38.671095
+24	19	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Paseador de perros\\"", "id_trabajo": 18, "id_referencia": 63, "id_postulacion": 28}	f	2026-09-11 01:49:50.245932
+26	2	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Paseador de perros fin de semana\\"", "id_trabajo": 3, "id_referencia": 29, "id_postulacion": 30}	f	2026-09-14 11:30:50.475947
+30	51	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"clase para mi hijo\\"", "id_trabajo": 29, "id_referencia": 66, "id_postulacion": 34}	f	2026-09-28 14:15:51.40333
+31	51	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"clase para mi hijo\\"", "id_trabajo": 29, "id_referencia": 66, "id_postulacion": 34}	f	2026-09-28 14:25:32.173515
+32	2	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Clase para mi hijo\\"", "id_trabajo": 9, "id_referencia": 66, "id_postulacion": 35}	f	2026-09-28 14:26:21.132782
+33	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Lucho aca\\"", "id_trabajo": 33, "id_referencia": 66, "id_postulacion": 36}	t	2026-09-28 14:33:50.318358
+35	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"ASASAS\\"", "id_trabajo": 34, "id_referencia": 66, "id_postulacion": 37}	t	2026-09-28 14:42:52.499143
+38	29	nueva_resena	{"cuerpo": null, "titulo": "Recibiste una nueva reseña", "id_referencia": 33}	t	2026-09-28 21:17:31.30849
+43	29	trabajo_completado	{"cuerpo": null, "titulo": "Marcaste \\"ASASAS\\" como completado. ¡Dejá tu reseña!", "id_referencia": "34"}	t	2026-09-28 21:32:21.287367
+28	63	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"clase para mi hijo\\"!", "id_referencia": 22}	f	2026-09-14 14:59:00.433914
+29	63	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"clase para mi hijo\\"!", "id_referencia": 22}	f	2026-09-14 14:59:00.81353
+41	63	trabajo_completado	{"cuerpo": null, "titulo": "Marcaste \\"Paseo de perro - prueba rese�as\\" como completado. ¡Dejá tu reseña!", "id_referencia": "39"}	f	2026-09-28 21:26:57.900491
+40	66	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"Paseo de perro - prueba rese�as\\"!", "id_referencia": 39}	t	2026-09-28 21:26:48.062685
+37	66	nueva_resena	{"cuerpo": null, "titulo": "Recibiste una nueva reseña", "id_referencia": 33}	t	2026-09-28 21:17:06.820043
+36	66	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"ASASAS\\"!", "id_referencia": 34}	t	2026-09-28 20:48:33.541105
+34	66	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"Lucho aca\\"!", "id_referencia": 33}	t	2026-09-28 14:37:07.312027
+45	66	nueva_resena	{"cuerpo": null, "titulo": "Recibiste una nueva reseña", "id_referencia": "34"}	t	2026-09-28 21:32:37.064896
+44	66	trabajo_completado	{"cuerpo": null, "titulo": "\\"ASASAS\\" se completó. ¡Dejá tu reseña!", "id_referencia": "34"}	t	2026-09-28 21:32:21.330227
+42	66	trabajo_completado	{"cuerpo": null, "titulo": "\\"Paseo de perro - prueba rese�as\\" se completó. ¡Dejá tu reseña!", "id_referencia": "39"}	t	2026-09-28 21:26:57.940629
+39	63	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Paseo de perro - prueba rese�as\\"", "id_trabajo": 39, "id_referencia": 66, "id_postulacion": 39}	f	2026-09-28 21:26:02.278296
+51	63	nueva_resena	{"cuerpo": null, "titulo": "Recibiste una nueva reseña", "id_referencia": "39"}	f	2026-09-29 16:49:35.866055
+66	51	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"clase para mi hijo\\"", "id_trabajo": 29, "id_referencia": 68, "id_postulacion": 44}	f	2026-10-02 11:49:07.845667
+77	66	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Lucho de prueba\\"", "id_trabajo": 42, "id_referencia": 71, "id_postulacion": 49}	f	2026-10-05 14:58:10.084021
+46	66	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 36, "ref_es_postulacion": true}	t	2026-09-28 22:00:50.568018
+72	69	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"AA\\"", "id_trabajo": 45, "id_referencia": 70, "id_postulacion": 48}	t	2026-10-02 12:56:44.848741
+69	69	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Limpieza una vez por semana\\"", "id_trabajo": 44, "id_referencia": 29, "id_postulacion": 47}	t	2026-10-02 12:54:27.062834
+68	69	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Limpieza una vez por semana\\"", "id_trabajo": 44, "id_referencia": 70, "id_postulacion": 46}	t	2026-10-02 12:43:34.183418
+67	69	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Limpieza una vez por semana\\"", "id_trabajo": 44, "id_referencia": 70, "id_postulacion": 46}	t	2026-10-02 11:54:40.705136
+71	70	postulacion_rechazada	{"cuerpo": null, "titulo": "Tu postulación para \\"Limpieza una vez por semana\\" no fue seleccionada", "id_referencia": 44}	f	2026-10-02 12:55:44.543048
+73	70	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"AA\\"!", "id_referencia": 45}	f	2026-10-02 12:56:57.095673
+54	63	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 39, "ref_es_postulacion": true}	f	2026-09-29 16:56:24.27077
+58	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"arte\\"", "id_trabajo": 38, "id_referencia": 66, "id_postulacion": 43}	t	2026-09-29 17:20:06.636792
+63	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"arte\\"", "id_trabajo": 38, "id_referencia": 66, "id_postulacion": 43}	t	2026-09-30 12:02:57.361983
+64	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"arte\\"", "id_trabajo": 38, "id_referencia": 66, "id_postulacion": 43}	t	2026-09-30 12:03:10.09066
+61	29	nueva_resena	{"cuerpo": null, "titulo": "Recibiste una nueva reseña", "id_referencia": "34"}	t	2026-09-30 11:53:36.211473
+48	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 36, "ref_es_postulacion": true}	t	2026-09-28 22:01:21.347395
+65	29	nueva_resena	{"cuerpo": null, "titulo": "Recibiste una nueva reseña", "id_referencia": "33"}	t	2026-09-30 12:04:21.949218
+70	29	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"Limpieza una vez por semana\\"!", "id_referencia": 44}	t	2026-10-02 12:55:44.507072
+52	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 37, "ref_es_postulacion": true}	t	2026-09-29 16:56:09.089379
+53	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 37, "ref_es_postulacion": true}	t	2026-09-29 16:56:14.183188
+55	63	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 39, "ref_es_postulacion": true}	f	2026-09-29 16:56:31.946394
+56	63	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 39, "ref_es_postulacion": true}	f	2026-09-29 16:56:37.218117
+57	63	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 39, "ref_es_postulacion": true}	f	2026-09-29 16:56:39.297798
+60	66	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 37, "ref_es_postulacion": true}	t	2026-09-29 19:13:54.289666
+50	66	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 37, "ref_es_postulacion": true}	t	2026-09-28 22:02:51.302138
+49	66	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 37, "ref_es_postulacion": true}	t	2026-09-28 22:02:48.693887
+47	66	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 36, "ref_es_postulacion": true}	t	2026-09-28 22:01:06.229655
+75	70	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 48, "ref_es_postulacion": true}	f	2026-10-02 12:57:51.377821
+78	51	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"clase para mi hijo\\"", "localidad": "Caballito, Ciudad Autónoma de Buenos Aires", "id_trabajo": 29, "id_referencia": 29, "id_postulacion": 50}	f	2026-10-09 12:55:47.760886
+74	69	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 48, "ref_es_postulacion": true}	t	2026-10-02 12:57:38.162112
+80	69	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 51, "ref_es_postulacion": true}	t	2026-10-09 13:00:47.38396
+62	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 37, "ref_es_postulacion": true}	t	2026-09-30 11:54:16.247164
+76	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 47, "ref_es_postulacion": true}	t	2026-10-02 13:07:10.992143
+81	29	postulacion_cancelada	{"cuerpo": null, "titulo": "Facundo Cardoso canceló su postulación a \\"clase para mi hijo\\"", "id_referencia": 46}	t	2026-10-16 11:20:00.263215
+82	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"CUIDAR A NAO\\"", "localidad": null, "id_trabajo": 47, "id_referencia": 69, "id_postulacion": 52}	t	2026-10-16 11:25:34.356897
+84	69	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 52, "ref_es_postulacion": true}	t	2026-10-16 11:26:29.902748
+83	69	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"CUIDAR A NAO\\"!", "id_referencia": 47}	t	2026-10-16 11:26:24.421609
+85	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 52, "ref_es_postulacion": true}	t	2026-10-16 12:43:24.258263
+86	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"Clase de ingles\\"", "localidad": null, "id_trabajo": 48, "id_referencia": 73, "id_postulacion": 53}	t	2026-10-19 13:24:34.118192
+87	29	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 53, "ref_es_postulacion": true}	t	2026-10-19 13:25:44.862568
+90	29	nueva_postulacion	{"cuerpo": null, "titulo": "Nueva postulación para \\"CLASE PARA FACU\\"", "localidad": null, "id_trabajo": 49, "id_referencia": 73, "id_postulacion": 54}	t	2026-10-19 14:37:37.3261
+88	73	postulacion_aceptada	{"cuerpo": null, "titulo": "¡Te aceptaron para \\"Clase de ingles\\"!", "id_referencia": 48}	t	2026-10-19 14:36:49.375067
+89	73	nuevo_mensaje	{"cuerpo": null, "titulo": "Tenés un mensaje nuevo", "id_referencia": 53, "ref_es_postulacion": true}	t	2026-10-19 14:36:53.671846
+\.
+
+
+--
+-- Data for Name: postulaciones; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.postulaciones (id, id_trabajo, id_trabajador, precio_propuesto, estado, postulado_en, rechazo_automatico, reconfirmar_hasta) FROM stdin;
+1	1	3	250.00	pendiente	2026-06-02 21:16:23.933982	f	\N
+2	1	4	300.00	pendiente	2026-06-03 21:16:23.933982	f	\N
+25	19	63	12322.00	pendiente	2026-09-11 01:40:56.082185	f	\N
+27	17	63	11111.00	pendiente	2026-09-11 01:49:38.593645	f	\N
+28	18	63	15000.00	pendiente	2026-09-11 01:49:50.170339	f	\N
+30	3	29	5000.00	pendiente	2026-09-14 11:30:50.37547	f	\N
+19	22	63	100000.00	aceptado	2026-09-10 23:54:56.161703	f	\N
+34	29	66	60000.00	pendiente	2026-09-28 14:25:32.10107	f	\N
+35	9	66	10000.00	pendiente	2026-09-28 14:26:21.060584	f	\N
+36	33	66	444.00	aceptado	2026-09-28 14:33:50.249852	f	\N
+37	34	66	44.00	aceptado	2026-09-28 14:42:52.416718	f	\N
+39	39	66	5000.00	aceptado	2026-09-28 21:26:02.158239	f	\N
+43	38	66	11.00	pendiente	2026-09-30 12:03:09.97662	f	\N
+44	29	68	80000.00	pendiente	2026-10-02 11:49:07.735528	f	\N
+47	44	29	40000.00	aceptado	2026-10-02 12:54:26.954422	f	\N
+48	45	70	11.00	aceptado	2026-10-02 12:56:44.748613	f	\N
+49	42	71	555.00	pendiente	2026-10-05 14:58:09.733318	f	\N
+46	44	70	40000.00	rechazado	2026-10-02 12:43:34.081218	t	\N
+50	29	29	60000.00	pendiente	2026-10-09 12:55:47.683227	f	\N
+51	46	69	1500.00	retirado	2026-10-09 13:00:33.954166	f	\N
+52	47	69	10000.00	aceptado	2026-10-16 11:25:34.108943	f	\N
+53	48	73	10000.00	aceptado	2026-10-19 13:24:33.874362	f	\N
+54	49	73	1111.00	pendiente	2026-10-19 14:37:37.255204	f	\N
+\.
+
+
+--
+-- Data for Name: provincias; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.provincias (id, nombre) FROM stdin;
+1	Ciudad Autónoma de Buenos Aires
+26	Entre Ríos
+27	Santiago del Estero
+28	Santa Fe
+29	Tierra del Fuego
+30	San Luis
+31	Misiones
+32	Chubut
+33	Chaco
+34	Mendoza
+35	Córdoba
+36	Salta
+37	Catamarca
+38	La Pampa
+39	Corrientes
+40	Jujuy
+41	Santa Cruz
+42	San Juan
+43	Formosa
+44	Buenos Aires
+45	Río Negro
+46	La Rioja
+47	Neuquén
+48	Tucumán
+\.
+
+
+--
+-- Data for Name: resenas; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.resenas (id, id_contrato, id_autor, id_receptor, es_contratante, calificacion, comentario, creado_en) FROM stdin;
+5	6	29	66	f	4	muy bien, trabaja bien	2026-09-28 21:32:37.024372
+6	7	66	63	t	4	\N	2026-09-29 16:49:35.821587
+7	6	66	29	t	5	asas	2026-09-30 11:53:36.150991
+8	4	66	29	t	5	Pedazo de goat	2026-09-30 12:04:21.914794
+\.
+
+
+--
+-- Data for Name: trabajos; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.trabajos (id, id_contratante, id_categoria, titulo, descripcion, id_localidad, presupuesto, estado, programado_para, creado_en, actualizado_en, prioridad, duracion, direccion, lat, lng) FROM stdin;
+46	29	3	clase para mi hijo	dsa	31	1500.00	abierto	2026-10-23 00:00:00	2026-10-09 12:58:22.684443	2026-10-09 12:58:22.684443	normal	60	Sarmiento 694	-34.60472134967496	-58.376433849334724
+47	29	2	CUIDAR A NAO	cuidar a nao	45	10000.00	activa	2026-10-23 09:30:00	2026-10-16 11:24:49.77085	2026-10-16 11:24:49.77085	normal	120	Avenida Santa Fe 1559	-34.59541648406063	-58.38932991027833
+49	29	3	CLASE PARA FACU	A	40	1111.00	abierto	2026-10-27 00:00:00	2026-10-19 14:37:27.013074	2026-10-19 14:37:27.013074	normal	60	Sarmiento 1228	-34.605360475865865	-58.3840298652649
+29	51	3	clase para mi hijo	Dar clases de matematica	\N	60000.00	abierto	2027-03-15 00:00:00	2026-08-14 12:53:21.259726	2026-08-14 12:54:11.22308	normal	60	teodoro garcia 2487	-34.5702698	-58.4462569
+22	29	3	clase para mi hijo	matematica, necesita aprender ecuaciones.	\N	100000.00	finalizado	2026-08-13 10:59:00	2026-08-06 21:44:51.505259	2026-09-28 14:39:58.535527	normal	120	Ortega 1066	-34.615438668722	-58.4462070469454
+33	29	2	Lucho aca	\N	\N	12.00	finalizado	2026-09-09 11:33:00	2026-09-28 14:33:13.583119	2026-09-28 14:40:07.000574	urgente	60	potosi 123	-34.6037	-58.3816
+1	2	2	Paseador de perros	\N	1	\N	vencido	2025-06-15 10:00:00	2026-05-26 01:18:15.191129	2026-09-28 20:32:30.111601	normal	\N	\N	\N	\N
+3	2	1	Paseador de perros fin de semana	Pasear al perro a la mañana	\N	5000.00	vencido	2026-04-12 10:00:00	2026-06-22 20:04:52.881297	2026-09-28 20:32:30.111601	urgente	1 hora	Potosí 123, Buenos Aires	-34.6	-58.4
+8	2	1	Cuidar a mi perro lalo	Necesito que cuiden a mi perro mientras yo no estoy.	\N	10000.00	vencido	2026-07-09 03:00:00	2026-06-29 15:51:08.002732	2026-09-28 20:32:30.111601	normal	\N	Sarmiento 3131	-34.60597200132939	-58.41053009033204
+9	2	3	Clase para mi hijo	mi hijo necesita clases de matematica	\N	10000.00	vencido	2026-07-10 03:00:00	2026-07-03 13:07:03.747943	2026-09-28 20:32:30.111601	normal	120	Inca 3844	-34.60681375127848	-58.420572751056184
+10	9	3	clase para mi hijo	mi hijo quiere clases de lengua. edad :12 años. tema: sintaxis	\N	10000.00	vencido	2026-07-10 03:00:00	2026-07-03 13:12:26.130692	2026-09-28 20:32:30.111601	normal	120	Riobamba 636	-34.60164226927692	-58.394200801849365
+11	17	1	Test tarea	desc	\N	100.00	vencido	2026-07-05 00:00:00	2026-07-03 14:31:06.22408	2026-09-28 20:32:30.111601	normal	60	Potosi 123	-34.6	-58.4
+12	17	1	Test tarea 2	\N	\N	50.00	vencido	2026-07-05 00:00:00	2026-07-03 14:31:57.698173	2026-09-28 20:32:30.111601	normal	60	Potosi 123	\N	\N
+13	18	3	clase para mi hijito	clase de ecuaciones	\N	10000.00	vencido	2026-07-06 03:00:00	2026-07-03 14:43:23.969056	2026-09-28 20:32:30.111601	normal	120	Yatay 240	-34.6099498	-58.429141
+14	18	2	cuidado de mi hijo	quedarse en casa a cuidar al nene	\N	10000.00	vencido	2026-07-07 03:00:00	2026-07-03 14:53:47.041749	2026-09-28 20:32:30.111601	normal	240	Leopoldo Marechal 1400	-34.6037	-58.3816
+15	18	4	llimpia mi casa	as	\N	10000.00	vencido	2026-07-06 00:00:00	2026-07-03 15:04:17.41305	2026-09-28 20:32:30.111601	normal	360	Yatay 240	-34.6099498	-58.429141
+16	18	2	cuidado del neneeee	vdf	\N	10000.00	vencido	2026-07-09 00:00:00	2026-07-03 15:08:22.075324	2026-09-28 20:32:30.111601	normal	180	Yatay 240	-34.6099498	-58.429141
+17	9	1	hola	grewtwerf	\N	11111.00	vencido	2026-07-23 13:52:00	2026-07-06 13:54:19.168869	2026-09-28 20:32:30.111601	urgente	60	Andrés Lamas 1965	-34.607073618869	-58.46915245056153
+18	19	1	Paseador de perros	Nocturno	\N	15000.00	vencido	2026-07-09 15:15:00	2026-07-06 14:12:09.115158	2026-09-28 20:32:30.111601	normal	60	Yatay 240	-34.6099498	-58.429141
+19	21	4	llimpia mi casa	dasd	\N	12322.00	vencido	2026-07-14 05:24:00	2026-07-06 20:21:45.00638	2026-09-28 20:32:30.111601	normal	180	Campichuelo 500	-34.61164771411551	-58.435335159301765
+48	29	3	Clase de ingles	Mi hijo necesita clase de cae	26	10000.00	activa	2026-10-24 12:15:00	2026-10-18 02:17:01.996654	2026-10-18 02:17:01.996654	normal	120	Monroe 4942	-34.57355921457381	-58.48444225014868
+39	63	1	Paseo de perro - prueba rese�as	Trabajo de prueba para probar el flujo de rese�as	\N	5000.00	finalizado	\N	2026-09-28 21:25:52.534425	2026-09-28 21:26:57.750228	normal	\N	\N	\N	\N
+34	29	2	ASASAS	DD	\N	44.00	finalizado	2026-09-22 12:42:00	2026-09-28 14:42:27.315829	2026-09-28 21:32:21.11731	normal	60	YATAY 22	-34.6140962	-58.4278806
+40	66	4	asddddddd	\N	\N	2.00	vencido	2026-09-03 18:15:00	2026-09-29 17:15:52.22041	2026-09-29 17:16:11.545891	normal	60	1	35.2852491	139.6616694
+41	67	3	Prueba de id	\N	\N	1.00	vencido	2026-09-03 14:19:00	2026-09-29 17:18:32.904777	2026-09-29 17:18:38.595946	normal	60	2	35.285635	139.6611491
+35	66	4	Yo	dsds	43	555.00	vencido	2026-09-24 11:45:00	2026-09-28 14:44:36.774366	2026-09-30 11:59:57.375316	urgente	60	YATAY 2233	-32.9262671	-60.7828468
+43	66	3	asasasas	\N	5	33.00	vencido	2026-09-30 09:16:00	2026-09-30 12:15:42.711874	2026-09-30 12:16:33.741826	normal	60	dd4	39.8302107	-104.710847
+38	29	3	arte	Clases de arte necesitoa	\N	10000.00	vencido	2026-10-01 08:30:00	2026-09-28 20:47:58.017386	2026-10-02 11:41:28.471192	urgente	120	Castelli 370	-34.605236845622	-58.4046936035156
+44	69	4	Limpieza una vez por semana	\N	11	40000.00	activa	2026-10-14 09:00:00	2026-10-02 11:53:20.229809	2026-10-02 11:53:20.229809	urgente	300	Olazábal 2232	-34.559242463113655	-58.45667481422424
+45	69	3	AA	AA	36	11.00	activa	2026-10-15 00:00:00	2026-10-02 12:56:27.848005	2026-10-02 12:56:27.848005	urgente	60	Avenida Pueyrredón 381	-34.605802010948516	-58.405723571777344
+42	66	3	Lucho de prueba	\N	23	555.00	vencido	2026-10-08 09:03:00	2026-09-30 12:01:46.051386	2026-10-09 12:47:57.100702	normal	60	dd3	47.1665307	27.5487467
+\.
+
+
+--
+-- Data for Name: usuario_categoria; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.usuario_categoria (id_usuario, id_categoria) FROM stdin;
+4	2
+5	4
+3	1
+3	4
+66	3
+66	2
+66	4
+66	1
+68	4
+68	2
+68	3
+70	2
+29	3
+29	2
+29	4
+\.
+
+
+--
+-- Data for Name: usuarios; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.usuarios (id, nombre_completo, email, telefono, contrasena, url_avatar, biografia_trabajador, id_localidad, prom_calif_trabajador, prom_calif_contratante, creado_en, actualizado_en, ultimo_rol, dni_frente_url, dni_reverso_url, verificado, biografia_contratante) FROM stdin;
+2	Mati	mati@test.com	\N	\N	\N	\N	\N	\N	\N	2026-05-26 01:18:15.15536	2026-05-26 01:18:15.15536	contratador	\N	\N	f	\N
+3	Juan García	juan@test.com	1234567890	\N	https://i.pravatar.cc/150?img=1	Paseador profesional con 5 años\r\n  de experiencia	1	4.80	\N	2026-06-04 21:16:03.946508	2026-06-04 21:16:03.946508	trabajador	\N	\N	t	\N
+5	Carlos Rodríguez	carlos@test.com	5555555555	\N	https://i.pravatar.cc/150?img=3	Paseo diario a domicilio,\r\n  puntual y responsable	1	4.90	\N	2026-06-04 21:16:03.946508	2026-06-04 21:16:03.946508	trabajador	\N	\N	t	\N
+9	matias wolfus	matwolfus@gmail.com	1123270532	123456A!	\N	\N	\N	\N	\N	2026-07-03 12:42:38.784615	2026-07-03 13:05:25.034994	contratador	\N	\N	f	\N
+15	Facundo cardoso	facu@gmail.com	1123090203	FACU12345!	\N	\N	\N	\N	\N	2026-07-03 13:25:29.001798	2026-07-03 13:25:29.001798	contratador	\N	\N	f	\N
+16	Adrian Turek	aa@aa.com	1234567890	A12345678*	\N	\N	\N	\N	\N	2026-07-03 13:49:22.662096	2026-07-03 13:49:22.662096	contratador	\N	\N	f	\N
+17	melman melman	melman@gmail.com	1123270434	MELMAN123!	\N	\N	\N	\N	\N	2026-07-03 14:23:17.558982	2026-07-03 14:23:17.558982	contratador	\N	\N	f	\N
+18	zoe acquista	zoe@gmail.com	1094384213	123456Q!	\N	\N	\N	\N	\N	2026-07-03 14:42:33.713251	2026-07-03 14:42:33.713251	contratador	\N	\N	f	\N
+19	nao serew	nao@gmail.com	1122222222	A12345678.	\N	\N	\N	\N	\N	2026-07-06 13:59:03.892279	2026-07-06 13:59:03.892279	contratador	\N	\N	f	\N
+27	Luciano Vallejos	lucho@gmail.com	1234567890	$2a$10$dNDBGuwAc9MSNH1lfR6A2Ov8VZKwBx/VI6N0f9qE.qC5cZrVj.ltq	\N	\N	\N	\N	\N	2026-08-05 20:40:24.139492	2026-08-05 20:40:24.139492	contratador	\N	\N	f	\N
+36	NAOMI SEREBRINSKY	49627257@est.ort.edu.ar	1111111111	$2a$10$piZbRMXk6aAoa.z.Hcfhz.T4UN7XgHg2Qxif8iZJn2ijBmz/PlJlu	\N	\N	\N	\N	\N	2026-08-07 12:40:17.661561	2026-08-07 12:40:17.661561	contratador	\N	\N	f	\N
+37	Luciano Vallejos	lucho@test.com	1234567890	$2a$10$mnmBEq5EcMxyo1nFPL9TGuTE1V7iWecTadw7IOQ1DX5Po.Gv7WyF.	\N	\N	\N	\N	\N	2026-08-07 12:49:18.013236	2026-08-07 12:49:18.013236	contratador	\N	\N	f	\N
+38	Luciano Vallejos	lucho172008@gmail.com	2222222222	$2a$10$RJxtN9N1HUc1XJfZG4TUD.G4HOB5TtLHUEp8NpBaeMA8rO4BaPuF2	\N	\N	\N	\N	\N	2026-08-07 12:56:26.142353	2026-08-07 12:56:26.142353	contratador	\N	\N	f	\N
+39	LUCIANO VALLEJOS	49194424@est.ort.edu.ar	1111111111	$2a$10$CHdULTQ36BcYLh26rZHzKecEn5vUHOrQ7N75IPFXQBVVWtyCwsxQa	\N	\N	\N	\N	\N	2026-08-10 11:10:07.926126	2026-08-10 11:10:07.926126	contratador	\N	\N	f	\N
+40	Luciano Vallejos	LUCHO@test.com	1234567890	$2a$10$Kr0EqBaHY1E//3LMMnd7but2JLVP5UeEGqDWs0g99tzWdjIOo44PG	\N	\N	\N	\N	\N	2026-08-10 11:31:03.685395	2026-08-10 11:31:03.685395	contratador	\N	\N	f	\N
+41	LUCIANO VALLEJOS	49194424@est.ort.edu.ara	1111111111	$2a$10$YBYnNSxvi1u2OWjql7N/i.z41s6lezQZtfYb7iiVFJACJ8jnAFi1a	\N	\N	\N	\N	\N	2026-08-10 13:27:54.983968	2026-08-10 13:27:54.983968	contratador	\N	\N	f	\N
+42	a a	a@a.com	1234567890	$2a$10$x98leAouU2Uhc8j9tad0gOHC/5Gm6YKuX2hPELiNkbQ2pYz.kZI.6	\N	\N	\N	\N	\N	2026-08-10 13:33:32.123219	2026-08-10 13:33:32.123219	contratador	\N	\N	f	\N
+43	Lolo Skibi	49194424@est.ort.edu.aruyg	1234567890	$2a$10$i3NbsWeb9kH4q1rXRaRRVui3YkF51VAwNjobSmhW4HXKeeLFsS2ym	aa	Soy laburo	1	\N	\N	2026-08-10 13:45:20.800563	2026-08-10 13:48:22.040338	contratador	\N	\N	f	Soy contratante
+44	Facundo Cardoso	laburapp.contacto@gmail.com	1234567890	$2a$10$9ev8WYYyMD0Wyosv0W6Hc.PBWWKzoON4ArA6JrCQgmMu3nJtdMYWy	\N	\N	\N	\N	\N	2026-08-10 14:25:40.485792	2026-08-10 14:25:40.485792	contratador	\N	\N	f	\N
+45	Facundo Mateo Cardoso	laburapp.contacto@gmail.comasasa	100000	$2a$10$PkluwDPjrfEF7clj7ShmaeAwRAwrJTNMhH0neB6oVn9vBBwO5nWnO	asas	Soy trabajador	1	\N	\N	2026-08-10 14:30:51.993903	2026-08-10 14:32:21.436756	contratador	\N	\N	f	Soy contratante
+46	LUCIANO VALLEJOS	49194424@est.ort.edu.tttt	1111111111	$2a$10$YQ8lwY0f1Dbiwxx.9sVXJ./rLhe7s0XK11529Aidir8fsi0uekJ6W	\N	\N	\N	\N	\N	2026-08-11 16:47:15.908301	2026-08-11 16:47:15.908301	contratador	\N	\N	f	\N
+47	LUCIANO VALLEJOS	49194424@est.ort.edu.arsgffg	1111111111	$2a$10$RMCA7THpfvJsPruV4a340eFiz/W8lbA/tCTDOp.bDmc/QiMXURrh.	\N	\N	\N	\N	\N	2026-08-12 11:08:30.083032	2026-08-12 11:08:30.083032	contratador	\N	\N	f	\N
+48	Luciano Vallejos	tester@gmail.com	1234567890	$2a$10$c0WtNhF9LtdZ/dYq13jJZuG29jbnQFyJCdpKLqOuP.hiG9Uc.hrXG	\N	\N	\N	\N	\N	2026-08-12 11:16:48.342856	2026-08-12 11:16:48.342856	contratador	\N	\N	f	\N
+50	NAOMI SEREBRINSKY	496272577@est.ort.edu.ar	4444444444	$2a$10$3/pTkoXzFxbbnZZsOnIF0OWYbJXo5jUpbh5UEoAJpjR/dZZs46YPK	\N	\N	\N	\N	\N	2026-08-14 11:14:49.004179	2026-08-14 11:14:49.004179	contratador	\N	\N	f	\N
+66	u	ltest@gmail.com	1234567890	$2a$10$yTC0PgJ9kJCs9b6fFxBw0ertlB8oNmaJEnXw2yF31nYx6RQz/sr.G		trabajo	31	\N	\N	2026-09-28 14:15:17.0718	2026-09-30 12:17:35.363496	contratador	\N	\N	f	contrato
+51	Adrian Turek	adrianbturek@gmail.com	1112345678	$2a$10$Li5YSOeCY.G.hoUVDItaC.ZPoxSW0ZwlBf6byytACRzQbqD0Hs3im	http://localhost:3000/uploads/1786712155455-dce26a4b96e7.png	Sacarlo	1	\N	\N	2026-08-14 12:46:30.251095	2026-08-14 12:56:12.724395	contratador	\N	\N	f	Sacarlo
+52	asas fsf	a@gmail.com	1111111111	$2a$10$1RcWCzbpOvz9Bh6V2DiGdOwjqY2530Z7tC.suZX8eEYi7cFhHR2d.	\N	\N	\N	\N	\N	2026-09-07 13:08:16.509121	2026-09-07 13:08:16.509121	contratador	\N	\N	f	\N
+4	María López	maria@test.com	0987654321	\N	https://i.pravatar.cc/150?img=2	Amante de los perros, cuido con\r\n  dedicación	1	4.50	\N	2026-06-04 21:16:03.946508	2026-06-04 21:16:03.946508	trabajador	\N	\N	t	\N
+53	Fernando Salik	fersalik@gmail.com	1234567890	$2a$10$kwPmOCITs3uw7RmW./LNV.Z3SuPhB1oBKe1jGvY/dwjOwZ652Qbga	\N	\N	\N	\N	\N	2026-09-07 13:11:35.116464	2026-09-07 13:11:35.116464	contratador	\N	\N	f	\N
+49	LUCIANO VALLEJOS	49194424@est.ort.edu.arasxzzx	1222222222	$2a$10$B2Erb2r2/Rs0n4N2WUSNC.zPAKr5dPIctGTWgmRt8PcAOpCSiKcxm	\N	\N	\N	\N	\N	2026-08-14 10:47:17.63966	2026-08-14 10:47:17.63966	contratador	\N	\N	f	\N
+57	MATIAS WOL	ma@gmail.com	1111111111	$2a$10$b2J7kpS8XeNmEgiABgrWgO3iXrNfl/l/JI48oHpfMjB4aIvdZHAfa	\N	\N	\N	\N	\N	2026-09-10 21:54:41.388074	2026-09-10 21:54:41.388074	trabajador	\N	\N	f	\N
+63	MATIAS  WOLFUS	mati@gmail.com	1111111111	$2a$10$h6thGkDCSrVxKTX7YKckZ.Y7FAyr0QSoskwei5rC16UH8V.ZJRcdy	\N	\N	\N	\N	\N	2026-09-10 23:10:45.475821	2026-09-11 01:41:40.081213	trabajador	\N	\N	f	\N
+21	Matias Wolfus	matias@gmail.com	1231232222	$2a$10$UHpg35FjtIBo3xPtwOypeeJ2KkgOmPXwBYDG2Od3mOjua301gljfS	\N	\N	\N	\N	\N	2026-07-06 20:20:56.213687	2026-09-14 11:06:40.33668	trabajador	\N	\N	f	\N
+67	LUCIANO VALLEJOS	luchotester@gmail.com	1234567890	$2a$10$Hf3SVI.edGLWAoTdY3yphOGqLkBO4HUgp9qhcH/0/TqH40HnP7Wj6	\N	\N	\N	\N	\N	2026-09-29 17:17:24.966713	2026-09-29 17:17:52.744315	contratador	\N	\N	f	\N
+68	Martina Oh	martu@gmail.com	1111111111	$2a$10$6APSfH2xYoum.zCUhZGZQeQpieLDLAOMCcj1kPkGDT0/1juUj/4Mu		Hola!	29	\N	\N	2026-10-02 11:41:28.200574	2026-10-02 11:45:30.960622	trabajador	\N	\N	f	Hola!
+70	tatiana fus	tat@gmail.com	8888888888	$2a$10$URU/9aEy/QBJd7J40rgxjOheVjuYKecjC.G1LiMnQN.aGu709z2w.		Me gusta cuidar chicos	17	\N	\N	2026-10-02 11:54:33.776112	2026-10-02 12:36:49.297291	trabajador	\N	\N	f	..
+69	Facundo Cardoso	facu344@gmail.com	1234579877	$2a$10$zZ6ZB/TrQQEQmnIKQhJ8jOGU3.n0hwze0bY.zNZWQSrD5rhuK7fTC	\N	\N	\N	\N	\N	2026-10-02 11:51:44.313666	2026-10-16 11:23:54.40444	trabajador	\N	\N	f	\N
+71	nao sere	naoo@gmail.com	1111111111	$2a$10$erHF83GQdw/21GX.pEfg8.AsnXGppm3PqlTI/sJkGkIDsXh5duFwy	\N	\N	\N	\N	\N	2026-10-05 14:57:56.764525	2026-10-05 15:00:55.234465	contratador	\N	\N	f	\N
+73	PRU EBA	prueba@gmail.com	1111111111	$2a$10$GTbqzNMuUVjrAnpqKg4Hau1IrciHGWqfb/O4GyH8fg8LmqL4frxwu	\N	\N	\N	\N	\N	2026-10-19 13:17:31.612828	2026-10-19 13:21:34.156526	trabajador	\N	\N	f	\N
+72	Matias ak	ak@gmail.com	3456789112	$2a$10$72awXrzTnneu1eLbPwA2gOwoYyKlZSPAknbRsZ3HRBSYVDScJnx1e	\N	\N	\N	\N	\N	2026-10-16 11:25:35.670986	2026-10-16 11:25:35.670986	contratador	\N	\N	f	\N
+29	Fernanado Salik	m@gmail.com	1111110000	$2a$10$3dSoZzNa1N9wLGEQS/OHBeGwPkIwHZly8TnTHfs8eHOLmEQE815SS	https://bohmjgbrhpjliilweene.supabase.co/storage/v1/object/public/prueba/1790707613362-9e5262aed0c5.jpg	\N	19	\N	\N	2026-08-06 21:36:33.183943	2026-10-19 13:21:12.083351	contratador	\N	\N	f	aaa
+\.
+
+
+--
+-- Name: categorias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.categorias_id_seq', 4, true);
+
+
+--
+-- Name: contratos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.contratos_id_seq', 11, true);
+
+
+--
+-- Name: imagenes_trabajo_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.imagenes_trabajo_id_seq', 24, true);
+
+
+--
+-- Name: localidades_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.localidades_id_seq', 49, true);
+
+
+--
+-- Name: mensajes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.mensajes_id_seq', 21, true);
+
+
+--
+-- Name: notificaciones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.notificaciones_id_seq', 90, true);
+
+
+--
+-- Name: postulaciones_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.postulaciones_id_seq', 54, true);
+
+
+--
+-- Name: provincias_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.provincias_id_seq', 48, true);
+
+
+--
+-- Name: resenas_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.resenas_id_seq', 8, true);
+
+
+--
+-- Name: trabajos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.trabajos_id_seq', 49, true);
+
+
+--
+-- Name: usuarios_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.usuarios_id_seq', 73, true);
+
+
+--
+-- Name: categorias categorias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.categorias
+    ADD CONSTRAINT categorias_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: contratos contratos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contratos
+    ADD CONSTRAINT contratos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: imagenes_trabajo imagenes_trabajo_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.imagenes_trabajo
+    ADD CONSTRAINT imagenes_trabajo_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: localidades localidades_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.localidades
+    ADD CONSTRAINT localidades_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mensajes mensajes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mensajes
+    ADD CONSTRAINT mensajes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notificaciones notificaciones_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notificaciones
+    ADD CONSTRAINT notificaciones_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: postulaciones postulaciones_id_trabajo_id_trabajador_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postulaciones
+    ADD CONSTRAINT postulaciones_id_trabajo_id_trabajador_key UNIQUE (id_trabajo, id_trabajador);
+
+
+--
+-- Name: postulaciones postulaciones_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postulaciones
+    ADD CONSTRAINT postulaciones_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: provincias provincias_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.provincias
+    ADD CONSTRAINT provincias_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: resenas resenas_id_contrato_id_autor_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resenas
+    ADD CONSTRAINT resenas_id_contrato_id_autor_key UNIQUE (id_contrato, id_autor);
+
+
+--
+-- Name: resenas resenas_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resenas
+    ADD CONSTRAINT resenas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trabajos trabajos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trabajos
+    ADD CONSTRAINT trabajos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: usuario_categoria usuario_categoria_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario_categoria
+    ADD CONSTRAINT usuario_categoria_pkey PRIMARY KEY (id_usuario, id_categoria);
+
+
+--
+-- Name: usuarios usuarios_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_email_key UNIQUE (email);
+
+
+--
+-- Name: usuarios usuarios_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: contratos_id_contratante_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX contratos_id_contratante_idx ON public.contratos USING btree (id_contratante);
+
+
+--
+-- Name: contratos_id_trabajador_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX contratos_id_trabajador_idx ON public.contratos USING btree (id_trabajador);
+
+
+--
+-- Name: mensajes_id_contrato_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX mensajes_id_contrato_idx ON public.mensajes USING btree (id_contrato);
+
+
+--
+-- Name: mensajes_id_postulacion_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX mensajes_id_postulacion_idx ON public.mensajes USING btree (id_postulacion);
+
+
+--
+-- Name: notificaciones_id_usuario_leido_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX notificaciones_id_usuario_leido_idx ON public.notificaciones USING btree (id_usuario, leido);
+
+
+--
+-- Name: postulaciones_id_trabajador_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX postulaciones_id_trabajador_idx ON public.postulaciones USING btree (id_trabajador);
+
+
+--
+-- Name: trabajos_estado_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trabajos_estado_idx ON public.trabajos USING btree (estado);
+
+
+--
+-- Name: trabajos_id_categoria_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trabajos_id_categoria_idx ON public.trabajos USING btree (id_categoria);
+
+
+--
+-- Name: trabajos_id_contratante_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trabajos_id_contratante_idx ON public.trabajos USING btree (id_contratante);
+
+
+--
+-- Name: contratos contratos_id_contratante_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contratos
+    ADD CONSTRAINT contratos_id_contratante_fkey FOREIGN KEY (id_contratante) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: contratos contratos_id_postulacion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contratos
+    ADD CONSTRAINT contratos_id_postulacion_fkey FOREIGN KEY (id_postulacion) REFERENCES public.postulaciones(id);
+
+
+--
+-- Name: contratos contratos_id_trabajador_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contratos
+    ADD CONSTRAINT contratos_id_trabajador_fkey FOREIGN KEY (id_trabajador) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: contratos contratos_id_trabajo_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contratos
+    ADD CONSTRAINT contratos_id_trabajo_fkey FOREIGN KEY (id_trabajo) REFERENCES public.trabajos(id);
+
+
+--
+-- Name: imagenes_trabajo imagenes_trabajo_id_trabajo_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.imagenes_trabajo
+    ADD CONSTRAINT imagenes_trabajo_id_trabajo_fkey FOREIGN KEY (id_trabajo) REFERENCES public.trabajos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: localidades localidades_id_provincia_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.localidades
+    ADD CONSTRAINT localidades_id_provincia_fkey FOREIGN KEY (id_provincia) REFERENCES public.provincias(id);
+
+
+--
+-- Name: mensajes mensajes_id_contrato_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mensajes
+    ADD CONSTRAINT mensajes_id_contrato_fkey FOREIGN KEY (id_contrato) REFERENCES public.contratos(id);
+
+
+--
+-- Name: mensajes mensajes_id_postulacion_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mensajes
+    ADD CONSTRAINT mensajes_id_postulacion_fkey FOREIGN KEY (id_postulacion) REFERENCES public.postulaciones(id);
+
+
+--
+-- Name: mensajes mensajes_id_remitente_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mensajes
+    ADD CONSTRAINT mensajes_id_remitente_fkey FOREIGN KEY (id_remitente) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: notificaciones notificaciones_id_usuario_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notificaciones
+    ADD CONSTRAINT notificaciones_id_usuario_fkey FOREIGN KEY (id_usuario) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: postulaciones postulaciones_id_trabajador_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postulaciones
+    ADD CONSTRAINT postulaciones_id_trabajador_fkey FOREIGN KEY (id_trabajador) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: postulaciones postulaciones_id_trabajo_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.postulaciones
+    ADD CONSTRAINT postulaciones_id_trabajo_fkey FOREIGN KEY (id_trabajo) REFERENCES public.trabajos(id);
+
+
+--
+-- Name: resenas resenas_id_autor_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resenas
+    ADD CONSTRAINT resenas_id_autor_fkey FOREIGN KEY (id_autor) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: resenas resenas_id_contrato_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resenas
+    ADD CONSTRAINT resenas_id_contrato_fkey FOREIGN KEY (id_contrato) REFERENCES public.contratos(id);
+
+
+--
+-- Name: resenas resenas_id_receptor_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resenas
+    ADD CONSTRAINT resenas_id_receptor_fkey FOREIGN KEY (id_receptor) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: trabajos trabajos_id_categoria_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trabajos
+    ADD CONSTRAINT trabajos_id_categoria_fkey FOREIGN KEY (id_categoria) REFERENCES public.categorias(id);
+
+
+--
+-- Name: trabajos trabajos_id_contratante_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trabajos
+    ADD CONSTRAINT trabajos_id_contratante_fkey FOREIGN KEY (id_contratante) REFERENCES public.usuarios(id);
+
+
+--
+-- Name: trabajos trabajos_id_localidad_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trabajos
+    ADD CONSTRAINT trabajos_id_localidad_fkey FOREIGN KEY (id_localidad) REFERENCES public.localidades(id);
+
+
+--
+-- Name: usuario_categoria usuario_categoria_id_categoria_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario_categoria
+    ADD CONSTRAINT usuario_categoria_id_categoria_fkey FOREIGN KEY (id_categoria) REFERENCES public.categorias(id) ON DELETE CASCADE;
+
+
+--
+-- Name: usuario_categoria usuario_categoria_id_usuario_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuario_categoria
+    ADD CONSTRAINT usuario_categoria_id_usuario_fkey FOREIGN KEY (id_usuario) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: usuarios usuarios_id_localidad_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.usuarios
+    ADD CONSTRAINT usuarios_id_localidad_fkey FOREIGN KEY (id_localidad) REFERENCES public.localidades(id);
+
+
+--
+-- Name: categorias; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.categorias ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: contratos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.contratos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: imagenes_trabajo; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.imagenes_trabajo ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: localidades; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.localidades ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: mensajes; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.mensajes ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: notificaciones; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.notificaciones ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: postulaciones; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.postulaciones ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: provincias; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.provincias ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: categorias public read categorias; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "public read categorias" ON public.categorias FOR SELECT USING (true);
+
+
+--
+-- Name: localidades public read localidades; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "public read localidades" ON public.localidades FOR SELECT USING (true);
+
+
+--
+-- Name: provincias public read provincias; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "public read provincias" ON public.provincias FOR SELECT USING (true);
+
+
+--
+-- Name: resenas; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.resenas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: trabajos; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.trabajos ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: usuarios; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.usuarios ENABLE ROW LEVEL SECURITY;
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict jlhVFXsXK2givG25kYcRB5VEfDSWKqrBl9OWUJYuv8TvzvkmpJiZVDvvtWZcRzI
+
