@@ -2,10 +2,13 @@
 import ResenasRepository from '../repositories/resenas-repository.js';
 import { badRequest, conflict, forbidden } from '../helpers/http-error.js';
 import { LIMITES, textoOpcional } from '../helpers/validaciones.js';
+import { sinFallar } from '../helpers/sin-fallar.js';
+import NotificacionesService from './notificaciones-service.js';
 
 export default class ResenasService {
   constructor() {
     this.repository = new ResenasRepository();
+    this.notificacionesService = new NotificacionesService();
   }
 
   async getElegibilidadAsync(idTrabajo, idUsuario) {
@@ -37,8 +40,9 @@ export default class ResenasService {
       throw badRequest('Este trabajo todavía no está completado');
     }
 
+    let id;
     try {
-      const id = await this.repository.crear({
+      id = await this.repository.crear({
         idContrato: elegibilidad.idContrato,
         idAutor: idUsuario,
         idReceptor: elegibilidad.idReceptor,
@@ -46,7 +50,6 @@ export default class ResenasService {
         calificacion: calificacionNum,
         comentario: comentarioOk,
       });
-      return { id, idReceptor: elegibilidad.idReceptor };
     } catch (err) {
       // 23505 = unique_violation en Postgres (SQLSTATE), no un texto de
       // mensaje: es el único chequeo confiable para distinguir "ya
@@ -57,5 +60,11 @@ export default class ResenasService {
       }
       throw err;
     }
+
+    await sinFallar('avisar nueva reseña', () =>
+      this.notificacionesService.avisarNuevaResena({ idReceptor: elegibilidad.idReceptor, idTrabajo })
+    );
+
+    return id;
   }
 }

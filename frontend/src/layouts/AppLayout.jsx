@@ -15,7 +15,8 @@ export default function AppLayout() {
   const [avatar, setAvatar] = useState(null);
   const [nombre, setNombre] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { modo, hydrateModo } = useAuth();
+  // El modo lo carga AuthProvider (única fuente de verdad); acá solo se lee.
+  const { modo } = useAuth();
   const badges = useBadges();
 
   useEffect(() => {
@@ -23,10 +24,6 @@ export default function AppLayout() {
       .then((user) => {
         if (user?.avatar) setAvatar(user.avatar);
         setNombre(user?.nombreCompleto ?? '');
-        // Cubre el caso de entrar directo a una pantalla con layout (ej.
-        // refrescar en /inicio) sin haber pasado por Perfil.jsx todavía:
-        // el contexto arranca en null en cada carga de página a propósito.
-        if (!modo && user?.ultimoRol) hydrateModo(user.ultimoRol);
       })
       .catch((err) => console.error('Error al cargar el avatar del usuario:', err));
   }, []);
@@ -37,7 +34,7 @@ export default function AppLayout() {
         logoSrc={logo}
         avatarSrc={avatar}
         nombre={nombre}
-        onLogoClick={() => navigate(homeDeModo(modo ?? localStorage.getItem('modoActivo')))}
+        onLogoClick={() => navigate(homeDeModo(modo))}
         onAvatarClick={() => navigate('/perfil')}
         onBellClick={() => navigate('/notificaciones')}
         notificacionesNoLeidas={badges.notificaciones}

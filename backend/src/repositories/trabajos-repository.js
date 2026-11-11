@@ -9,48 +9,9 @@ export default class TrabajosRepository {
     this.db = new Db();
   }
 
-// Devuelve todos los trabajos de un empleador determinado filtrados por estado
-async getJobsByEmployerAndStatus(employerId, status) {
-    await this.expirarVencidos();
-
-    // Usamos subconsultas (en vez de JOIN + GROUP BY) para: (a) no inflar el COUNT
-    // por el cruce con imagenes_trabajo, y (b) sumar los avatares de los primeros
-    // 3 postulantes para mostrarlos en la tarjeta.
-    const sql = `
-      SELECT
-        t.id,
-        t.titulo          AS title,
-        t.programado_para AS scheduled_at,
-        c.nombre          AS category,
-        (SELECT COUNT(*)::int FROM postulaciones p WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}) AS applicants_count,
-        (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
-        COALESCE((
-          SELECT json_agg(sub.url_avatar)
-          FROM (
-            SELECT u.url_avatar
-            FROM postulaciones p
-            JOIN usuarios u ON u.id = p.id_trabajador
-            WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}
-            ORDER BY p.postulado_en ASC
-            LIMIT 3
-          ) sub
-        ), '[]') AS applicant_avatars
-      FROM trabajos t
-      LEFT JOIN categorias c ON c.id = t.id_categoria
-      WHERE t.id_contratante = $1
-        AND t.estado         = $2
-      ORDER BY t.programado_para ASC
-    `;
-
-    // en el parámetro $1 se pasa el ID del empleador y en $2 el estado. EN el 2 Se pasa "proxima" o "activa"
-    
-    return await this.db.queryAll(sql, [employerId, status]);
-  }
-
-  // ACÁ AGREGUÉ
   // Todas las ofertas de un contratante (cualquier estado) para la pantalla "Ofertas".
-  // Misma forma que getJobsByEmployerAndStatus (la necesita JobCard), pero sin filtrar por
-  // estado, e incluyendo 'estado' para que el frontend agrupe en Próximas/Activas.
+  // Incluye 'estado' para que el frontend agrupe en secciones. Subconsultas en vez de
+  // JOIN + GROUP BY para no inflar el COUNT por el cruce con imagenes_trabajo.
   async getAllJobsByEmployer(employerId) {
     await this.expirarVencidos();
 
@@ -111,18 +72,14 @@ async getJobsByEmployerAndStatus(employerId, status) {
   }
   // ACÁ YA NO
 
-  // Caducidad: un trabajo 'abierto'/'proxima' cuya fecha programada ya pasó
-  // sin haberse activado nunca (aceptar una postulación pasa el estado a
-  // 'activa' en la misma transacción que crea el contrato, así que un
-  // trabajo en 'abierto'/'proxima' nunca tiene contrato) se marca 'vencido'.
-  // No hay cron en el proyecto: se resuelve con un UPDATE liviano antes de
-  // cada lectura de trabajos abiertos, mismo patrón "chequeo al leer" que ya
-  // usa el resto del código en vez de sumar una dependencia nueva.
+  // Caducidad: un trabajo 'abierto' cuya fecha programada ya pasó sin que se
+  // aceptara a nadie se marca 'vencido'. No hay cron en el proyecto: se
+  // resuelve con un UPDATE liviano antes de cada lectura de trabajos.
   async expirarVencidos() {
     await this.db.queryAll(`
       UPDATE trabajos
       SET estado = 'vencido', actualizado_en = ${AHORA}
-      WHERE estado IN ('abierto', 'proxima')
+      WHERE estado = 'abierto'
         AND programado_para IS NOT NULL
         AND (
           -- Sin horario elegido se guarda 00:00: vence recién cuando pasa el día.
@@ -280,125 +237,32 @@ async getJobsByEmployerAndStatus(employerId, status) {
     return await this.db.queryOne(sql, [jobId, viewerUserId]);
   }
 
-  // Devuelve el id del contratador dueño del trabajo (o null si no existe).
-  // Se usa para chequear propiedad antes de mostrar/tocar postulaciones.
-  async getOwnerId(jobId) {
-    const sql = `SELECT id_contratante FROM trabajos WHERE id = $1`;
-    const row = await this.db.queryOne(sql, [jobId]);
-    return row ? row.id_contratante : null;
-  }
-
-  // Fecha programada y estado actuales, para validar una edición.
-  async getSchedule(jobId) {
-    return await this.db.queryOne(
-      `SELECT programado_para, estado FROM trabajos WHERE id = $1`,
-      [jobId]
+  // Cambia el estado de un trabajo solo si sigue en uno de los estados
+  // esperados (`desde`): si otra request lo cambió en el medio, no toca nada
+  // y devuelve null. Qué transiciones son válidas lo decide el servicio con
+  // domain/estados.js; acá solo se protege contra carreras.
+  async cambiarEstadoAsync(jobId, desde, hacia, db = this.db) {
+    return await db.queryReturnId(
+      `UPDATE trabajos SET estado = $3, actualizado_en = ${AHORA}
+       WHERE id = $1 AND estado = ANY($2::varchar[])
+       RETURNING id`,
+      [jobId, desde, hacia]
     );
   }
 
-  // Marca un trabajo 'activa' como 'finalizado' y cierra su contrato
-  // ('activo' -> 'completado'). Ambas escrituras en una sola transacción:
-  // sin esto, un contrato podría quedar 'activo' para siempre aunque el
-  // trabajo ya esté finalizado, y las stats del perfil (que cuentan
-  // contratos 'completado') seguirían mostrando 0.
-  async completarTrabajo(jobId) {
-    return await this.db.withTransaction(async (txDb) => {
-
-      const updated = await txDb.queryOne(
-        `UPDATE trabajos SET estado = 'finalizado', actualizado_en = ${AHORA}
-         WHERE id = $1
-         RETURNING id`,
-        [jobId]
-      );
-
-      if (!updated) return null;
-
-      const contrato = await txDb.queryOne(
-        `UPDATE contratos SET estado = 'completado', completado_en = ${AHORA}
-         WHERE id_trabajo = $1 AND estado = 'activo'
-         RETURNING id_trabajador`,
-        [jobId]
-      );
-
-      return { id: updated.id, idTrabajador: contrato?.id_trabajador ?? null };
-    });
+  // Reabre un trabajo 'en_espera' con una fecha nueva.
+  async reabrirAsync(jobId, programadoPara, db = this.db) {
+    return await db.queryReturnId(
+      `UPDATE trabajos
+       SET estado = 'abierto', programado_para = $2, actualizado_en = ${AHORA}
+       WHERE id = $1 AND estado = 'en_espera'
+       RETURNING id`,
+      [jobId, programadoPara]
+    );
   }
 
-  // Cancela un trabajo (lo puede hacer el contratador mientras no esté
-  // 'finalizado'): pasa trabajos.estado a 'cancelado', rechaza las
-  // postulaciones pendientes y cierra el contrato activo si había uno (por
-  // ejemplo si ya había un trabajador aceptado cuando se cancela). Todo en
-  // una transacción, mismo criterio que completarTrabajo. Devuelve los ids
-  // de trabajador a notificar (postulantes rechazados + el contratado, si
-  // corresponde) para que el controller notifique después del commit.
-  async cancelarTrabajo(jobId) {
-    return await this.db.withTransaction(async (txDb) => {
-
-      const updated = await txDb.queryOne(
-        `UPDATE trabajos SET estado = 'cancelado', actualizado_en = ${AHORA}
-         WHERE id = $1
-         RETURNING id`,
-        [jobId]
-      );
-
-      if (!updated) return null;
-
-      const rechazados = await txDb.queryAll(
-        `UPDATE postulaciones
-         SET estado = 'rechazado', rechazo_automatico = FALSE, reconfirmar_hasta = NULL
-         WHERE id_trabajo = $1 AND estado IN ('pendiente', 'por_reconfirmar')
-         RETURNING id_trabajador`,
-        [jobId]
-      );
-
-      const contratosCancelados = await txDb.queryAll(
-        `UPDATE contratos SET estado = 'cancelado'
-         WHERE id_trabajo = $1 AND estado = 'activo'
-         RETURNING id_trabajador`,
-        [jobId]
-      );
-
-      const idsANotificar = [
-        ...rechazados.map((r) => r.id_trabajador),
-        ...contratosCancelados.map((c) => c.id_trabajador),
-      ];
-
-      return { id: updated.id, idsANotificar };
-    });
-  }
-
-  // Reabre un trabajo 'en_espera' (el trabajador aceptado canceló): vuelve a
-  // 'abierto' con una fecha nueva, y los postulantes que el sistema rechazó
-  // al aceptar a otro pasan a 'por_reconfirmar' con 2 días para responder.
-  // Devuelve esas postulaciones para que el controller las notifique.
-  async reabrirTrabajo(jobId, programadoPara) {
-    return await this.db.withTransaction(async (txDb) => {
-
-      const updated = await txDb.queryOne(
-        `UPDATE trabajos
-         SET estado = 'abierto', programado_para = $2, actualizado_en = ${AHORA}
-         WHERE id = $1 AND estado = 'en_espera'
-         RETURNING id`,
-        [jobId, programadoPara]
-      );
-
-      if (!updated) return null;
-
-      const aReconfirmar = await txDb.queryAll(
-        `UPDATE postulaciones
-         SET estado = 'por_reconfirmar', reconfirmar_hasta = ${AHORA} + INTERVAL '2 days'
-         WHERE id_trabajo = $1 AND estado = 'rechazado' AND rechazo_automatico = TRUE
-         RETURNING id, id_trabajador`,
-        [jobId]
-      );
-
-      return { id: updated.id, aReconfirmar };
-    });
-  }
-
-  // ACÁ AGREGUÉ
   // Crea un trabajo. NO inserta 'estado' a propósito: usa el DEFAULT de la tabla ('abierto').
-  async createJob(entity) {
+  async createJob(entity, db = this.db) {
     const sql = `
       INSERT INTO trabajos (
         id_contratante,
@@ -433,7 +297,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
       entity.lng ?? null,
     ];
 
-    return await this.db.queryReturnId(sql, values);
+    return await db.queryReturnId(sql, values);
   }
 
   // Inserta todas las fotos en UNA sola query (multi-row). Si no hay URLs, no hace nada.

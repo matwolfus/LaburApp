@@ -42,8 +42,11 @@ export default class UsuariosService {
         this.repository = new UsuariosRepository();
     }
 
-    #firmarToken(userId, rol) {
-        return jwt.sign({ userId, rol }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    // El token solo identifica al usuario. El modo activo (contratador /
+    // trabajador) NO va acá: vive en usuarios.ultimo_rol y cambia sin
+    // volver a loguearse, así que en el token quedaría desactualizado.
+    #firmarToken(userId) {
+        return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     }
 
     async login(emailIngresado, password) {
@@ -65,7 +68,7 @@ export default class UsuariosService {
 
         return {
             success: true,
-            token: this.#firmarToken(user.id, user.rol),
+            token: this.#firmarToken(user.id),
             userId: user.id,
             rol: user.rol
         };
@@ -136,7 +139,7 @@ export default class UsuariosService {
 
         return {
             success: true,
-            token: this.#firmarToken(userId, rol),
+            token: this.#firmarToken(userId),
             userId
         };
     }

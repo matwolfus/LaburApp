@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import PostulantCard from '../PostulantCard'
 import ConfirmModal from '../ConfirmModal'
+import { recibePostulaciones } from '../../constants/dominio'
 import styles from './PostulantsArray.module.css'
 import { getPostulantesByTrabajo, aceptarPostulacion } from '../../services/api';
 
@@ -25,7 +26,7 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
   // Si el trabajo ya venció, se canceló, se activó o se completó, no se
   // puede aceptar ningún postulante nuevo (el backend igual lo valida, esto
   // solo evita el intento fallido desde la UI).
-  const puedeAceptar = jobEstado === 'abierto' || jobEstado === 'proxima';
+  const puedeAceptar = recibePostulaciones(jobEstado);
   const [postulantes, setPostulantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

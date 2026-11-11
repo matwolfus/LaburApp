@@ -2,6 +2,7 @@
 import { useNavigate } from "react-router-dom"
 import { login } from "../../services/api"
 import { useAuth } from "../../context/useAuth"
+import { EMAIL_REGEX } from "../../constants/dominio"
 import styles from "../../styles/Login.module.css"
 
 const ERROR_MESSAGES = {
@@ -88,7 +89,7 @@ export default function Login() {
     }
   }
 
-  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+  const emailValido = EMAIL_REGEX.test(form.email.trim())
   const allValid = emailValido && form.contrasena.length > 0
 
   return (

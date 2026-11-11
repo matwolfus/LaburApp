@@ -4,6 +4,7 @@ import { Check, UserCheck, Eye, ArrowLeft, Camera, User, Phone, Award, Briefcase
 import { uploadFotos, actualizarMisCategorias, getCategorias, getMiUsuario, actualizarPerfil } from "../../services/api";
 import UbicacionSelector from "../../components/UbicacionSelector";
 import { resizeImage } from "../../utils/resizeImage";
+import { ACCEPT_IMAGENES, TIPOS_IMAGEN } from "../../constants/dominio";
 import styles from "../../styles/editarPerfil.module.css";
 
 function validateTelefono(tel) {
@@ -173,7 +174,7 @@ export default function EditarPerfil() {
 
         setAvatarError("");
 
-        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        if (!TIPOS_IMAGEN.includes(file.type)) {
             setAvatarError("Solo se permiten imágenes JPG, PNG o WebP.");
             return;
         }
@@ -432,7 +433,7 @@ export default function EditarPerfil() {
                             ref={fileInputRef}
                             id="avatar"
                             type="file"
-                            accept="image/jpeg,image/png,image/webp"
+                            accept={ACCEPT_IMAGENES}
                             className={styles.avatarInputHidden}
                             onChange={handleAvatarChange}
                         />

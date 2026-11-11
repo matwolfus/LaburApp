@@ -1,57 +1,67 @@
-﻿// TODO: trabajos service
-// backend/src/services/trabajos-service.js
+﻿// backend/src/services/trabajos-service.js
+// Reglas de negocio de los trabajos: quién puede hacer qué, en qué estado,
+// qué se cambia junto (transacción) y a quién se avisa. Los controladores
+// solo leen la request y llaman a estos métodos.
+import Db from '../repositories/db-pg.js';
 import TrabajosRepository from '../repositories/trabajos-repository.js';
-import { badRequest, conflict, parseId, parseOptionalId } from '../helpers/http-error.js';
+import PostulacionesRepository from '../repositories/postulaciones-repository.js';
+import ContratosService from './contratos-service.js';
+import NotificacionesService from './notificaciones-service.js';
+import { badRequest, conflict, forbidden, notFound, parseId, parseOptionalId } from '../helpers/http-error.js';
 import { LIMITES, precioOpcional, textoOpcional, textoRequerido } from '../helpers/validaciones.js';
+import { sinFallar } from '../helpers/sin-fallar.js';
+import {
+  ESTADO_TRABAJO,
+  PRIORIDADES,
+  esTrabajoCerrado,
+  exigirCambioEstadoTrabajo,
+} from '../domain/estados.js';
+import { esFechaPasada, normalizarFecha } from '../domain/fechas.js';
 
-// Estado de la base -> estado que muestra HomeJobCard. Antes todo lo que no
-// fuera abierto/proxima se mostraba "Finalizado", incluso un trabajo 'activa'
-// (con trabajador aceptado, todavía sin hacer).
+// Estado de la base -> estado que muestra HomeJobCard.
 const STATUS_POR_ESTADO = {
-  abierto:    'PENDIENTE',   // buscando trabajadores (DEFAULT de la tabla)
-  proxima:    'PENDIENTE',   // viene de datos previos, equivale a abierto
-  activa:     'EN_CURSO',    // hay un trabajador aceptado
-  en_espera:  'EN_ESPERA',   // el aceptado canceló, falta reabrir
-  finalizado: 'FINALIZADO',
-  cancelado:  'CANCELADO',
-  vencido:    'VENCIDO',
+  [ESTADO_TRABAJO.ABIERTO]:    'PENDIENTE',
+  [ESTADO_TRABAJO.ACTIVA]:     'EN_CURSO',
+  [ESTADO_TRABAJO.EN_ESPERA]:  'EN_ESPERA',
+  [ESTADO_TRABAJO.FINALIZADO]: 'FINALIZADO',
+  [ESTADO_TRABAJO.CANCELADO]:  'CANCELADO',
+  [ESTADO_TRABAJO.VENCIDO]:    'VENCIDO',
 };
 
-function mapEstadoToStatus(estado) {
-  return STATUS_POR_ESTADO[estado] ?? 'PENDIENTE';
-}
+const mapEstadoToStatus = (estado) => STATUS_POR_ESTADO[estado] ?? 'PENDIENTE';
 
 export default class TrabajosService {
   constructor() {
+    this.db = new Db();
     this.repository = new TrabajosRepository();
+    this.postulacionesRepository = new PostulacionesRepository();
+    this.contratosService = new ContratosService();
+    this.notificacionesService = new NotificacionesService();
   }
 
-  // ACÁ AGREGUÉ
-  // Todas las ofertas de un contratante (cualquier estado) para la pantalla "Ofertas".
+  // =========================================================
+  // LECTURAS
+  // =========================================================
+
+  // Todas las ofertas de un contratador (cualquier estado), pantalla "Ofertas".
   async getAllJobsAsync(employerId) {
     return await this.repository.getAllJobsByEmployer(employerId);
   }
-  // ACÁ YA NO
 
-  // ACÁ AGREGUÉ
+  // "Tus trabajos" de la home del contratador.
   async getJobsByEmployerAsync(employerId) {
     const jobs = await this.repository.getJobsByEmployer(employerId);
-    return jobs.map(({ estado, ...job }) => ({
-      ...job,
-      status: mapEstadoToStatus(estado),
-    }));
-  }
-  // ACÁ YA NO
-
-  async getUpcomingJobsAsync(employerId) {
-    return await this.repository.getJobsByEmployerAndStatus(employerId, 'proxima');
+    return jobs.map(({ estado, ...job }) => ({ ...job, status: mapEstadoToStatus(estado) }));
   }
 
-  async getActiveJobsAsync(employerId) {
-    return await this.repository.getJobsByEmployerAndStatus(employerId, 'activa');
-  }
-   async getJobById(jobId, viewerUserId = null) {
+  async getJobById(jobId, viewerUserId = null) {
     return await this.repository.getJobById(jobId, viewerUserId);
+  }
+
+  async getJobByIdOrFail(jobId, viewerUserId = null) {
+    const job = await this.repository.getJobById(jobId, viewerUserId);
+    if (!job) throw notFound('Trabajo no encontrado');
+    return job;
   }
 
   // Trabajos abiertos para que un trabajador los descubra (filtros opcionales).
@@ -59,77 +69,179 @@ export default class TrabajosService {
     return await this.repository.buscarAbiertos(filtros);
   }
 
-  // Solo un trabajo 'en_espera' se reabre, y siempre con una fecha nueva
-  // que no esté en el pasado (si no, vencería en el acto).
-  async reabrirTrabajoAsync(jobId, currentEstado, programadoPara) {
-    if (currentEstado !== 'en_espera') {
-      throw badRequest("Solo se puede reabrir un trabajo en espera");
-    }
-    if (!programadoPara || isNaN(Date.parse(programadoPara))) {
-      throw badRequest('Elegí una nueva fecha para el trabajo');
-    }
-    if (this.#esFechaPasada(programadoPara)) {
+  // Trae el trabajo y verifica que el usuario sea el dueño.
+  async getTrabajoPropioAsync(jobId, userId) {
+    const job = await this.getJobByIdOrFail(jobId);
+    if (Number(job.id_contratante) !== Number(userId)) throw forbidden();
+    return job;
+  }
+
+  // =========================================================
+  // ALTA Y EDICIÓN
+  // =========================================================
+
+  // "Publicar tarea". El trabajo y sus fotos se guardan juntos.
+  async createJobAsync(entity, imagenes = []) {
+    this.#validateJobFields(entity, imagenes);
+
+    // Un trabajo nuevo en el pasado quedaría 'vencido' al instante.
+    if (esFechaPasada(entity.programado_para)) {
       throw badRequest('La fecha y hora del trabajo ya pasaron');
     }
-    return await this.repository.reabrirTrabajo(jobId, programadoPara);
+
+    return await this.db.withTransaction(async (tx) => {
+      const newId = await this.repository.createJob(entity, tx);
+      await this.repository.addImagesToJob(newId, imagenes ?? [], tx);
+      return newId;
+    });
   }
 
-  // Marca un trabajo 'activa' como completado (cierra también su contrato).
-  // Valida el estado acá, no en el repository, mismo criterio que el resto
-  // de las validaciones de negocio de este service.
-  async completarTrabajoAsync(jobId, currentEstado) {
-    if (currentEstado !== 'activa') {
-      throw badRequest("Solo se puede completar un trabajo en estado 'activa'");
+  // "Editar trabajo". Solo el dueño, y no si el trabajo ya está cerrado.
+  // Siempre llega la lista final de fotos (vacía si las borró todas).
+  async updateJobAsync(jobId, userId, entity, imagenes = []) {
+    const job = await this.getTrabajoPropioAsync(jobId, userId);
+
+    // Un trabajo cerrado ya no se edita (ej. cambiarle el presupuesto después de finalizarlo).
+    if (esTrabajoCerrado(job.estado)) {
+      throw conflict(`No se puede editar un trabajo ${job.estado}`);
     }
-    return await this.repository.completarTrabajo(jobId);
-  }
 
-  // Un trabajo ya 'finalizado' o 'cancelado' no se puede volver a cancelar.
-  async cancelarTrabajoAsync(jobId, currentEstado) {
-    if (currentEstado === 'finalizado' || currentEstado === 'cancelado') {
-      throw badRequest(`No se puede cancelar un trabajo en estado '${currentEstado}'`);
+    this.#validateJobFields(entity, imagenes);
+
+    // La fecha solo se revalida si cambió: así se puede editar un trabajo
+    // vencido (otros campos) sin que lo bloquee, pero no ponerle otra fecha pasada.
+    const cambioFecha = normalizarFecha(job.scheduled_at) !== normalizarFecha(entity.programado_para);
+    const fechaPasada = esFechaPasada(entity.programado_para);
+    if (cambioFecha && fechaPasada) {
+      throw badRequest('La fecha y hora del trabajo ya pasaron');
     }
-    return await this.repository.cancelarTrabajo(jobId);
+
+    // Vencido + fecha nueva no pasada -> vuelve a 'abierto' (transición
+    // vencido -> abierto de domain/estados.js; el UPDATE lo hace el repository).
+    const reabrir = job.estado === ESTADO_TRABAJO.VENCIDO && cambioFecha && !fechaPasada;
+
+    return await this.repository.updateJobWithImages(jobId, entity, imagenes ?? [], reabrir);
   }
 
-  // Devuelve el id del contratador dueño del trabajo (o null si el trabajo no existe).
-  async getJobOwnerAsync(jobId) {
-    return await this.repository.getOwnerId(jobId);
+  // =========================================================
+  // CAMBIOS DE ESTADO
+  // =========================================================
+
+  // El contratador marca su trabajo como completado: el trabajo pasa a
+  // 'finalizado' y su contrato a 'completado', juntos.
+  async completarAsync(jobId, userId) {
+    const job = await this.getTrabajoPropioAsync(jobId, userId);
+    exigirCambioEstadoTrabajo(job.estado, ESTADO_TRABAJO.FINALIZADO, 'marcar como completado');
+
+    const contrato = await this.db.withTransaction(async (tx) => {
+      const ok = await this.repository.cambiarEstadoAsync(jobId, [job.estado], ESTADO_TRABAJO.FINALIZADO, tx);
+      if (!ok) throw conflict('El trabajo cambió mientras tanto. Recargá la página.');
+      return await this.contratosService.completar(jobId, tx);
+    });
+
+    await sinFallar('avisar trabajo completado', () =>
+      this.notificacionesService.avisarTrabajoCompletado({
+        idTrabajo: jobId,
+        tituloTrabajo: job.title,
+        idContratante: userId,
+        idTrabajador: contrato?.id_trabajador ?? null,
+      })
+    );
   }
 
-  // ACÁ AGREGUÉ
-  // Validaciones compartidas por crear y editar un trabajo. OJO: no valida "estado" a
-  // propósito (updateJobAsync manda estado: null porque acá no se edita el estado).
-  // Además de validar, NORMALIZA la entidad en el lugar (trim de textos, ids y
-  // presupuesto como Number) para que el repository guarde datos limpios.
+  // El contratador cancela su trabajo: se rechazan las postulaciones que
+  // seguían abiertas y se cancela el contrato activo, si había.
+  async cancelarAsync(jobId, userId) {
+    const job = await this.getTrabajoPropioAsync(jobId, userId);
+    exigirCambioEstadoTrabajo(job.estado, ESTADO_TRABAJO.CANCELADO, 'cancelar');
+
+    const idsTrabajadores = await this.db.withTransaction(async (tx) => {
+      const ok = await this.repository.cambiarEstadoAsync(jobId, [job.estado], ESTADO_TRABAJO.CANCELADO, tx);
+      if (!ok) throw conflict('El trabajo cambió mientras tanto. Recargá la página.');
+
+      const rechazados = await this.postulacionesRepository.rechazarAbiertasDeTrabajoAsync(
+        jobId, { automatico: false }, tx
+      );
+      const contrato = await this.contratosService.cancelarPorCancelacionDelTrabajo(jobId, tx);
+
+      return contrato ? [...rechazados, contrato.id_trabajador] : rechazados;
+    });
+
+    await sinFallar('avisar trabajo cancelado', () =>
+      this.notificacionesService.avisarTrabajoCancelado({
+        idTrabajo: jobId,
+        tituloTrabajo: job.title,
+        idsTrabajadores,
+      })
+    );
+  }
+
+  // Reabre un trabajo que quedó 'en_espera' porque el trabajador aceptado
+  // se bajó. Necesita una fecha nueva que no esté en el pasado. Los
+  // postulantes que el sistema había rechazado reciben un aviso para
+  // reconfirmar su interés.
+  async reabrirAsync(jobId, userId, programadoPara) {
+    const job = await this.getTrabajoPropioAsync(jobId, userId);
+
+    // De 'vencido' también se puede volver a 'abierto', pero eso es editando
+    // la fecha (updateJobAsync). "Reabrir" es solo para un trabajo en espera.
+    if (job.estado !== ESTADO_TRABAJO.EN_ESPERA) {
+      throw conflict('Solo se puede reabrir un trabajo en espera');
+    }
+    if (typeof programadoPara !== 'string' || isNaN(Date.parse(programadoPara))) {
+      throw badRequest('Elegí una nueva fecha para el trabajo');
+    }
+    if (esFechaPasada(programadoPara)) {
+      throw badRequest('La fecha y hora del trabajo ya pasaron');
+    }
+
+    const aReconfirmar = await this.db.withTransaction(async (tx) => {
+      const ok = await this.repository.reabrirAsync(jobId, programadoPara, tx);
+      if (!ok) throw conflict('El trabajo cambió mientras tanto. Recargá la página.');
+      return await this.postulacionesRepository.pasarAReconfirmarAsync(jobId, tx);
+    });
+
+    await sinFallar('avisar reapertura', () =>
+      this.notificacionesService.avisarReapertura({
+        idTrabajo: jobId,
+        tituloTrabajo: job.title,
+        postulaciones: aReconfirmar,
+      })
+    );
+  }
+
+  // =========================================================
+  // VALIDACIONES
+  // =========================================================
+
+  // Validaciones compartidas por crear y editar. Además de validar,
+  // NORMALIZA la entidad en el lugar (trim de textos, ids y presupuesto
+  // como Number) para que el repository guarde datos limpios. No toca
+  // "estado": ni el alta ni la edición lo eligen.
   #validateJobFields(entity, imagenes) {
-    // Requeridos
     if (!entity?.id_contratante) throw badRequest('id_contratante es requerido');
     entity.id_categoria = parseId(entity.id_categoria, 'id_categoria');
     entity.id_localidad = parseOptionalId(entity.id_localidad, 'id_localidad') ?? null;
 
-    // Textos: largo máximo según las columnas (titulo varchar(255) en la base,
-    // pero se limita a 100 para que entre en las tarjetas).
+    // Textos: largo máximo según las columnas (titulo es varchar(255) en la
+    // base, pero se limita a 100 para que entre en las tarjetas).
     entity.titulo      = textoRequerido(entity.titulo, 'El título', LIMITES.TITULO);
     entity.descripcion = textoOpcional(entity.descripcion, 'La descripción', LIMITES.DESCRIPCION);
     entity.duracion    = textoOpcional(entity.duracion, 'La duración', LIMITES.DURACION);
     entity.direccion   = textoOpcional(entity.direccion, 'La dirección', LIMITES.DIRECCION);
 
-    // programado_para: si viene, que sea una fecha parseable
     if (entity.programado_para === '') entity.programado_para = null;
     if (entity.programado_para != null && (typeof entity.programado_para !== 'string' || isNaN(Date.parse(entity.programado_para)))) {
       throw badRequest('programado_para no es una fecha válida');
     }
 
-    // presupuesto: si viene, number > 0 y que entre en numeric(10,2)
+    // presupuesto: si viene, > 0 y que entre en numeric(10,2)
     entity.presupuesto = precioOpcional(entity.presupuesto, 'El presupuesto');
 
-    // prioridad: si viene, dentro de los valores permitidos
-    if (entity.prioridad != null && !['normal', 'urgente'].includes(entity.prioridad)) {
-      throw badRequest("prioridad debe ser 'normal' o 'urgente'");
+    if (entity.prioridad != null && !PRIORIDADES.includes(entity.prioridad)) {
+      throw badRequest(`prioridad debe ser ${PRIORIDADES.map((p) => `'${p}'`).join(' o ')}`);
     }
 
-    // lat / lng: si vienen, numbers en rango
     if (entity.lat != null) {
       const lat = Number(entity.lat);
       if (isNaN(lat) || lat < -90 || lat > 90) throw badRequest('lat fuera de rango (-90..90)');
@@ -149,70 +261,4 @@ export default class TrabajosService {
       }
     }
   }
-
-  // Crea un trabajo (POST de "Publicar tarea"). Valida con el mismo estilo de throw
-  // que postulaciones-service y, si vienen, inserta las fotos en imagenes_trabajo.
-  async createJobAsync(entity, imagenes = []) {
-    this.#validateJobFields(entity, imagenes);
-
-    // Un trabajo nuevo en el pasado quedaría 'vencido' al instante (ver
-    // expirarVencidos) y nunca se listaría.
-    if (this.#esFechaPasada(entity.programado_para)) {
-      throw badRequest('La fecha y hora del trabajo ya pasaron');
-    }
-
-    const newId = await this.repository.createJob(entity);
-
-    if (Array.isArray(imagenes) && imagenes.length > 0) {
-      await this.repository.addImagesToJob(newId, imagenes);
-    }
-
-    return newId;
-  }
-  // ACÁ YA NO
-
-  // ACÁ AGREGUÉ
-  // Edita un trabajo (pantalla "Editar trabajo", reusa el form de "Nuevo trabajo").
-  // A diferencia de crear, acá SIEMPRE se manda la lista final de fotos (vacía si el
-  // usuario las borró todas), y el update + reemplazo de fotos son atómicos (ver repository).
-  async updateJobAsync(jobId, entity, imagenes = [], currentEstado) {
-    // Un trabajo cerrado ya no se edita (ej. cambiarle el presupuesto después de finalizarlo).
-    if (currentEstado === 'finalizado' || currentEstado === 'cancelado') {
-      throw conflict(`No se puede editar un trabajo ${currentEstado}`);
-    }
-
-    this.#validateJobFields(entity, imagenes);
-
-    // La fecha solo se revalida si cambió: así se puede editar un trabajo vencido
-    // (otros campos) sin que lo bloquee, pero no ponerle otra fecha pasada.
-    const actual = await this.repository.getSchedule(jobId);
-    const cambioFecha = this.#normalizarFecha(actual?.programado_para) !== this.#normalizarFecha(entity.programado_para);
-    const fechaPasada = this.#esFechaPasada(entity.programado_para);
-    if (cambioFecha && fechaPasada) {
-      throw badRequest('La fecha y hora del trabajo ya pasaron');
-    }
-
-    // Vencido + fecha nueva no pasada -> vuelve a 'abierto' (ver repository).
-    const reabrir = cambioFecha && !fechaPasada;
-
-    return await this.repository.updateJobWithImages(jobId, entity, imagenes ?? [], reabrir);
-  }
-
-  // 'YYYY-MM-DDTHH:MM' (sin segundos ni offset) para comparar fechas del form contra la base.
-  #normalizarFecha(valor) {
-    if (valor == null) return null;
-    return String(valor).replace(' ', 'T').slice(0, 16);
-  }
-
-  // programado_para es hora Argentina sin offset. Sin horario (00:00) vence recién al pasar el día,
-  // igual que expirarVencidos() en el repository.
-  #esFechaPasada(programadoPara) {
-    if (programadoPara == null) return false;
-    const ahoraAR = new Date().toLocaleString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' }).replace(' ', 'T');
-    const [fecha, hora] = String(programadoPara).split('T');
-    const sinHorario = !hora || hora.startsWith('00:00');
-    return sinHorario ? fecha < ahoraAR.slice(0, 10) : String(programadoPara) < ahoraAR;
-  }
-  // ACÁ YA NO
-
 }

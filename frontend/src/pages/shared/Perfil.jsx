@@ -17,7 +17,8 @@ export default function PerfilPage() {
 
     const navigate = useNavigate();
     const [perfil, setPerfil] = useState(null);
-    const { modo, hydrateModo, modoError } = useAuth();
+    // El modo lo carga AuthProvider (única fuente de verdad); acá solo se lee.
+    const { modo, modoError } = useAuth();
     const { switching, changeModo } = useRoleSwitch();
 
     // Reconfirmación al cambiar de rol: roleSwitchTarget es el modo que se
@@ -33,16 +34,6 @@ export default function PerfilPage() {
                 const perfilCompleto = await getMiUsuario();
 
                 setPerfil(perfilCompleto);
-
-                // Solo hidrata si todavía no hay modo activo (sesión recién
-                // iniciada / primer login post-feature). Nunca pisa un modo
-                // que el usuario ya eligió a mano vía el toggle — eso sería
-                // un PATCH "actualizar a lo mismo" en cada visita a Perfil,
-                // y acá ni siquiera pega al backend porque es hidratación,
-                // no una decisión del usuario.
-                if (!modo) {
-                    hydrateModo(perfilCompleto.ultimoRol);
-                }
 
             } catch (error) {
 

@@ -10,11 +10,11 @@ import ReabrirTrabajoModal from '../ReabrirTrabajoModal';
 import ConfirmModal from '../ConfirmModal';
 import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena, reconfirmarPostulacion } from '../../services/api';
 import { getCategoryIcon } from '../../utils/categoryIcons';
+import { recibePostulaciones } from '../../constants/dominio';
 import styles from './JobDetail.module.css';
 
 const ESTADO_LABELS = {
   abierto: 'Buscando trabajador',
-  proxima: 'Buscando trabajador',
   activa: 'En curso',
   en_espera: 'En espera',
   finalizado: 'Finalizado',
@@ -22,8 +22,6 @@ const ESTADO_LABELS = {
   vencido: 'Vencido',
 };
 
-// Estados del trabajo en los que se aceptan postulaciones nuevas.
-const RECIBE_POSTULACIONES = ['abierto', 'proxima'];
 
 function estadoLabel(estado) {
   return ESTADO_LABELS[estado] ?? 'Finalizado';
@@ -205,7 +203,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
   const presupuesto = formatPresupuesto(precioEfectivo);
   const presupuestoPublicadoOriginal = precioDistintoAlPublicado ? formatPresupuesto(job.budget) : null;
   const applicantsCount = Number(job.applicants_count) || 0;
-  const recibePostulaciones = RECIBE_POSTULACIONES.includes(job.estado);
+  const aceptaPostulaciones = recibePostulaciones(job.estado);
   // Chat: el contratante habla con el trabajador aceptado; el trabajador,
   // con el contratante, desde su propia postulación (cualquier estado: si
   // está retirada o rechazada el chat queda en solo lectura).
@@ -416,7 +414,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
             <p className={styles.msg}>Este es un trabajo que publicaste vos.</p>
           ) : !miPostulacion && job.estado === 'vencido' ? (
             <p className={styles.msg}>Este trabajo venció, ya no se puede postular.</p>
-          ) : !miPostulacion && !recibePostulaciones ? (
+          ) : !miPostulacion && !aceptaPostulaciones ? (
             <p className={styles.msg}>Este trabajo ya no recibe postulaciones.</p>
           ) : !miPostulacion ? (
             <button className={styles.postularmeBtn} onClick={() => setShowPostularModal(true)}>
@@ -448,7 +446,7 @@ const JobDetail = ({ jobId, isOwner = true }) => {
                 Ya no me interesa
               </button>
             </div>
-          ) : miPostulacion.estado === 'retirado' && recibePostulaciones ? (
+          ) : miPostulacion.estado === 'retirado' && aceptaPostulaciones ? (
             // Retiró su postulación pero el trabajo sigue abierto: puede volver
             // a postularse (el backend reactiva la misma postulación).
             <div className={styles.postuladoBlock}>

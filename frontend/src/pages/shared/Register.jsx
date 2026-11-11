@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { register } from "../../services/api"
 import { useAuth } from "../../context/useAuth"
 import Banner from "../../assets/Banner.png"
+import { EMAIL_REGEX } from "../../constants/dominio"
 import "../../styles/Register.css"
 
 // Misma regla que validatePassword() de usuarios-service.js en el backend:
@@ -139,7 +140,7 @@ export default function Register() {
     }
   }
 
-  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+  const emailValido = EMAIL_REGEX.test(form.email.trim())
   const telefonoValido = validateTelefono(form.telefono)
 
   const allValid =

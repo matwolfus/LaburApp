@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SectionHeader from '../../components/SectionHeader';
 import CancelarPostulacionModal from '../../components/CancelarPostulacionModal';
 import { getMisPostulaciones, reconfirmarPostulacion } from '../../services/api';
+import { ESTADOS_CHAT_ABIERTO, recibePostulaciones } from '../../constants/dominio';
 import '../../styles/ofertas.css';
 
 const ESTADO_LABEL = {
@@ -31,13 +32,11 @@ function labelEstado(p) {
 // pendiente se cancela mientras el trabajo siga abierto; una aceptada,
 // mientras el trabajo esté activo.
 function puedeCancelar(p) {
-  if (p.estado === 'pendiente') return ['abierto', 'proxima'].includes(p.estado_trabajo);
+  if (p.estado === 'pendiente') return recibePostulaciones(p.estado_trabajo);
   if (p.estado === 'aceptado') return p.estado_trabajo === 'activa';
   return false;
 }
 
-// Estados en los que el chat con el contratante está abierto.
-const CHAT_ABIERTO = ['pendiente', 'aceptado', 'por_reconfirmar'];
 
 function formatPlazo(fecha) {
   if (!fecha) return '';
@@ -111,7 +110,7 @@ export default function EstadoTrabajos() {
           <button className="job-card__btn job-card__btn--outline" onClick={() => navigate(`/trabajador/trabajos/${p.id_trabajo}`)}>
             Ver detalle
           </button>
-          {CHAT_ABIERTO.includes(p.estado) && (
+          {ESTADOS_CHAT_ABIERTO.includes(p.estado) && (
             <button className="job-card__btn job-card__btn--outline" onClick={() => navigate(`/chats/${p.id}`)}>
               Chat
             </button>

@@ -2,9 +2,8 @@
 import Db from './db-pg.js';
 import { AHORA } from './sql-fechas.js';
 
-// Estados de postulación en los que el chat admite mensajes nuevos. En
-// 'retirado' / 'rechazado' el historial se puede leer pero no escribir.
-export const ESTADOS_CHAT_ABIERTO = ['pendiente', 'aceptado', 'por_reconfirmar'];
+// En 'retirado' / 'rechazado' el historial se puede leer pero no escribir.
+import { ESTADOS_CHAT_ABIERTO } from '../domain/estados.js';
 
 export default class MensajesRepository {
   constructor() {

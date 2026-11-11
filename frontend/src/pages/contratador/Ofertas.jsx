@@ -34,9 +34,8 @@ export default function Ofertas() {
   if (loading) return <div className="ofertas-loading">Cargando ofertas...</div>;
   if (error)   return <div className="ofertas-error">Error: {error}</div>;
 
-  // 'abierto' es el estado default de una changua recién publicada (todavía buscando
-  // candidatos), por eso se agrupa junto con 'proxima' en "Próximas Ofertas".
-  const upcomingJobs = jobs.filter((job) => ['abierto', 'proxima'].includes(job.estado));
+  // 'abierto' = publicada y buscando candidatos.
+  const upcomingJobs = jobs.filter((job) => job.estado === 'abierto');
   const activeJobs = jobs.filter((job) => job.estado === 'activa');
   // El trabajador aceptado canceló: esperan que el contratante los reabra.
   const enEsperaJobs = jobs.filter((job) => job.estado === 'en_espera');

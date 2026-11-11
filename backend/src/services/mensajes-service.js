@@ -1,12 +1,16 @@
 // backend/src/services/mensajes-service.js
-import MensajesRepository, { ESTADOS_CHAT_ABIERTO } from '../repositories/mensajes-repository.js';
+import MensajesRepository from '../repositories/mensajes-repository.js';
+import NotificacionesService from './notificaciones-service.js';
 import { HttpError, badRequest } from '../helpers/http-error.js';
+import { sinFallar } from '../helpers/sin-fallar.js';
+import { ESTADOS_CHAT_ABIERTO } from '../domain/estados.js';
 
 const CUERPO_MAX_LENGTH = 2000;
 
 export default class MensajesService {
   constructor() {
     this.repository = new MensajesRepository();
+    this.notificacionesService = new NotificacionesService();
   }
 
   async getConversacionesAsync(idUsuario) {
@@ -70,6 +74,10 @@ export default class MensajesService {
       ? chat.id_trabajador
       : chat.id_contratante;
 
-    return { mensaje, idOtro };
+    await sinFallar('avisar nuevo mensaje', () =>
+      this.notificacionesService.avisarNuevoMensaje({ idDestinatario: idOtro, idPostulacion })
+    );
+
+    return mensaje;
   }
 }

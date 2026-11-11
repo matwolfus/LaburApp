@@ -12,11 +12,11 @@ import UbicacionSelector from "../../components/UbicacionSelector";
 import { geocodeAddress, reverseGeocode } from "../../services/geocoding";
 import { ubicacionDesdeMapa, nombresDeUbicacion } from "../../utils/ubicacionDesdeMapa";
 import { resizeImage } from "../../utils/resizeImage";
+import { fechaHoraYaPaso, hoyLocal } from "../../utils/fechas";
+import { ACCEPT_IMAGENES, TIPOS_IMAGEN } from "../../constants/dominio";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
 const MAX_FOTOS = 2;
-// Mismos tipos que acepta el backend (ALLOWED_MIME_TYPES en upload-middleware.js).
-const TIPOS_IMAGEN = ["image/jpeg", "image/png", "image/webp"];
 
 // Formatea un string de dígitos (+ opcional coma decimal) con puntos de miles: "10000" -> "10.000"
 function formatPresupuesto(raw) {
@@ -39,12 +39,6 @@ function budgetToInputValue(budget) {
   const raw = hasDecimals ? num.toFixed(2).replace(".", ",") : String(Math.round(num));
   return formatPresupuesto(raw);
 }
-
-// Fecha de hoy (YYYY-MM-DD) en hora local del navegador, no en UTC.
-const hoyLocal = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
 
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
@@ -242,10 +236,7 @@ export default function NuevoTrabajo() {
       return;
     }
     if (!isEdit) {
-      const ahora = new Date();
-      const hoy = hoyLocal();
-      const hhmm = `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`;
-      if (fecha < hoy || (fecha === hoy && hora && hora < hhmm)) {
+      if (fechaHoraYaPaso(fecha, hora)) {
         setError("La fecha y hora ya pasaron. Elegí una fecha futura.");
         return;
       }
@@ -526,7 +517,7 @@ export default function NuevoTrabajo() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept={ACCEPT_IMAGENES}
                 multiple
                 className={styles.photosInputHidden}
                 onChange={handleFotosChange}
