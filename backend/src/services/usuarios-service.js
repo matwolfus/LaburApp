@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import UsuariosRepository from '../repositories/usuarios-repository.js';
+import PerfilRepository from '../repositories/perfil-repository.js';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../configs/jwt-config.js';
 import { badRequest, parseId, parseOptionalId } from '../helpers/http-error.js';
 import {
@@ -40,6 +41,7 @@ export default class UsuariosService {
 
     constructor() {
         this.repository = new UsuariosRepository();
+        this.perfilRepository = new PerfilRepository();
     }
 
     // El token solo identifica al usuario. El modo activo (contratador /
@@ -160,7 +162,7 @@ export default class UsuariosService {
     }
 
     async getPerfil(idUsuario) {
-        return await this.repository.getPerfil(idUsuario);
+        return await this.perfilRepository.getPerfil(idUsuario);
     }
 
     async updatePerfil(idUsuario, datos) {

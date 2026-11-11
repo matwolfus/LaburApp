@@ -1,72 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, DollarSign, Clock, Tag, Users, Star, CheckCircle2, MessageSquare } from 'lucide-react';
 import BackButton from '../BackButton';
-import MapPreview from '../MapPreview';
-import CancelarPostulacionModal from '../CancelarPostulacionModal';
-import PostularmeModal from '../PostularmeModal';
-import DejarResenaModal from '../DejarResenaModal';
-import ReabrirTrabajoModal from '../ReabrirTrabajoModal';
-import ConfirmModal from '../ConfirmModal';
-import Avatar from '../Avatar';
-import { formatFechaCorta, formatFechaTrabajo, formatPesos } from '../../utils/formato';
-import { getTrabajoById, getMisPostulaciones, completarTrabajo, cancelarTrabajo, getElegibilidadResena, reconfirmarPostulacion } from '../../services/api';
-import IconoCategoria from '../IconoCategoria';
-import { recibePostulaciones } from '../../constants/dominio';
+import { getTrabajoById } from '../../services/api';
+import InfoTrabajo from './InfoTrabajo';
+import AccionesDueno from './AccionesDueno';
+import AccionesTrabajador from './AccionesTrabajador';
+import ResenaTrabajo from './ResenaTrabajo';
 import styles from './JobDetail.module.css';
 
-const ESTADO_LABELS = {
-  abierto: 'Buscando trabajador',
-  activa: 'En curso',
-  en_espera: 'En espera',
-  finalizado: 'Finalizado',
-  cancelado: 'Cancelado',
-  vencido: 'Vencido',
-};
-
-
-function estadoLabel(estado) {
-  return ESTADO_LABELS[estado] ?? 'Finalizado';
-}
-
-function formatDuracion(minutos) {
-  if (!minutos) return null;
-  const n = Number(minutos);
-  if (n < 60) return `${n} minutos`;
-  const horas = n / 60;
-  return `${horas % 1 === 0 ? horas : horas.toFixed(1)} ${horas === 1 ? 'hora' : 'horas'}`;
-}
-
+// Detalle de un trabajo. Carga el trabajo y arma la pantalla con la
+// información común (InfoTrabajo) más las acciones de cada lado:
+//   isOwner = true  -> AccionesDueno (ruta del contratador)
+//   isOwner = false -> AccionesTrabajador (ruta del trabajador)
 const JobDetail = ({ jobId, isOwner = true }) => {
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
-  // El prop isOwner depende de la ruta (contratador/trabajador), no de quién
-  // sos realmente: si cambiaste a modo trabajador y entrás a tu propio
-  // trabajo, isOwner viene en false igual. Esto detecta ese caso puntual
-  // para no ofrecer "Postularme" a tu propia publicación.
-  const esPropioTrabajo = job != null && String(job.id_contratante) === String(localStorage.getItem('userId'));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [imgError, setImgError] = useState(false);
-
-  // Solo para el trabajador: saber si ya se postuló a este trabajo (y con
-  // qué estado), para no ofrecerle "Postularme" de nuevo sin sentido.
-  const [miPostulacion, setMiPostulacion] = useState(null);
-  const [postulacionesLoaded, setPostulacionesLoaded] = useState(isOwner);
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [showPostularModal, setShowPostularModal] = useState(false);
-  const [showReabrirModal, setShowReabrirModal] = useState(false);
-  const [respondiendo, setRespondiendo] = useState(false);
-  const [completando, setCompletando] = useState(false);
-  const [cancelando, setCancelando] = useState(false);
-  const [actionError, setActionError] = useState(null);
-  // Acción del dueño esperando confirmación: null | 'completar' | 'cancelar'.
-  const [confirmacion, setConfirmacion] = useState(null);
-
-  // Elegibilidad para dejar reseña: solo aplica una vez que el trabajo está
-  // finalizado, para cualquiera de los dos lados (contratador o trabajador).
-  const [elegibilidadResena, setElegibilidadResena] = useState(null);
-  const [showResenaModal, setShowResenaModal] = useState(false);
 
   const cargarJob = useCallback(() => {
     return getTrabajoById(jobId)
@@ -79,435 +29,30 @@ const JobDetail = ({ jobId, isOwner = true }) => {
     cargarJob();
   }, [cargarJob]);
 
-  const cargarMiPostulacion = useCallback(() => {
-    return getMisPostulaciones()
-      .then((postulaciones) => {
-        const propia = postulaciones.find((p) => String(p.id_trabajo) === String(jobId));
-        setMiPostulacion(propia ?? null);
-      })
-      .catch((err) => console.error('Error al traer tus postulaciones:', err))
-      .finally(() => setPostulacionesLoaded(true));
-  }, [jobId]);
-
-  useEffect(() => {
-    if (isOwner) return;
-    cargarMiPostulacion();
-  }, [isOwner, cargarMiPostulacion]);
-
-  const cargarElegibilidadResena = useCallback(() => {
-    return getElegibilidadResena(jobId)
-      .then(setElegibilidadResena)
-      .catch((err) => console.error('Error al consultar elegibilidad de reseña:', err));
-  }, [jobId]);
-
-  useEffect(() => {
-    if (job?.estado !== 'finalizado') return;
-    cargarElegibilidadResena();
-  }, [job?.estado, cargarElegibilidadResena]);
-
-  // Los botones abren un ConfirmModal (antes window.confirm); la acción
-  // corre recién al confirmar.
-  const handleCompletar = () => setConfirmacion('completar');
-  const handleCancelar = () => setConfirmacion('cancelar');
-
-  const ejecutarCompletar = async () => {
-    setCompletando(true);
-    setActionError(null);
-    try {
-      await completarTrabajo(jobId);
-      await cargarJob();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setCompletando(false);
-      setConfirmacion(null);
-    }
-  };
-
-  const ejecutarCancelar = async () => {
-    setCancelando(true);
-    setActionError(null);
-    try {
-      await cancelarTrabajo(jobId);
-      await cargarJob();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setCancelando(false);
-      setConfirmacion(null);
-    }
-  };
-
-  const handleReconfirmar = async (sigue) => {
-    setRespondiendo(true);
-    setActionError(null);
-    try {
-      await reconfirmarPostulacion(miPostulacion.id, sigue);
-      await cargarMiPostulacion();
-    } catch (err) {
-      setActionError(err.message);
-    } finally {
-      setRespondiendo(false);
-    }
-  };
-
-  if (loading) {
+  if (loading || error || !job) {
     return (
       <div className={styles.wrapper}>
         <BackButton title="Detalle del trabajo" />
-        <p className={styles.msg}>Cargando...</p>
+        <p className={styles.msg}>{loading ? 'Cargando...' : error ?? 'No se pudo cargar el trabajo.'}</p>
       </div>
     );
   }
 
-  if (error || !job) {
-    return (
-      <div className={styles.wrapper}>
-        <BackButton title="Detalle del trabajo" />
-        <p className={styles.msg}>{error ?? 'No se pudo cargar el trabajo.'}</p>
-      </div>
-    );
-  }
-
-  const mainImage = job.images?.[0]?.url;
-  const showImage = mainImage && !imgError;
-  const fecha = formatFechaTrabajo(job.scheduled_at);
-  const duracion = formatDuracion(job.duration);
-  // Precedencia: precio ya acordado (contrato activo) > precio que el propio
-  // trabajador propuso (postulación pendiente) > presupuesto publicado.
-  // Sin esto, el detalle siempre mostraba el presupuesto original aunque el
-  // trabajador se hubiera postulado o lo hubieran contratado por otro monto.
-  const precioEfectivo = job.contract_price ?? job.my_proposed_price ?? job.budget;
-  const precioDistintoAlPublicado = precioEfectivo != null && job.budget != null && Number(precioEfectivo) !== Number(job.budget);
-  const presupuesto = precioEfectivo != null ? formatPesos(precioEfectivo) : null;
-  const presupuestoPublicadoOriginal = precioDistintoAlPublicado ? formatPesos(job.budget) : null;
-  const applicantsCount = Number(job.applicants_count) || 0;
-  const aceptaPostulaciones = recibePostulaciones(job.estado);
-  // Chat: el contratante habla con el trabajador aceptado; el trabajador,
-  // con el contratante, desde su propia postulación (cualquier estado: si
-  // está retirada o rechazada el chat queda en solo lectura).
-  const idPostulacionChat = isOwner ? job.id_postulacion_aceptada : miPostulacion?.id;
-  const employerJobsCount = Number(job.employer_jobs_count) || 0;
+  const Acciones = isOwner ? AccionesDueno : AccionesTrabajador;
 
   return (
     <div className={styles.wrapper}>
       <BackButton title="Detalle del trabajo" />
 
       <div className={styles.content}>
+        <InfoTrabajo job={job} mostrarContratador={!isOwner} />
 
-        {/* ── Hero con overlay ── */}
-        <div className={styles.hero}>
-          {showImage ? (
-            <img
-              className={styles.heroImg}
-              src={mainImage}
-              alt={job.title}
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className={styles.heroPlaceholder} aria-hidden="true">
-              <IconoCategoria categoria={job.category} size={40} strokeWidth={2} />
-            </div>
-          )}
-          <div className={styles.heroOverlay}>
-            <h1 className={styles.heroTitle}>{job.title}</h1>
-            {!isOwner && job.employer_name && (
-              <p className={styles.heroSubtitle}>
-                {job.employer_name}
-                {job.employer_verificado && <span className={styles.heroVerificado}>✓</span>}
-                {employerJobsCount > 0 && ` · ${employerJobsCount} trabajos publicados`}
-              </p>
-            )}
-          </div>
-        </div>
+        <Acciones job={job} jobId={jobId} onCambio={cargarJob} />
 
-        {/* ── Tarjeta flotante de resumen ── */}
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryValue}>{presupuesto ?? 'A coordinar'}</span>
-            <span className={styles.summaryLabel}>Pago est.</span>
-          </div>
-          <div className={styles.summaryDivider} />
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryValue}>{formatFechaCorta(job.scheduled_at) ?? 'A coordinar'}</span>
-            <span className={styles.summaryLabel}>Cuándo</span>
-          </div>
-          <div className={styles.summaryDivider} />
-          <div className={styles.summaryItem}>
-            <span className={styles.summaryValue}>{job.localidad ?? 'Sin zona'}</span>
-            <span className={styles.summaryLabel}>Zona</span>
-          </div>
-        </div>
-
-        <div className={styles.headerRow}>
-          <span className={`${styles.badge} ${job.estado === 'activa' ? styles.badgeActiva : styles.badgeAbierto}`}>
-            {estadoLabel(job.estado)}
-          </span>
-          {job.priority === 'urgente' && (
-            <span className={styles.urgente}>⚡ Urgente</span>
-          )}
-        </div>
-
-        {/* Quién publicó: arriba, para poder ver su perfil sin scrollear hasta el final. */}
-        {!isOwner && job.employer_name && (
-          <button
-            className={styles.employerCard}
-            onClick={() => navigate(`/perfil/${job.id_contratante}`)}
-            aria-label={`Ver perfil de ${job.employer_name}`}
-          >
-            <Avatar
-              src={job.employer_avatar}
-              nombre={job.employer_name}
-              alt={job.employer_name}
-              className={styles.employerAvatar}
-              fallbackClassName={styles.employerAvatarFallback}
-            />
-            <div className={styles.employerInfo}>
-              <p className={styles.employerName}>{job.employer_name}</p>
-              {job.employer_rating != null && (
-                <p className={styles.employerRating}>
-                  <Star size={13} className={styles.starIcon} /> {Number(job.employer_rating).toFixed(1)}
-                </p>
-              )}
-              <p className={styles.employerLink}>Ver perfil ›</p>
-            </div>
-            {job.employer_verificado && (
-              <span className={styles.verificadoBadge}>Verificado ✓</span>
-            )}
-          </button>
-        )}
-
-        {job.description && (
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Qué hay que hacer</h2>
-            <p className={styles.sectionText}>{job.description}</p>
-          </div>
-        )}
-
-        <div className={styles.infoGrid}>
-          {job.category && (
-            <div className={styles.infoItem}>
-              <Tag size={16} className={styles.infoIcon} />
-              <span>{job.category}</span>
-            </div>
-          )}
-          {job.address && (
-            <div className={styles.infoItem}>
-              <MapPin size={16} className={styles.infoIcon} />
-              <span>{job.address}</span>
-            </div>
-          )}
-          {fecha && (
-            <div className={styles.infoItem}>
-              <Calendar size={16} className={styles.infoIcon} />
-              <span>{fecha}</span>
-            </div>
-          )}
-          {duracion && (
-            <div className={styles.infoItem}>
-              <Clock size={16} className={styles.infoIcon} />
-              <span>{duracion}</span>
-            </div>
-          )}
-          {presupuesto && (
-            <div className={styles.infoItem}>
-              <DollarSign size={16} className={styles.infoIcon} />
-              <span>
-                {presupuesto}
-                {presupuestoPublicadoOriginal && (
-                  <span className={styles.precioOriginal} title="Precio publicado originalmente">
-                    {presupuestoPublicadoOriginal}
-                  </span>
-                )}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {job.images?.length > 1 && (
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Fotos</h2>
-            <div className={styles.gallery}>
-              {job.images.map((img) => (
-                <img key={img.id} src={img.url} alt="" className={styles.galleryImg} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {job.lat != null && job.lng != null && (
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Ubicación</h2>
-            <MapPreview lat={job.lat} lng={job.lng} />
-          </div>
-        )}
-
-        {isOwner && (
-          <button className={styles.applicantsRow} onClick={() => navigate(`/ofertas/${jobId}/postulantes`)}>
-            <Users size={16} className={styles.infoIcon} />
-            <span>{applicantsCount} {applicantsCount === 1 ? 'postulante' : 'postulantes'}</span>
-          </button>
-        )}
-
-        {actionError && <p className={styles.actionError}>{actionError}</p>}
-
-        {isOwner && job.estado === 'en_espera' && (
-          <div className={styles.enEsperaBox}>
-            <p>
-              La persona que habías aceptado canceló su participación. El trabajo
-              quedó en espera: podés reabrirlo con una nueva fecha para elegir a otra persona.
-            </p>
-            <button className={styles.postularmeBtn} onClick={() => setShowReabrirModal(true)}>
-              Reabrir trabajo
-            </button>
-          </div>
-        )}
-
-        <div className={styles.actions}>
-          {isOwner ? (
-            <>
-              <button className={styles.editBtn} onClick={() => navigate(`/ofertas/${jobId}/editar`)}>
-                Editar
-              </button>
-              <button className={styles.postulantesBtn} onClick={() => navigate(`/ofertas/${jobId}/postulantes`)}>
-                Ver postulantes
-              </button>
-              {job.estado === 'activa' && (
-                <button className={styles.completarBtn} onClick={handleCompletar} disabled={completando}>
-                  <CheckCircle2 size={16} />
-                  {completando ? 'Marcando...' : 'Marcar como completado'}
-                </button>
-              )}
-              {job.estado !== 'finalizado' && job.estado !== 'cancelado' && (
-                <button className={styles.cancelarBtn} onClick={handleCancelar} disabled={cancelando}>
-                  {cancelando ? 'Cancelando...' : 'Cancelar trabajo'}
-                </button>
-              )}
-            </>
-          ) : !postulacionesLoaded ? (
-            <p className={styles.msg}>Cargando...</p>
-          ) : esPropioTrabajo ? (
-            <p className={styles.msg}>Este es un trabajo que publicaste vos.</p>
-          ) : !miPostulacion && job.estado === 'vencido' ? (
-            <p className={styles.msg}>Este trabajo venció, ya no se puede postular.</p>
-          ) : !miPostulacion && !aceptaPostulaciones ? (
-            <p className={styles.msg}>Este trabajo ya no recibe postulaciones.</p>
-          ) : !miPostulacion ? (
-            <button className={styles.postularmeBtn} onClick={() => setShowPostularModal(true)}>
-              Postularme
-            </button>
-          ) : miPostulacion.estado === 'pendiente' ? (
-            <div className={styles.postuladoBlock}>
-              <span className={styles.postuladoLabel}>Ya te postulaste — Pendiente</span>
-              <button className={styles.cancelarBtn} onClick={() => setShowCancelModal(true)}>
-                Cancelar postulación
-              </button>
-            </div>
-          ) : miPostulacion.estado === 'aceptado' ? (
-            <div className={styles.postuladoBlock}>
-              <span className={styles.aceptadoBadge}>🎉 ¡Te aceptaron para este trabajo!</span>
-              {job.estado === 'activa' && (
-                <button className={styles.cancelarBtn} onClick={() => setShowCancelModal(true)}>
-                  Cancelar mi participación
-                </button>
-              )}
-            </div>
-          ) : miPostulacion.estado === 'por_reconfirmar' ? (
-            <div className={styles.postuladoBlock}>
-              <span className={styles.postuladoLabel}>El trabajo está disponible de nuevo. ¿Seguís interesado?</span>
-              <button className={styles.postularmeBtn} onClick={() => handleReconfirmar(true)} disabled={respondiendo}>
-                Sigo interesado
-              </button>
-              <button className={styles.cancelarBtn} onClick={() => handleReconfirmar(false)} disabled={respondiendo}>
-                Ya no me interesa
-              </button>
-            </div>
-          ) : miPostulacion.estado === 'retirado' && aceptaPostulaciones ? (
-            // Retiró su postulación pero el trabajo sigue abierto: puede volver
-            // a postularse (el backend reactiva la misma postulación).
-            <div className={styles.postuladoBlock}>
-              <span className={styles.postuladoLabel}>Cancelaste tu postulación</span>
-              <button className={styles.postularmeBtn} onClick={() => setShowPostularModal(true)}>
-                Postularme de nuevo
-              </button>
-            </div>
-          ) : (
-            <span className={styles.postuladoLabel}>
-              {miPostulacion.estado === 'rechazado' ? 'Tu postulación no fue seleccionada' : 'Cancelaste tu postulación'}
-            </span>
-          )}
-        </div>
-
-        {idPostulacionChat && !esPropioTrabajo && (
-          <button className={styles.postulantesBtn} onClick={() => navigate(`/chats/${idPostulacionChat}`)}>
-            <MessageSquare size={16} />
-            Chat
-          </button>
-        )}
-
-        {job.estado === 'finalizado' && elegibilidadResena?.puedeResenar && (
-          <button className={styles.completarBtn} onClick={() => setShowResenaModal(true)}>
-            <Star size={16} />
-            Dejar reseña
-          </button>
-        )}
-
-        {job.estado === 'finalizado' && elegibilidadResena?.yaReseño && (
-          <p className={styles.msg}>Ya dejaste tu reseña para este trabajo.</p>
+        {job.estado === 'finalizado' && (
+          <ResenaTrabajo jobId={jobId} onDone={() => navigate(isOwner ? '/inicio' : '/trabajador/inicio')} />
         )}
       </div>
-
-      <PostularmeModal
-        open={showPostularModal}
-        job={job}
-        onClose={() => setShowPostularModal(false)}
-        onPosted={cargarMiPostulacion}
-      />
-
-      <CancelarPostulacionModal
-        open={showCancelModal}
-        postulacionId={miPostulacion?.id}
-        aceptada={miPostulacion?.estado === 'aceptado'}
-        onClose={() => setShowCancelModal(false)}
-        onCancelled={() => { cargarMiPostulacion(); cargarJob(); }}
-      />
-
-      <ReabrirTrabajoModal
-        open={showReabrirModal}
-        jobId={jobId}
-        onClose={() => setShowReabrirModal(false)}
-        onReopened={cargarJob}
-      />
-
-      <DejarResenaModal
-        open={showResenaModal}
-        jobId={jobId}
-        onClose={() => setShowResenaModal(false)}
-        onSubmitted={cargarElegibilidadResena}
-        onDone={() => navigate(isOwner ? '/inicio' : '/trabajador/inicio')}
-      />
-
-      <ConfirmModal
-        open={confirmacion === 'completar'}
-        title="¿Marcar el trabajo como completado?"
-        message="Se cierra el contrato y los dos van a poder dejarse una reseña."
-        confirmLabel="Sí, está completado"
-        cancelLabel="Volver"
-        confirming={completando}
-        onConfirm={ejecutarCompletar}
-        onCancel={() => setConfirmacion(null)}
-      />
-
-      <ConfirmModal
-        open={confirmacion === 'cancelar'}
-        title="¿Cancelar este trabajo?"
-        message="Se cierran los postulantes pendientes y el contrato activo, si hay. Esto no se puede deshacer."
-        confirmLabel="Sí, cancelar trabajo"
-        cancelLabel="Volver"
-        confirming={cancelando}
-        onConfirm={ejecutarCancelar}
-        onCancel={() => setConfirmacion(null)}
-      />
     </div>
   );
 };

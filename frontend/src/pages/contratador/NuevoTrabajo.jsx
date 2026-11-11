@@ -1,46 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Camera, X, Bell, FileEdit } from "lucide-react";
+import { Bell, FileEdit } from "lucide-react";
 import BackButton from "../../components/BackButton";
 import CategorySelector from "../../components/CategorySelector/CategorySelector";
 import DateTimePicker from "../../components/DateTimeSelector/DateTimeSelector";
 import DurationSelector from "../../components/DurationSelector/DurationSelector";
 import PrioritySelector from "../../components/PrioritySelector/PrioritySelector";
 import MapPicker from "../../components/MapPicker/MapPicker";
-import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos } from "../../services/api";
 import UbicacionSelector from "../../components/UbicacionSelector";
-import { geocodeAddress, reverseGeocode } from "../../services/geocoding";
-import { ubicacionDesdeMapa, nombresDeUbicacion } from "../../utils/ubicacionDesdeMapa";
-import { resizeImage } from "../../utils/resizeImage";
 import PantallaGuardado from "../../components/PantallaGuardado";
+import { createTrabajo, updateTrabajo, getTrabajoById, uploadFotos } from "../../services/api";
+import { resizeImage } from "../../utils/resizeImage";
 import { fechaHoraYaPaso, hoyLocal } from "../../utils/fechas";
-import { ACCEPT_IMAGENES, TIPOS_IMAGEN } from "../../constants/dominio";
+import FotosTrabajoEditor from "./nuevoTrabajo/FotosTrabajoEditor";
+import useUbicacionTrabajo from "./nuevoTrabajo/useUbicacionTrabajo";
+import { limpiarEntradaPresupuesto, parsePresupuesto, presupuestoParaInput } from "./nuevoTrabajo/presupuesto";
 import styles from "../../styles/NuevoTrabajo.module.css";
 
-const MAX_FOTOS = 2;
-
-// Formatea un string de dígitos (+ opcional coma decimal) con puntos de miles: "10000" -> "10.000"
-function formatPresupuesto(raw) {
-  const [entero, decimales] = raw.split(",");
-  const enteroConPuntos = entero.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return decimales !== undefined ? `${enteroConPuntos},${decimales}` : enteroConPuntos;
-}
-
-// Convierte el valor formateado ("10.000,50") al número que espera el backend (10000.5)
-function parsePresupuesto(formatted) {
-  return Number(formatted.replace(/\./g, "").replace(",", "."));
-}
-
-// Inverso de parsePresupuesto: number/string que viene del backend -> valor mostrable en el input.
-function budgetToInputValue(budget) {
-  if (budget == null) return "";
-  const num = Number(budget);
-  if (isNaN(num)) return "";
-  const hasDecimals = Math.round((num % 1) * 100) !== 0;
-  const raw = hasDecimals ? num.toFixed(2).replace(".", ",") : String(Math.round(num));
-  return formatPresupuesto(raw);
-}
-
+// "Nuevo trabajo" y "Editar trabajo" (con :jobId). La ubicación (dirección +
+// mapa + localidad) y las fotos viven en la carpeta nuevoTrabajo/.
 export default function NuevoTrabajo() {
   const navigate = useNavigate();
   const { jobId } = useParams();
@@ -54,27 +32,15 @@ export default function NuevoTrabajo() {
   const [prioridad, setPrioridad] = useState("normal");
   const [duracion, setDuracion] = useState(60);
   const [presupuesto, setPresupuesto] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [ubicacion, setUbicacion] = useState({ idProvincia: "", idLocalidad: "" });
-  // Provincia / localidad detectadas en el punto del mapa (para completar los
-  // desplegables solos y avisar si después no coinciden).
-  const [ubicacionMapa, setUbicacionMapa] = useState(null);
-  const [lat, setLat] = useState(null);
-  const [lng, setLng] = useState(null);
+  const ubic = useUbicacionTrabajo();
+
+  // Fotos que el trabajo ya tenía (solo en edición) y nuevas sin subir.
+  const [fotosExistentes, setFotosExistentes] = useState([]);
+  const [fotosNuevas, setFotosNuevas] = useState([]);
 
   const [submitting, setSubmitting] = useState(false);
+  const [subiendoFotos, setSubiendoFotos] = useState(false);
   const [error, setError] = useState(null);
-
-  const [geocodingLoading, setGeocodingLoading] = useState(false);
-  const [geocodingError, setGeocodingError] = useState(null);
-  const reverseGeocodeRequestRef = useRef(0);
-
-  // Fotos nuevas (Files todavía no subidos) y fotos que el trabajo ya tenía (solo en edición).
-  const [fotos, setFotos] = useState([]);
-  const [existingFotos, setExistingFotos] = useState([]);
-  const [uploadingFotos, setUploadingFotos] = useState(false);
-  const [fotosError, setFotosError] = useState(null);
-  const fileInputRef = useRef(null);
 
   const [loadingJob, setLoadingJob] = useState(isEdit);
   const [loadJobError, setLoadJobError] = useState(null);
@@ -88,217 +54,86 @@ export default function NuevoTrabajo() {
         setTitulo(job.title ?? "");
         setIdCategoria(job.id_categoria ?? null);
         setDescripcion(job.description ?? "");
-
         if (job.scheduled_at) {
           const [fechaPart, horaPart] = job.scheduled_at.split("T");
           setFecha(fechaPart ?? "");
           setHora(horaPart ? horaPart.slice(0, 5) : "");
         }
-
         setPrioridad(job.priority ?? "normal");
         setDuracion(job.duration != null ? Number(job.duration) : null);
-        setPresupuesto(budgetToInputValue(job.budget));
-        setDireccion(job.address ?? "");
-        setUbicacion({ idProvincia: job.id_provincia ?? "", idLocalidad: job.id_localidad ?? "" });
-        setLat(job.lat ?? null);
-        setLng(job.lng ?? null);
-        setExistingFotos((job.images ?? []).map((img) => ({ id: img.id, url: img.url })));
+        setPresupuesto(presupuestoParaInput(job.budget));
+        ubic.cargar(job);
+        setFotosExistentes((job.images ?? []).map((img) => ({ id: img.id, url: img.url })));
       })
       .catch((err) => setLoadJobError(err.message || "Error al cargar el trabajo"))
       .finally(() => setLoadingJob(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId]);
 
-  useEffect(() => {
-    return () => fotos.forEach((foto) => URL.revokeObjectURL(foto.previewUrl));
-  }, [fotos]);
-
-  const totalFotos = existingFotos.length + fotos.length;
-
-  const handleFotosChange = (e) => {
-    const selected = Array.from(e.target.files);
-    e.target.value = "";
-
-    if (totalFotos + selected.length > MAX_FOTOS) {
-      setFotosError(`Podés subir hasta ${MAX_FOTOS} fotos.`);
-      return;
-    }
-
-    // Mismos tipos que acepta el backend (upload-middleware.js). Antes el
-    // input aceptaba image/* y un HEIC o GIF fallaba recién al publicar.
-    if (selected.some((file) => !TIPOS_IMAGEN.includes(file.type))) {
-      setFotosError("Solo se permiten imágenes JPG, PNG o WebP.");
-      return;
-    }
-
-    setFotosError(null);
-    const nuevas = selected.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }));
-    setFotos((prev) => [...prev, ...nuevas]);
-  };
-
-  const handleRemoveFoto = (index) => {
-    setFotos((prev) => {
-      URL.revokeObjectURL(prev[index].previewUrl);
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  const handleRemoveExistingFoto = (index) => {
-    setExistingFotos((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Completa provincia y localidad con lo que hay en el punto del mapa.
-  // Si la localidad del mapa no está en nuestra lista, se deja la provincia
-  // y se avisa (ver avisoUbicacion).
-  const sincronizarUbicacionConMapa = async (address) => {
-    try {
-      const detectada = await ubicacionDesdeMapa(address);
-      setUbicacionMapa(detectada);
-      if (detectada.idProvincia) {
-        setUbicacion({ idProvincia: detectada.idProvincia, idLocalidad: detectada.idLocalidad });
-      }
-    } catch (err) {
-      console.error("No se pudo detectar la localidad del mapa:", err);
-    }
-  };
-
-  const handleGeocodeAddress = async () => {
-    if (!direccion.trim()) return;
-
-    setGeocodingLoading(true);
-    setGeocodingError(null);
-
-    try {
-      // La provincia / localidad ya elegidas acotan la búsqueda.
-      const contexto = await nombresDeUbicacion(ubicacion).catch(() => ({}));
-      const { lat: foundLat, lng: foundLng, address } = await geocodeAddress(direccion, contexto);
-      setLat(foundLat);
-      setLng(foundLng);
-      await sincronizarUbicacionConMapa(address);
-    } catch (err) {
-      setGeocodingError(err.message || "Error al buscar la dirección");
-    } finally {
-      setGeocodingLoading(false);
-    }
-  };
-
-  const handleMapChange = async ({ lat: newLat, lng: newLng, isUserAction }) => {
-    setLat(newLat);
-    setLng(newLng);
-
-    if (!isUserAction) return;
-
-    const requestId = ++reverseGeocodeRequestRef.current;
-    setGeocodingLoading(true);
-    setGeocodingError(null);
-
-    try {
-      const { direccion: calle, address } = await reverseGeocode(newLat, newLng);
-      if (requestId === reverseGeocodeRequestRef.current) {
-        setDireccion(calle);
-        await sincronizarUbicacionConMapa(address);
-      }
-    } catch (err) {
-      if (requestId === reverseGeocodeRequestRef.current) {
-        setGeocodingError(err.message || "Error al buscar la dirección");
-      }
-    } finally {
-      if (requestId === reverseGeocodeRequestRef.current) setGeocodingLoading(false);
-    }
-  };
-
-  // Aviso si el punto del mapa no coincide con la localidad elegida.
-  const avisoUbicacion = (() => {
-    if (!ubicacionMapa?.idProvincia) return null;
-    if (!ubicacionMapa.idLocalidad) {
-      return ubicacionMapa.localidadDetectada
-        ? `El punto del mapa está en "${ubicacionMapa.localidadDetectada}", que no está en la lista de localidades. Elegí la más cercana.`
-        : null;
-    }
-    if (String(ubicacion.idLocalidad) !== String(ubicacionMapa.idLocalidad)) {
-      return `El punto del mapa está en ${ubicacionMapa.nombreLocalidad}, pero elegiste otra localidad. Revisá que coincidan.`;
-    }
+  // Devuelve el mensaje de error del form, o null si está todo bien.
+  const validar = () => {
+    if (!idCategoria) return "Seleccioná una categoría.";
+    if (!titulo.trim()) return "Ingresá un título.";
+    if (!fecha) return "Seleccioná una fecha.";
+    if (!isEdit && fechaHoraYaPaso(fecha, hora)) return "La fecha y hora ya pasaron. Elegí una fecha futura.";
+    const monto = parsePresupuesto(presupuesto);
+    if (!presupuesto || isNaN(monto) || monto <= 0) return "Ingresá un presupuesto válido.";
+    if (!ubic.direccion.trim()) return "Ingresá una ubicación.";
     return null;
-  })();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!idCategoria) {
-      setError("Seleccioná una categoría.");
+    const errorValidacion = validar();
+    if (errorValidacion) {
+      setError(errorValidacion);
       return;
     }
-    if (!titulo.trim()) {
-      setError("Ingresá un título.");
-      return;
-    }
-    if (!fecha) {
-      setError("Seleccioná una fecha.");
-      return;
-    }
-    if (!isEdit) {
-      if (fechaHoraYaPaso(fecha, hora)) {
-        setError("La fecha y hora ya pasaron. Elegí una fecha futura.");
-        return;
-      }
-    }
-    const presupuestoNum = parsePresupuesto(presupuesto);
-    if (!presupuesto || isNaN(presupuestoNum) || presupuestoNum <= 0) {
-      setError("Ingresá un presupuesto válido.");
-      return;
-    }
-    if (!direccion.trim()) {
-      setError("Ingresá una ubicación.");
-      return;
-    }
-
-    // Sin offset a propósito: la columna es "timestamp without time zone" y toda la app
-    // asume una sola timezone (Argentina), así que mandamos la hora tal cual la eligió el usuario.
-    const programado_para = `${fecha}T${hora || "00:00"}:00`;
 
     setSubmitting(true);
     setError(null);
 
     try {
       let nuevasUrls = [];
-      if (fotos.length > 0) {
-        setUploadingFotos(true);
-        // Se achican a 800px / JPEG antes de subir (igual que el avatar en
-        // editarPerfil): una foto de celular pesa varios MB y el backend
-        // rechaza más de 5 MB.
-        const reducidas = await Promise.all(fotos.map((f) => resizeImage(f.file)));
-        const { urls } = await uploadFotos(reducidas);
-        nuevasUrls = urls;
+      if (fotosNuevas.length > 0) {
+        setSubiendoFotos(true);
+        // Se achican a 800px / JPEG antes de subir: una foto de celular
+        // pesa varios MB y el backend rechaza más de 5 MB.
+        const reducidas = await Promise.all(fotosNuevas.map((f) => resizeImage(f.file)));
+        nuevasUrls = (await uploadFotos(reducidas)).urls;
       }
 
-      const datosComunes = {
+      const datos = {
         id_categoria: idCategoria,
         titulo: titulo.trim(),
         descripcion: descripcion.trim() || undefined,
-        presupuesto: presupuestoNum,
-        programado_para,
+        presupuesto: parsePresupuesto(presupuesto),
+        // Sin offset a propósito: la columna es "timestamp without time zone"
+        // y toda la app asume hora argentina.
+        programado_para: `${fecha}T${hora || "00:00"}:00`,
         prioridad,
         duracion,
-        direccion: direccion.trim(),
-        id_localidad: ubicacion.idLocalidad ? Number(ubicacion.idLocalidad) : undefined,
-        lat: lat ?? undefined,
-        lng: lng ?? undefined,
+        direccion: ubic.direccion.trim(),
+        id_localidad: ubic.ubicacion.idLocalidad ? Number(ubic.ubicacion.idLocalidad) : undefined,
+        lat: ubic.lat ?? undefined,
+        lng: ubic.lng ?? undefined,
       };
 
       if (isEdit) {
         // En edición siempre se manda la lista final completa de fotos (puede quedar vacía).
-        const imagenes = [...existingFotos.map((f) => f.url), ...nuevasUrls];
-        await updateTrabajo(jobId, { ...datosComunes, imagenes });
+        const imagenes = [...fotosExistentes.map((f) => f.url), ...nuevasUrls];
+        await updateTrabajo(jobId, { ...datos, imagenes });
         setSaved(true);
       } else {
-        await createTrabajo({ ...datosComunes, imagenes: nuevasUrls.length > 0 ? nuevasUrls : undefined });
+        await createTrabajo({ ...datos, imagenes: nuevasUrls.length > 0 ? nuevasUrls : undefined });
         navigate("/inicio");
       }
     } catch (err) {
       setError(err.message || (isEdit ? "Error al guardar los cambios" : "Error al publicar la tarea"));
     } finally {
       setSubmitting(false);
-      setUploadingFotos(false);
+      setSubiendoFotos(false);
     }
   };
 
@@ -309,51 +144,42 @@ export default function NuevoTrabajo() {
           titulo="¡Cambios guardados!"
           subtitulo="Tu publicación fue actualizada"
           filas={[
-            { icono: <Bell size={18} />, texto: 'Los postulantes verán la información actualizada' },
-            { icono: <FileEdit size={18} />, texto: 'Tu publicación ya está al día' },
+            { icono: <Bell size={18} />, texto: "Los postulantes verán la información actualizada" },
+            { icono: <FileEdit size={18} />, texto: "Tu publicación ya está al día" },
           ]}
           nota="Podés seguir editando cuando quieras"
-          primario={{ label: 'Volver al inicio', onClick: () => navigate('/inicio', { replace: true }) }}
-          secundario={{ label: 'Ver postulantes', onClick: () => navigate(`/ofertas/${jobId}/postulantes`, { replace: true }) }}
+          primario={{ label: "Volver al inicio", onClick: () => navigate("/inicio", { replace: true }) }}
+          secundario={{ label: "Ver postulantes", onClick: () => navigate(`/ofertas/${jobId}/postulantes`, { replace: true }) }}
         />
       </div>
     );
   }
 
-  if (loadingJob) {
+  if (loadingJob || loadJobError) {
     return (
       <div className={styles.screen}>
         <BackButton title="Editar trabajo" />
-        <p className={styles.subheading} style={{ padding: "20px" }}>Cargando...</p>
-      </div>
-    );
-  }
-
-  if (loadJobError) {
-    return (
-      <div className={styles.screen}>
-        <BackButton title="Editar trabajo" />
-        <p className={styles.errorText} style={{ padding: "20px" }} role="alert">{loadJobError}</p>
+        {loadJobError
+          ? <p className={styles.errorText} style={{ padding: "20px" }} role="alert">{loadJobError}</p>
+          : <p className={styles.subheading} style={{ padding: "20px" }}>Cargando...</p>}
       </div>
     );
   }
 
   return (
     <div className={styles.screen}>
-      <BackButton title={isEdit ? "Editar trabajo" : "Nuevo Trabajo"} />
+      <BackButton title={isEdit ? "Editar trabajo" : "Nuevo trabajo"} />
 
       <form className={styles.content} onSubmit={handleSubmit}>
         <div className={styles.intro}>
           <h1 className={styles.heading}>{isEdit ? "Editar trabajo" : "Nuevo trabajo"}</h1>
           <p className={styles.subheading}>
-            {isEdit
-              ? "Actualizá los datos de tu publicación."
-              : "Describe lo que necesitas y encontrá la ayuda ideal."}
+            {isEdit ? "Actualizá los datos de tu publicación." : "Describí lo que necesitás y encontrá la ayuda ideal."}
           </p>
         </div>
 
         <div className={styles.card}>
-          <label className={styles.label} htmlFor="titulo">¿QUÉ NECESITAS?</label>
+          <label className={styles.label} htmlFor="titulo">¿QUÉ NECESITÁS?</label>
           <input
             id="titulo"
             className={styles.textInput}
@@ -368,13 +194,13 @@ export default function NuevoTrabajo() {
 
         <div className={styles.card}>
           <label className={styles.label} htmlFor="descripcion">
-            DETALLES DE LA TAREA <span className={styles.optional}>(Opcional)</span>
+            DETALLES DEL TRABAJO <span className={styles.optional}>(Opcional)</span>
           </label>
           <textarea
             id="descripcion"
             className={styles.textarea}
             maxLength={2000}
-            placeholder="Contanos qué necesitas exactamente..."
+            placeholder="Contanos qué necesitás exactamente..."
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             rows={4}
@@ -398,18 +224,13 @@ export default function NuevoTrabajo() {
               inputMode="decimal"
               placeholder="0,00"
               value={presupuesto}
-              onChange={(e) => {
-                let raw = e.target.value.replace(/[^\d,]/g, "");
-                const [entero, ...resto] = raw.split(",");
-                if (resto.length > 0) raw = `${entero},${resto.join("").slice(0, 2)}`;
-                setPresupuesto(raw === "" ? "" : formatPresupuesto(raw));
-              }}
+              onChange={(e) => setPresupuesto(limpiarEntradaPresupuesto(e.target.value))}
             />
           </div>
 
           <UbicacionSelector
-            value={ubicacion}
-            onChange={setUbicacion}
+            value={ubic.ubicacion}
+            onChange={ubic.setUbicacion}
             labelClassName={styles.label}
             labels={{ provincia: "PROVINCIA", localidad: "LOCALIDAD" }}
             idPrefix="trabajo"
@@ -422,98 +243,36 @@ export default function NuevoTrabajo() {
             maxLength={255}
             type="text"
             placeholder="Ej: Potosí 123, Buenos Aires"
-            value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
+            value={ubic.direccion}
+            onChange={(e) => ubic.setDireccion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault();
-                handleGeocodeAddress();
+                ubic.buscarDireccion();
               }
             }}
-            disabled={geocodingLoading}
+            disabled={ubic.buscando}
           />
-          {geocodingError && <p className={styles.errorText} role="alert">{geocodingError}</p>}
-          {avisoUbicacion && <p className={styles.warningText} role="status">{avisoUbicacion}</p>}
+          {ubic.errorBusqueda && <p className={styles.errorText} role="alert">{ubic.errorBusqueda}</p>}
+          {ubic.aviso && <p className={styles.warningText} role="status">{ubic.aviso}</p>}
           <div className={styles.mapWrapper}>
-            <MapPicker lat={lat} lng={lng} onChange={handleMapChange} />
+            <MapPicker lat={ubic.lat} lng={ubic.lng} onChange={ubic.moverMapa} />
           </div>
         </div>
 
-        <div className={`${styles.card} ${styles.photosCard}`}>
-          <div className={styles.photosHeader}>
-            <div className={styles.photosIcon} aria-hidden="true">
-              <Camera size={22} />
-            </div>
-            <div>
-              <p className={styles.photosTitle}>
-                Agregar fotos <span className={styles.optional}>(Opcional)</span>
-              </p>
-              <p className={styles.photosSubtitle}>
-                Muestra lo que necesitas para obtener mejores ofertas
-              </p>
-            </div>
-          </div>
-
-          {(existingFotos.length > 0 || fotos.length > 0) && (
-            <div className={styles.photosGrid}>
-              {existingFotos.map((foto, index) => (
-                <div key={foto.url} className={styles.photoThumb}>
-                  <img src={foto.url} alt={`Foto ${index + 1}`} />
-                  <button
-                    type="button"
-                    className={styles.photoRemoveBtn}
-                    onClick={() => handleRemoveExistingFoto(index)}
-                    aria-label="Quitar foto"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-              {fotos.map((foto, index) => (
-                <div key={foto.previewUrl} className={styles.photoThumb}>
-                  <img src={foto.previewUrl} alt={`Foto ${existingFotos.length + index + 1}`} />
-                  <button
-                    type="button"
-                    className={styles.photoRemoveBtn}
-                    onClick={() => handleRemoveFoto(index)}
-                    aria-label="Quitar foto"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {totalFotos < MAX_FOTOS && (
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={ACCEPT_IMAGENES}
-                multiple
-                className={styles.photosInputHidden}
-                onChange={handleFotosChange}
-              />
-              <button
-                type="button"
-                className={styles.photosAddBtn}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Elegir fotos
-              </button>
-            </>
-          )}
-
-          {fotosError && <p className={styles.errorText} role="alert">{fotosError}</p>}
-        </div>
+        <FotosTrabajoEditor
+          existentes={fotosExistentes}
+          nuevas={fotosNuevas}
+          onExistentesChange={setFotosExistentes}
+          onNuevasChange={setFotosNuevas}
+        />
 
         {error && <p className={styles.errorText} role="alert">{error}</p>}
 
         <button type="submit" className={styles.submitBtn} disabled={submitting}>
           {submitting
-            ? (uploadingFotos ? "Subiendo fotos..." : (isEdit ? "Guardando..." : "Publicando..."))
-            : (isEdit ? "Guardar cambios" : "Publicar tarea")}
+            ? (subiendoFotos ? "Subiendo fotos..." : (isEdit ? "Guardando..." : "Publicando..."))
+            : (isEdit ? "Guardar cambios" : "Publicar trabajo")}
         </button>
       </form>
     </div>
