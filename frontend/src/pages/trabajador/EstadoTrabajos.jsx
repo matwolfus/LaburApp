@@ -97,7 +97,7 @@ export default function EstadoTrabajos() {
           <h3 className="job-card__title">{p.titulo_trabajo}</h3>
           <p className="job-card__date">
             {p.categoria ? `${p.categoria} · ` : ''}
-            {/* precio_propuesto null = se postuló al precio publicado */}
+            {/* precio_propuesto null solo en postulaciones viejas (antes del P3): ahí se muestra el presupuesto */}
             {(p.precio_propuesto ?? p.presupuesto_trabajo) != null
               ? `$${Number(p.precio_propuesto ?? p.presupuesto_trabajo).toLocaleString('es-AR')}`
               : 'A convenir'}

@@ -42,9 +42,7 @@ export default class TrabajosRepository {
     `;
     return await this.db.queryAll(sql, [employerId]);
   }
-  // ACÁ YA NO
 
-  // ACÁ AGREGUÉ
   // Trabajos de un contratante para la home ("Tus Trabajos").
   // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado, category }.
   // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
@@ -70,7 +68,6 @@ export default class TrabajosRepository {
     `;
     return await this.db.queryAll(sql, [employerId]);
   }
-  // ACÁ YA NO
 
   // Caducidad: un trabajo 'abierto' cuya fecha programada ya pasó sin que se
   // aceptara a nadie se marca 'vencido'. No hay cron en el proyecto: se
@@ -322,7 +319,6 @@ export default class TrabajosRepository {
 
     return await db.queryAll(sql, values);
   }
-  // ACÁ YA NO
 
   // Actualiza los datos de un trabajo y reemplaza sus fotos, todo en una sola transacción:
   // si el reemplazo de fotos falla, el UPDATE de los datos también se revierte (no queda

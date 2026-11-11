@@ -70,11 +70,6 @@ export default class PostulacionesService {
         return await this.repository.getByTrabajoIdAsync(idTrabajo);
     }
 
-    async contarPostulantesAsync(idTrabajo, userId) {
-        await this.#getTrabajoPropio(idTrabajo, userId);
-        return await this.repository.getCountByTrabajoIdAsync(idTrabajo);
-    }
-
     async misPostulacionesAsync(idTrabajador) {
         await this.repository.expirarReconfirmaciones();
         return await this.repository.getByTrabajadorIdAsync(idTrabajador);

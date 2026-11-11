@@ -144,10 +144,6 @@ export default class UsuariosService {
         };
     }
 
-    async getUserById(id) {
-        return await this.repository.getById(id);
-    }
-
     // Cambia el modo activo (contratador/trabajador) del usuario autenticado.
     async updateUltimoRolAsync(idUsuario, rol) {
         if (!ROLES.includes(rol)) return fallo('INVALID_ROL');

@@ -1,8 +1,7 @@
-﻿// TODO: AppRouter with role-based routing
-// frontend/src/router/index.jsx
-
-//a medida que agreguen nuevas pantallas, las agregás en router/index.jsx como una línea más:
-//{ path: '/contratador/nueva-pantalla', element: <NuevaPantalla /> },
+// frontend/src/router/AppRouter.jsx
+// Rutas de la app. Las privadas pasan por PrivateRoute (requieren token).
+// Para sumar una pantalla, agregar una línea en el array de rutas:
+//   { path: '/contratador/nueva-pantalla', element: <NuevaPantalla /> },
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import AppLayout from '../layouts/AppLayout';

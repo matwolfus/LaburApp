@@ -4,3 +4,8 @@ logs/
 dist/
 .DS_Store
 backend/uploads/
+
+# Dumps de la base: tienen datos personales, nunca al repo
+pg_dump*.txt
+*.dump
+*.log

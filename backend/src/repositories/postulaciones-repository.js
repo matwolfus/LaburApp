@@ -101,16 +101,6 @@ export default class PostulacionesRepository {
         );
     }
 
-    getCountByTrabajoIdAsync = async (idTrabajo) => {
-        return await this.db.queryOne(
-            `SELECT COUNT(*)::int AS total
-             FROM postulaciones p
-             WHERE p.id_trabajo = $1
-               AND ${FILTRO_POSTULANTES_VISIBLES}`,
-            [idTrabajo]
-        );
-    }
-
     // "Barrio, Provincia" del trabajador, para el aviso al contratador.
     getLocalidadTrabajadorAsync = async (idTrabajador) => {
         const row = await this.db.queryOne(

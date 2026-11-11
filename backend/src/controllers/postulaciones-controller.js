@@ -19,11 +19,6 @@ router.get('/trabajo/:idTrabajo', authMiddleware, async (req, res) => {
     res.status(200).json(await service.listarPostulantesAsync(req.params.idTrabajo, req.userId));
 });
 
-// GET /api/postulaciones/trabajo/:idTrabajo/count -> cantidad (solo el dueño).
-router.get('/trabajo/:idTrabajo/count', authMiddleware, async (req, res) => {
-    res.status(200).json(await service.contarPostulantesAsync(req.params.idTrabajo, req.userId));
-});
-
 // GET /api/postulaciones/mias -> postulaciones propias.
 router.get('/mias', authMiddleware, async (req, res) => {
     res.status(200).json(await service.misPostulacionesAsync(req.userId));

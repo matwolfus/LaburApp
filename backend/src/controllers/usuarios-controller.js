@@ -104,11 +104,4 @@ router.get('/:id/perfil', async (req, res) => {
     res.json(perfil);
 });
 
-// GET /api/usuarios/:id
-router.get('/:id', async (req, res) => {
-    const user = await service.getUserById(req.params.id);
-    if (!user) throw notFound('Usuario no encontrado');
-    res.json(user);
-});
-
 export default router;

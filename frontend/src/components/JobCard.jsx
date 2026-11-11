@@ -17,7 +17,7 @@ export default function JobCard({ job, estadoLabel = null }) {
   // Avatares de los postulantes (vienen del backend, hasta 3). El resto se cuenta en "+N".
   const avatars = Array.isArray(applicant_avatars) ? applicant_avatars : [];
   const count = Number(applicants_count) || 0;
-  // scheduled_at puede venir null (changua publicada sin fecha/hora todavía).
+  // scheduled_at puede venir null (trabajo publicado sin fecha/hora todavía).
   // Viene como string local sin offset ("YYYY-MM-DDTHH:MM:SS"), así que new Date()
   // la interpreta como hora local tal cual está escrita, sin corrimientos.
   const date = scheduled_at ? new Date(scheduled_at) : null;

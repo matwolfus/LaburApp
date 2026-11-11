@@ -1,5 +1,4 @@
 // backend/src/repositories/categorias-repository.js
-// ACÁ AGREGUÉ
 import Db from './db-pg.js';
 
 export default class CategoriasRepository {
@@ -22,4 +21,3 @@ export default class CategoriasRepository {
     return await this.db.queryAll(sql);
   }
 }
-// ACÁ YA NO
