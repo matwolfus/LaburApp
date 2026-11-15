@@ -5,6 +5,8 @@
   --color-primary-dark: #1A2560;  /* textos y títulos sobre fondo claro (antes también #252A70) */
   --color-orange:       #F97316;  /* acciones principales (antes también #ED8500 / #E1810D) */
   --color-danger:       #DC2626;  /* errores y acciones destructivas (antes también #EF4444 / #C0392B) */
+  --color-danger-dark:  #B91C1C;  /* texto de error sobre fondo de error */
+  --color-danger-bg:    #FEE2E2;  /* fondo de los avisos de error */
   --color-success:      #22C55E;
   --color-success-dark: #16A34A;
   --color-text:         #1F2937;  /* texto principal (antes también #1E293B / #333) */
@@ -28,6 +30,8 @@
   --fs-3xl:  22px;
   --fs-4xl:  24px;
   --fs-5xl:  28px;
+  --fs-6xl:  32px;  /* títulos grandes e iniciales de avatar grandes */
+  --fs-7xl:  40px;
 
   /* ===== Layout ===== */
   /* Ancho de la columna "celular": la app se ve igual en desktop y en el teléfono. */
@@ -150,7 +154,7 @@
 
 .buscar-hero h1 {
   margin: 0 0 8px;
-  font-size: 32px;
+  font-size: var(--fs-6xl);
   line-height: 1.15;
   font-weight: 800;
   color: #172554;
@@ -182,7 +186,7 @@
 .buscar-search-icon {
   margin-right: 10px;
   color: var(--color-muted);
-  font-size: 23px;
+  font-size: var(--fs-3xl);
 }
 
 .buscar-search-box input {

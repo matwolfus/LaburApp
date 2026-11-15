@@ -58,7 +58,9 @@ export default function EditarPerfil() {
 
                 setCategorias(dataCategorias);
                 setNombreCompleto(perfil.nombreCompleto || "");
-                setTelefono(perfil.telefono || "");
+                // Solo dígitos: hay teléfonos viejos guardados con guiones o espacios
+                // ("11-2345-6789"). Así se pueden volver a guardar sin retocarlos.
+                setTelefono((perfil.telefono || "").replace(/\D/g, ""));
                 setBiografiaContratante(perfil.biografiaContratante || "");
                 setBiografiaTrabajador(perfil.biografiaTrabajador || "");
                 // La provincia no se guarda en el usuario: viene deducida de su localidad.

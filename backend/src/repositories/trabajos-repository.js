@@ -45,7 +45,8 @@ export default class TrabajosRepository {
 
   // Trabajos de un contratador para la home ("Tus Trabajos").
   // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado, category }.
-  // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
+  // El estado crudo se mapea a status (PENDIENTE, EN_CURSO, FINALIZADO...) en el
+  // service: ver STATUS_POR_ESTADO en trabajos-service.js.
   async getJobsByEmployer(employerId) {
     // Igual que el resto de las lecturas: primero vencer los que ya pasaron
     // de fecha, si no la home los muestra como pendientes.

@@ -127,7 +127,7 @@
     border-radius: 50%;
     display: grid;
     place-items: center;
-    font-size: 40px;
+    font-size: var(--fs-7xl);
     font-weight: 800;
     color: var(--color-primary);
 }

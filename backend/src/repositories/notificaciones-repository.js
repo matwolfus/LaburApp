@@ -25,6 +25,7 @@ export default class NotificacionesRepository {
                 (datos->>'id_postulacion')::int AS id_postulacion,
                 datos->>'localidad'     AS localidad,
                 datos->>'respondida'    AS respondida,
+                datos->>'rol_destinatario' AS rol_destinatario,
                 leido,
                 creado_en
             FROM notificaciones

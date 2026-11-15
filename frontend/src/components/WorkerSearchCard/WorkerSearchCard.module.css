@@ -110,24 +110,6 @@
   font-weight: 700;
 }
 
-.verified {
-  width: 13px;
-  height: 13px;
-
-  flex-shrink: 0;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 50%;
-
-  background: #1680e8;
-  color: white;
-
-  font-size: 8px;
-  font-weight: 800;
-}
-
 .ratingRow {
   display: flex;
   align-items: center;
@@ -150,75 +132,9 @@
   font-weight: 600;
 }
 
-.jobs {
-  overflow: hidden;
-
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  color: #747680;
-
-  font-size: 8px;
-}
-
-.available {
-  align-self: flex-start;
-
-  margin-top: 3px;
-
-  padding: 3px 6px;
-
-  border-radius: 4px;
-
-  background: #e3f8e8;
-
-  color: #2d9b4e;
-
-  font-size: 6px;
-  font-weight: 700;
-
-  letter-spacing: 0.2px;
-}
-
 /* =========================
    FAVORITE
 ========================= */
-
-.favorite {
-  width: 24px;
-  height: 24px;
-
-  flex-shrink: 0;
-
-  display: grid;
-  place-items: center;
-
-  padding: 0;
-
-  border: none;
-
-  background: transparent;
-
-  color: #575963;
-
-  font-size: var(--fs-2xl);
-
-  line-height: 1;
-
-  cursor: pointer;
-
-  transition:
-    transform 0.15s ease,
-    color 0.15s ease;
-}
-
-.favorite:hover {
-  transform: scale(1.1);
-}
-
-.favoriteActive {
-  color: var(--color-orange);
-}
 
 /* =========================
    DESCRIPTION
@@ -279,25 +195,6 @@
   justify-content: space-between;
 
   gap: 10px;
-}
-
-.detailLabel {
-  display: block;
-
-  margin-bottom: 1px;
-
-  color: #747680;
-
-  font-size: var(--fs-base);
-}
-
-.price {
-  display: block;
-
-  color: var(--color-primary-dark);
-
-  font-size: var(--fs-sm);
-  font-weight: 800;
 }
 
 .location {

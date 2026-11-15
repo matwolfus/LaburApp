@@ -13,11 +13,11 @@ export default function Ajustes() {
       gap: 12,
       padding: '80px 24px',
       textAlign: 'center',
-      color: '#64748B',
+      color: 'var(--color-muted)',
     }}>
       <Settings size={40} strokeWidth={1.5} />
-      <h2 style={{ margin: 0, color: '#2D3B8E' }}>Ajustes</h2>
-      <p style={{ margin: 0, fontSize: 14 }}>Disponible próximamente.</p>
+      <h2 style={{ margin: 0, color: 'var(--color-primary)' }}>Ajustes</h2>
+      <p style={{ margin: 0, fontSize: 'var(--fs-base)' }}>Disponible próximamente.</p>
     </div>
   );
 }

@@ -179,8 +179,8 @@
 /* ── Error ────────────────────────────────────────── */
 .error-message {
   font-size: var(--fs-md);
-  color: #b91c1c;
-  background-color: #fee2e2;
+  color: var(--color-danger-dark);
+  background-color: var(--color-danger-bg);
   border-radius: 8px;
   padding: 10px 14px;
   margin-bottom: 10px;

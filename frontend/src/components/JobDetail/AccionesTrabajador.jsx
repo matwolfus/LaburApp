@@ -4,7 +4,7 @@ import { MessageSquare } from 'lucide-react';
 import CancelarPostulacionModal from '../CancelarPostulacionModal';
 import PostularmeModal from '../PostularmeModal';
 import { getMisPostulaciones, reconfirmarPostulacion } from '../../services/api';
-import { recibePostulaciones } from '../../constants/dominio';
+import { puedeCancelarPostulacion, recibePostulaciones } from '../../constants/dominio';
 import styles from './JobDetail.module.css';
 
 // Acciones de un trabajador sobre un trabajo ajeno: postularse, cancelar,
@@ -50,6 +50,11 @@ export default function AccionesTrabajador({ job, jobId, onCambio }) {
     }
   };
 
+  // Misma regla que PostulacionCard y que el backend (constants/dominio.js):
+  // por ejemplo, una postulación pendiente de un trabajo vencido ya no se cancela.
+  const puedeCancelar = miPostulacion != null
+    && puedeCancelarPostulacion({ estado: miPostulacion.estado, estado_trabajo: job.estado });
+
   const renderEstado = () => {
     if (!cargada) return <p className={styles.msg}>Cargando...</p>;
     if (esPropio) return <p className={styles.msg}>Este es un trabajo que publicaste vos.</p>;
@@ -65,14 +70,16 @@ export default function AccionesTrabajador({ job, jobId, onCambio }) {
         return (
           <div className={styles.postuladoBlock}>
             <span className={styles.postuladoLabel}>Ya te postulaste — Pendiente</span>
-            <button className={styles.cancelarBtn} onClick={() => setShowCancelar(true)}>Cancelar postulación</button>
+            {puedeCancelar && (
+              <button className={styles.cancelarBtn} onClick={() => setShowCancelar(true)}>Cancelar postulación</button>
+            )}
           </div>
         );
       case 'aceptado':
         return (
           <div className={styles.postuladoBlock}>
             <span className={styles.aceptadoBadge}>🎉 ¡Te aceptaron para este trabajo!</span>
-            {job.estado === 'activa' && (
+            {puedeCancelar && (
               <button className={styles.cancelarBtn} onClick={() => setShowCancelar(true)}>Cancelar mi participación</button>
             )}
           </div>

@@ -62,7 +62,12 @@ export default class ResenasService {
     }
 
     await sinFallar('avisar nueva reseña', () =>
-      this.notificacionesService.avisarNuevaResena({ idReceptor: elegibilidad.idReceptor, idTrabajo })
+      this.notificacionesService.avisarNuevaResena({
+        idReceptor: elegibilidad.idReceptor,
+        idTrabajo,
+        // esContratante = la reseña es sobre el receptor COMO contratador.
+        rolReceptor: elegibilidad.esContratante ? 'contratador' : 'trabajador',
+      })
     );
 
     return id;

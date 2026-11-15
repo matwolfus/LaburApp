@@ -54,7 +54,7 @@ const PostulantsArray = ({ jobId, jobBudget, jobEstado }) => {
     try {
       await aceptarPostulacion(id);
       // Refetch: el aceptado pasa a 'aceptado' y el resto de pendientes de
-      // esta trabajo pasan a 'rechazado' automáticamente en el backend.
+      // este trabajo pasan a 'rechazado' automáticamente en el backend.
       await fetchPostulantes();
     } catch (err) {
       setError(err.message);

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import IconoCategoria from '../IconoCategoria';
 import { ESTADOS_CHAT_ABIERTO, labelEstadoPostulacion, puedeCancelarPostulacion } from '../../constants/dominio';
 import { formatFechaHoraCorta, formatPesosOVacio } from '../../utils/formato';
 import '../../styles/ofertas.css';
@@ -13,6 +15,8 @@ import '../../styles/ofertas.css';
 //   conChat                 -> botón "Chat" (solo si el chat sigue abierto)
 export default function PostulacionCard({ postulacion: p, conChat = false, onCancelar, onReconfirmar, respondiendo = false }) {
   const navigate = useNavigate();
+  // Si la foto no carga (URL rota) se muestra el ícono de la categoría, igual que JobCard.
+  const [imgError, setImgError] = useState(false);
 
   // precio_propuesto null solo en postulaciones viejas (antes del P3): ahí se muestra el presupuesto.
   const precio = p.precio_propuesto ?? p.presupuesto_trabajo;
@@ -20,10 +24,17 @@ export default function PostulacionCard({ postulacion: p, conChat = false, onCan
   return (
     <div className="job-card">
       <div className="job-card__top">
-        {p.image_url ? (
-          <img className="job-card__image" src={p.image_url} alt={p.titulo_trabajo} />
+        {p.image_url && !imgError ? (
+          <img
+            className="job-card__image"
+            src={p.image_url}
+            alt={p.titulo_trabajo}
+            onError={() => setImgError(true)}
+          />
         ) : (
-          <div className="job-card__image job-card__image--placeholder" aria-hidden="true">🧰</div>
+          <div className="job-card__image job-card__image--placeholder" aria-hidden="true">
+            <IconoCategoria categoria={p.categoria} size={28} strokeWidth={2} />
+          </div>
         )}
         <div className="job-card__info">
           <h3 className="job-card__title">{p.titulo_trabajo}</h3>

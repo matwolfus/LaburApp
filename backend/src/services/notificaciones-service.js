@@ -108,6 +108,8 @@ export default class NotificacionesService {
     // =========================================================
 
     // A las dos partes: ya pueden dejarse una reseña.
+    // extra.rol_destinatario: el mismo tipo lo reciben las dos partes, y el
+    // botón "Ver trabajo" lleva a la pantalla de cada una.
     avisarTrabajoCompletado = async ({ idTrabajo, tituloTrabajo, idContratante, idTrabajador }) => {
         await this.crearAsync({
             id_usuario: idContratante,
@@ -115,6 +117,7 @@ export default class NotificacionesService {
             titulo: `Marcaste "${tituloTrabajo}" como completado. ¡Dejá tu reseña!`,
             cuerpo: null,
             id_referencia: idTrabajo,
+            extra: { rol_destinatario: 'contratador' },
         });
 
         if (idTrabajador) {
@@ -124,6 +127,7 @@ export default class NotificacionesService {
                 titulo: `"${tituloTrabajo}" se completó. ¡Dejá tu reseña!`,
                 cuerpo: null,
                 id_referencia: idTrabajo,
+                extra: { rol_destinatario: 'trabajador' },
             });
         }
     }
@@ -172,13 +176,15 @@ export default class NotificacionesService {
         });
     }
 
-    avisarNuevaResena = async ({ idReceptor, idTrabajo }) => {
+    // rolReceptor: 'contratador' o 'trabajador' (en qué rol lo reseñaron).
+    avisarNuevaResena = async ({ idReceptor, idTrabajo, rolReceptor }) => {
         await this.crearAsync({
             id_usuario: idReceptor,
             tipo: 'nueva_resena',
             titulo: 'Recibiste una nueva reseña',
             cuerpo: null,
             id_referencia: idTrabajo,
+            extra: { rol_destinatario: rolReceptor },
         });
     }
 }

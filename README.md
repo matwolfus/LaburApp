@@ -36,6 +36,7 @@ Variables de `backend/.env`:
 | `SUPABASE_SERVICE_ROLE_KEY` | Clave secreta de Supabase (Settings → API keys → secret key). Nunca al front ni al repo |
 | `SUPABASE_STORAGE_BUCKET` | Bucket donde se suben las fotos |
 | `JWT_SECRET` | **Obligatoria.** Clave para firmar las sesiones. Sin ella el backend no arranca |
+| `FRONTEND_URL` | Opcional. Si el front se sirve desde otro dominio, solo ese dominio puede llamar a la API (CORS). Varios, separados por coma. Sin definir, CORS queda abierto (desarrollo, o Vercel con front y back en el mismo dominio) |
 
 Para generar un `JWT_SECRET`:
 
@@ -64,14 +65,35 @@ hace falta configurar nada. Variables opcionales de `frontend/.env`:
 
 Los scripts están en [`backend/db/`](backend/db). No hay herramienta de
 migraciones: se corren **a mano** en el SQL Editor de Supabase (pegar el
-contenido completo del archivo y ejecutar), en este orden:
+contenido completo del archivo y ejecutar).
 
-| Archivo | Qué hace | Se puede repetir |
-|---|---|---|
-| `seed-localidades-caba.sql` | Carga los barrios de CABA | Sí |
-| `migracion-corregir.sql` | Provincias, reconfirmación de postulaciones, chat por postulación | Sí |
-| `migracion-fechas-argentina.sql` | Fechas automáticas en hora argentina (defaults y datos existentes). **Correr junto con el deploy del backend que usa `AHORA`** | Sí (tiene guarda: no convierte dos veces) |
-| `migracion-p3-dominio.sql` | CHECK de estado y prioridad de los trabajos, precio en postulaciones viejas | Sí |
+### Base nueva (proyecto de Supabase recién creado)
+
+Correr todos, **en este orden**:
+
+| # | Archivo | Qué hace | Se puede repetir |
+|---|---|---|---|
+| 1 | `schema.sql` | Crea las tablas, claves, índices y políticas (solo estructura, sin datos) | No: solo en una base vacía |
+| 2 | `seed-categorias.sql` | Carga las categorías de trabajo | Sí |
+| 3 | `migracion-corregir.sql` | Carga las 24 provincias; reconfirmación de postulaciones; chat por postulación | Sí |
+| 4 | `seed-localidades-caba.sql` | Carga los 48 barrios de CABA (necesita las provincias del paso 3) | Sí |
+| 5 | `migracion-fechas-argentina.sql` | Fechas automáticas en hora argentina | Sí (tiene guarda: no convierte dos veces) |
+| 6 | `migracion-p3-dominio.sql` | CHECK de estado y prioridad de los trabajos, precio en postulaciones viejas | Sí |
+| 7 | `migracion-telefonos.sql` | Deja los teléfonos guardados solo con dígitos | Sí |
+
+En una base nueva los pasos 5 a 7 no cambian datos (no hay filas), pero dejan
+los valores por defecto y las restricciones como los espera el backend.
+
+### Base existente (la de producción)
+
+Las tablas ya existen: no correr `schema.sql`. Correr los pasos 2 a 7 que
+falten. Todos se pueden repetir sin romper nada. `migracion-fechas-argentina.sql`
+va **junto con el deploy del backend que usa `AHORA`**.
+
+### `pg_dump.txt`
+
+`pg_dump.txt` (en la raíz) es un volcado completo de la base, con estructura
+y datos. Para crear una base nueva usar `backend/db/schema.sql`.
 
 ## Deploy (Vercel)
 

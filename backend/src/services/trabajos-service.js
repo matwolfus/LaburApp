@@ -10,6 +10,7 @@ import NotificacionesService from './notificaciones-service.js';
 import { badRequest, conflict, forbidden, notFound, parseId, parseOptionalId } from '../helpers/http-error.js';
 import { LIMITES, precioOpcional, textoOpcional, textoRequerido } from '../helpers/validaciones.js';
 import { sinFallar } from '../helpers/sin-fallar.js';
+import { esUrlDelBucket } from '../middlewares/upload-middleware.js';
 import {
   ESTADO_TRABAJO,
   PRIORIDADES,
@@ -83,6 +84,7 @@ export default class TrabajosService {
   // "Publicar trabajo". El trabajo y sus fotos se guardan juntos.
   async createJobAsync(entity, imagenes = []) {
     this.#validateJobFields(entity, imagenes);
+    this.#exigirFotosDelBucket(imagenes);
 
     // Un trabajo nuevo en el pasado quedaría 'vencido' al instante.
     if (esFechaPasada(entity.programado_para)) {
@@ -107,6 +109,9 @@ export default class TrabajosService {
     }
 
     this.#validateJobFields(entity, imagenes);
+    // Las fotos que el trabajo ya tenía se aceptan tal cual (pueden ser
+    // anteriores a Supabase Storage); las nuevas tienen que ser de nuestro bucket.
+    this.#exigirFotosDelBucket(imagenes, (job.images ?? []).map((img) => img.url));
 
     // La fecha solo se revalida si cambió: así se puede editar un trabajo
     // vencido (otros campos) sin que lo bloquee, pero no ponerle otra fecha pasada.
@@ -214,10 +219,24 @@ export default class TrabajosService {
   // VALIDACIONES
   // =========================================================
 
+  // Las fotos de un trabajo solo pueden ser URLs de nuestro bucket (subidas
+  // por /api/uploads), igual que el avatar. `permitidas`: las que el trabajo
+  // ya tenía, que se pueden conservar al editar.
+  #exigirFotosDelBucket(imagenes, permitidas = []) {
+    for (const url of imagenes ?? []) {
+      if (!permitidas.includes(url) && !esUrlDelBucket(url)) {
+        throw badRequest('Las fotos del trabajo tienen que subirse desde la app');
+      }
+    }
+  }
+
   // Validaciones compartidas por crear y editar. Además de validar,
   // NORMALIZA la entidad en el lugar (trim de textos, ids y presupuesto
   // como Number) para que el repository guarde datos limpios. No toca
   // "estado": ni el alta ni la edición lo eligen.
+  //
+  // Fecha, presupuesto y dirección son obligatorios: son las mismas reglas
+  // que el formulario de NuevoTrabajo, pero acá no se pueden saltear.
   #validateJobFields(entity, imagenes) {
     if (!entity?.id_contratante) throw badRequest('id_contratante es requerido');
     entity.id_categoria = parseId(entity.id_categoria, 'id_categoria');
@@ -227,16 +246,19 @@ export default class TrabajosService {
     // base, pero se limita a 100 para que entre en las tarjetas).
     entity.titulo      = textoRequerido(entity.titulo, 'El título', LIMITES.TITULO);
     entity.descripcion = textoOpcional(entity.descripcion, 'La descripción', LIMITES.DESCRIPCION);
-    entity.duracion    = textoOpcional(entity.duracion, 'La duración', LIMITES.DURACION);
-    entity.direccion   = textoOpcional(entity.direccion, 'La dirección', LIMITES.DIRECCION);
+    // La duración se guarda como texto (varchar), pero el formulario la manda
+    // en minutos como número: se aceptan las dos formas.
+    const duracion = typeof entity.duracion === 'number' ? String(entity.duracion) : entity.duracion;
+    entity.duracion    = textoOpcional(duracion, 'La duración', LIMITES.DURACION);
+    entity.direccion   = textoRequerido(entity.direccion, 'La dirección', LIMITES.DIRECCION);
 
-    if (entity.programado_para === '') entity.programado_para = null;
-    if (entity.programado_para != null && (typeof entity.programado_para !== 'string' || isNaN(Date.parse(entity.programado_para)))) {
-      throw badRequest('programado_para no es una fecha válida');
+    if (typeof entity.programado_para !== 'string' || !entity.programado_para || isNaN(Date.parse(entity.programado_para))) {
+      throw badRequest('Elegí una fecha válida para el trabajo');
     }
 
-    // presupuesto: si viene, > 0 y que entre en numeric(10,2)
+    // presupuesto: obligatorio, > 0 y que entre en numeric(10,2)
     entity.presupuesto = precioOpcional(entity.presupuesto, 'El presupuesto');
+    if (entity.presupuesto == null) throw badRequest('El presupuesto es obligatorio');
 
     if (entity.prioridad != null && !PRIORIDADES.includes(entity.prioridad)) {
       throw badRequest(`prioridad debe ser ${PRIORIDADES.map((p) => `'${p}'`).join(' o ')}`);

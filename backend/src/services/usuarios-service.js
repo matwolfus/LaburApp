@@ -58,15 +58,18 @@ export default class UsuariosService {
         const email = normalizarEmail(emailIngresado);
         if (!email) return fallo('INVALID_EMAIL');
 
-        if (typeof password !== 'string' || !password) return fallo('INVALID_PASSWORD');
+        // Email inexistente y contraseña incorrecta responden lo mismo
+        // (INVALID_CREDENTIALS): si no, el login sirve para averiguar qué
+        // emails tienen cuenta.
+        if (typeof password !== 'string' || !password) return fallo('INVALID_CREDENTIALS');
 
         const user = await this.repository.getByEmail(email);
-        if (!user) return fallo('EMAIL_NOT_FOUND');
+        if (!user) return fallo('INVALID_CREDENTIALS');
 
         // Filas viejas (cargadas antes de bcrypt) pueden tener contrasena NULL;
         // bcrypt.compare tira si el hash no es un string, así que se corta antes.
         const passwordOk = !!user.contrasena && await bcrypt.compare(password, user.contrasena);
-        if (!passwordOk) return fallo('INVALID_PASSWORD');
+        if (!passwordOk) return fallo('INVALID_CREDENTIALS');
 
         return {
             success: true,

@@ -7,8 +7,9 @@ import styles from "../../styles/Login.module.css"
 
 const ERROR_MESSAGES = {
   INVALID_EMAIL: "El email no es válido.",
-  EMAIL_NOT_FOUND: "No existe ninguna cuenta con ese email.",
-  INVALID_PASSWORD: "La contraseña es incorrecta.",
+  // Mismo mensaje para email inexistente y contraseña incorrecta: no se
+  // revela qué emails tienen cuenta.
+  INVALID_CREDENTIALS: "Email o contraseña incorrectos.",
 }
 
 const ERROR_DESCONOCIDO = "Ocurrió un error. Intentá de nuevo."

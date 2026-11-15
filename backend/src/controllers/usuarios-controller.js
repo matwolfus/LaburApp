@@ -16,7 +16,7 @@ router.param('id', idParam);
 // errores de la API. Los errores del servidor van al middleware central.
 const MENSAJES_ERROR = {
     INVALID_EMAIL: 'El email no es válido',
-    EMAIL_NOT_FOUND: 'Email o contraseña incorrectos',
+    INVALID_CREDENTIALS: 'Email o contraseña incorrectos',
     INVALID_PASSWORD: 'La contraseña no es válida',
     PASSWORD_TOO_LONG: 'La contraseña no puede superar los 72 caracteres',
     INVALID_NOMBRE: 'Ingresá tu nombre (hasta 60 caracteres)',

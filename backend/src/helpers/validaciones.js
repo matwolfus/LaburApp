@@ -33,7 +33,7 @@ export const CARACTER_ESPECIAL_REGEX = /[^A-Za-z0-9]/;
 // Texto obligatorio: string no vacío (después de trim) y hasta `max` caracteres.
 export function textoRequerido(valor, campo, max) {
     if (typeof valor !== 'string' || !valor.trim()) {
-        throw badRequest(`${campo} es obligatorio`);
+        throw badRequest(`${campo} es un dato obligatorio`);
     }
     const texto = valor.trim();
     if (texto.length > max) {
@@ -46,7 +46,7 @@ export function textoRequerido(valor, campo, max) {
 export function textoOpcional(valor, campo, max) {
     if (valor === undefined || valor === null) return null;
     if (typeof valor !== 'string') {
-        throw badRequest(`${campo} no es válido`);
+        throw badRequest(`${campo} tiene un formato inválido`);
     }
     const texto = valor.trim();
     if (!texto) return null;

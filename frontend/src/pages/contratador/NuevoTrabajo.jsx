@@ -60,7 +60,9 @@ export default function NuevoTrabajo() {
           setHora(horaPart ? horaPart.slice(0, 5) : "");
         }
         setPrioridad(job.priority ?? "normal");
-        setDuracion(job.duration != null ? Number(job.duration) : null);
+        // duración: en la base es texto ("60"); el selector trabaja en minutos.
+        const minutos = Number(job.duration);
+        setDuracion(job.duration != null && Number.isFinite(minutos) ? minutos : null);
         setPresupuesto(presupuestoParaInput(job.budget));
         ubic.cargar(job);
         setFotosExistentes((job.images ?? []).map((img) => ({ id: img.id, url: img.url })));
@@ -113,7 +115,8 @@ export default function NuevoTrabajo() {
         // y toda la app asume hora argentina.
         programado_para: `${fecha}T${hora || "00:00"}:00`,
         prioridad,
-        duracion,
+        // La columna es texto: se manda "60", no 60.
+        duracion: duracion != null ? String(duracion) : undefined,
         direccion: ubic.direccion.trim(),
         id_localidad: ubic.ubicacion.idLocalidad ? Number(ubic.ubicacion.idLocalidad) : undefined,
         lat: ubic.lat ?? undefined,

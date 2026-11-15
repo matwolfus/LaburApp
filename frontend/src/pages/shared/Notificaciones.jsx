@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, CheckCircle2, XCircle, Bell, MessageSquare, UserMinus, RotateCcw, MapPin } from 'lucide-react';
+import { UserPlus, CheckCircle2, XCircle, Bell, MessageSquare, UserMinus, RotateCcw, MapPin, Star, Ban } from 'lucide-react';
 import SectionHeader from '../../components/SectionHeader';
 import { getNotificaciones, marcarNotificacionLeida, marcarTodasNotificacionesLeidas, reconfirmarPostulacion } from '../../services/api';
 import { notificarCambioBadges } from '../../hooks/useBadges';
@@ -19,6 +19,20 @@ import '../../styles/notificaciones.css';
 // - 'reconfirmar_postulacion' la recibe el trabajador -> botones "Sigo
 //   interesado" / "Ya no me interesa" (id_postulacion viene en la notificación).
 // - 'nuevo_mensaje' -> id_referencia es el id_postulacion del chat.
+// - 'trabajo_cancelado' la recibe el trabajador -> "Ver trabajo".
+// - 'trabajo_completado' / 'nueva_resena' las reciben las dos partes ->
+//   id_referencia es el id_trabajo; rol_destinatario dice a qué pantalla ir
+//   (ver pathTrabajoSegunRol).
+
+// Detalle del trabajo para quien recibe la notificación: el contratador va a
+// su oferta y el trabajador a la vista de trabajador. Las notificaciones
+// viejas no traen rol_destinatario: van a la vista de trabajador, que también
+// muestra el botón "Dejar reseña" cuando el trabajo está finalizado.
+const pathTrabajoSegunRol = (n) =>
+  n.rol_destinatario === 'contratador'
+    ? `/ofertas/${n.id_referencia}/detalle`
+    : `/trabajador/trabajos/${n.id_referencia}`;
+
 const TIPO_CONFIG = {
   nueva_postulacion: {
     icon: UserPlus,
@@ -49,6 +63,21 @@ const TIPO_CONFIG = {
     icon: MessageSquare,
     actionLabel: 'Ver chat',
     getPath: (n) => `/chats/${n.id_referencia}`,
+  },
+  trabajo_cancelado: {
+    icon: Ban,
+    actionLabel: 'Ver trabajo',
+    getPath: (n) => `/trabajador/trabajos/${n.id_referencia}`,
+  },
+  trabajo_completado: {
+    icon: CheckCircle2,
+    actionLabel: 'Ver trabajo',
+    getPath: pathTrabajoSegunRol,
+  },
+  nueva_resena: {
+    icon: Star,
+    actionLabel: 'Ver trabajo',
+    getPath: pathTrabajoSegunRol,
   },
 };
 
