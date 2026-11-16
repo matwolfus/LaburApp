@@ -278,24 +278,5 @@
   line-height: 1.4;
 }
 
-/* Chip de estado (mismo formato que los estados de "Tus Trabajos" en el Inicio) */
-.job-chip {
-  display: inline-block;
-  align-self: center;
-  margin-top: 2px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: var(--fs-2xs);
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  font-family: 'Nunito', sans-serif;
-}
+/* Chip de estado: la forma y los colores están en index.css (job-chip). */
 .job-card__info .job-chip { margin-top: 8px; }
-
-.job-chip--verde   { background: var(--color-success-bg); color: var(--color-success-text); }
-.job-chip--ambar   { background: var(--color-warning-bg); color: var(--color-warning-text); }
-.job-chip--naranja { background: var(--color-orange-bg);  color: var(--color-orange-text); }
-.job-chip--rojo    { background: var(--color-danger-bg);  color: var(--color-danger-dark); }
-.job-chip--gris    { background: var(--color-divider);    color: var(--color-muted); }

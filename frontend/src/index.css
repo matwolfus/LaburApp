@@ -103,6 +103,32 @@
   button { font-family: 'Nunito', sans-serif; }
 
   *, *::before, *::after { box-sizing: border-box; }
+
+/* =========================================
+   CHIPS DE ESTADO
+   El tono de cada estado sale de constants/dominio.js
+   (TONO_ESTADO_TRABAJO / TONO_ESTADO_POSTULACION).
+   ========================================= */
+.job-chip {
+  display: inline-block;
+  align-self: center;
+  margin-top: 2px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: 'Nunito', sans-serif;
+}
+
+.job-chip--azul    { background: var(--color-primary-soft); color: var(--color-primary); }
+.job-chip--verde   { background: var(--color-success-bg);   color: var(--color-success-text); }
+.job-chip--ambar   { background: var(--color-warning-bg);   color: var(--color-warning-text); }
+.job-chip--naranja { background: var(--color-orange-bg);    color: var(--color-orange-text); }
+.job-chip--rojo    { background: var(--color-danger-bg);    color: var(--color-danger-dark); }
+.job-chip--gris    { background: var(--color-divider);      color: var(--color-muted); }
   /* =========================================
    BUSCAR TRABAJO
    ========================================= */

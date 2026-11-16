@@ -1,19 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import IconoCategoria from "../IconoCategoria";
+import { ESTADO_TRABAJO_POR_STATUS, tonoEstadoTrabajo } from "../../constants/dominio";
 import styles from "./HomeJobCard.module.css";
 
 const TRUNCATE_AT = 60;
 
 // status viene ya mapeado del backend (ver mapEstadoToStatus en trabajos-service.js).
-// abierto = true: el trabajo sigue en curso (estilo "pendiente"); false: ya cerró.
-const STATUS_CONFIG = {
-  PENDIENTE:  { label: "Pendiente",  abierto: true },
-  EN_CURSO:   { label: "En curso",   abierto: true },
-  EN_ESPERA:  { label: "En espera",  abierto: true },
-  FINALIZADO: { label: "Finalizado", abierto: false },
-  CANCELADO:  { label: "Cancelado",  abierto: false },
-  VENCIDO:    { label: "Vencido",    abierto: false },
+// El color sale de la tabla compartida (TONO_ESTADO_TRABAJO en constants/dominio.js).
+const STATUS_LABEL = {
+  PENDIENTE:  "Pendiente",
+  EN_CURSO:   "En curso",
+  EN_ESPERA:  "En espera",
+  FINALIZADO: "Finalizado",
+  CANCELADO:  "Cancelado",
+  VENCIDO:    "Vencido",
 };
 
 const HomeJobCard = ({ job }) => {
@@ -23,7 +24,9 @@ const HomeJobCard = ({ job }) => {
 
   const desc = description ?? "";
   const isLong = desc.length > TRUNCATE_AT;
-  const statusCfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.PENDIENTE;
+  // Un status desconocido se muestra como "Pendiente", igual que antes.
+  const statusConocido = Object.hasOwn(STATUS_LABEL, status) ? status : "PENDIENTE";
+  const tono = tonoEstadoTrabajo(ESTADO_TRABAJO_POR_STATUS[statusConocido]);
 
   const goToDetalle = () => navigate(`/ofertas/${id}/detalle`);
 
@@ -66,8 +69,8 @@ const HomeJobCard = ({ job }) => {
         )}
       </div>
 
-      <span className={statusCfg.abierto ? styles.statusPending : styles.statusDone}>
-        {statusCfg.label}
+      <span className={`${styles.status} job-chip--${tono}`}>
+        {STATUS_LABEL[statusConocido]}
       </span>
     </div>
   );

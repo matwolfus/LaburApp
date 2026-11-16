@@ -64,8 +64,9 @@
   font-family: 'Nunito', sans-serif;
 }
 
-.statusPending,
-.statusDone {
+/* Forma del chip de estado. El color lo pone la clase global job-chip--<tono>
+   (index.css), elegida con la tabla de constants/dominio.js. */
+.status {
   flex-shrink: 0;
   align-self: flex-start;
   font-size: var(--fs-2xs);
@@ -75,14 +76,4 @@
   padding: 5px 10px;
   border-radius: 999px;
   white-space: nowrap;
-}
-
-.statusPending {
-  background: var(--color-warning-bg);
-  color: var(--color-warning-text);
-}
-
-.statusDone {
-  background: var(--color-success-bg);
-  color: var(--color-success-text);
 }

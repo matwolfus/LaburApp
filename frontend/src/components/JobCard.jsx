@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import IconoCategoria from './IconoCategoria';
 import { formatFechaTrabajo } from '../utils/formato';
-
-// Color del chip de estado de los trabajos cerrados (solo estética).
-const TONO_ESTADO = { finalizado: 'verde', cancelado: 'rojo', vencido: 'gris' };
+import { tonoEstadoTrabajo } from '../constants/dominio';
 
 //El componente recibe un objeto job con todos los datos de un trabajo.
 // estadoLabel (opcional): etiqueta para trabajos cerrados ("Completado", "Vencido"...).
@@ -45,7 +43,7 @@ export default function JobCard({ job, estadoLabel = null }) {
             {fecha}
           </p>
           {estadoLabel && (
-            <span className={`job-chip job-chip--${TONO_ESTADO[job.estado] ?? 'gris'}`}>{estadoLabel}</span>
+            <span className={`job-chip job-chip--${tonoEstadoTrabajo(job.estado)}`}>{estadoLabel}</span>
           )}
         </div>
       </div>

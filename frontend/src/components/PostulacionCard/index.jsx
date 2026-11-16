@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import IconoCategoria from '../IconoCategoria';
-import { ESTADOS_CHAT_ABIERTO, labelEstadoPostulacion, puedeCancelarPostulacion } from '../../constants/dominio';
+import { ESTADOS_CHAT_ABIERTO, labelEstadoPostulacion, puedeCancelarPostulacion, tonoEstadoPostulacion } from '../../constants/dominio';
 import { formatFechaHoraCorta, formatPesosOVacio } from '../../utils/formato';
 import '../../styles/ofertas.css';
 
@@ -13,11 +13,6 @@ import '../../styles/ofertas.css';
 //   onCancelar(p)           -> botón "Cancelar" (solo si el estado lo permite)
 //   onReconfirmar(p, sigue) -> bloque "¿Seguís interesado?" (por_reconfirmar)
 //   conChat                 -> botón "Chat" (solo si el chat sigue abierto)
-// Color del chip de estado (solo estética).
-const TONO_ESTADO = { pendiente: 'ambar', aceptado: 'verde', rechazado: 'rojo', retirado: 'gris', por_reconfirmar: 'naranja' };
-const tonoEstado = (p) =>
-  p.estado === 'aceptado' && p.estado_trabajo === 'cancelado' ? 'rojo' : TONO_ESTADO[p.estado] ?? 'gris';
-
 export default function PostulacionCard({ postulacion: p, conChat = false, onCancelar, onReconfirmar, respondiendo = false }) {
   const navigate = useNavigate();
   // Si la foto no carga (URL rota) se muestra el ícono de la categoría, igual que JobCard.
@@ -50,7 +45,7 @@ export default function PostulacionCard({ postulacion: p, conChat = false, onCan
       </div>
 
       <div className="job-card__bottom">
-        <span className={`job-chip job-chip--${tonoEstado(p)}`}>{labelEstadoPostulacion(p)}</span>
+        <span className={`job-chip job-chip--${tonoEstadoPostulacion(p)}`}>{labelEstadoPostulacion(p)}</span>
         <div className="job-card__actions">
           <button className="job-card__btn job-card__btn--outline" onClick={() => navigate(`/trabajador/trabajos/${p.id_trabajo}`)}>
             Ver detalle

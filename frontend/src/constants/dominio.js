@@ -24,6 +24,50 @@ export const ESTADO_POSTULACION_LABEL = {
   por_reconfirmar: 'Confirmá tu interés',
 };
 
+// ---------- Colores de los chips de estado ----------
+// Cada tono es una clase global job-chip--<tono> (ver index.css). Única tabla
+// de colores por estado: la usan JobCard, PostulacionCard y HomeJobCard.
+
+// Estado del trabajo (como está en la base) -> tono.
+export const TONO_ESTADO_TRABAJO = {
+  abierto: 'azul',
+  activa: 'ambar',
+  en_espera: 'naranja',
+  finalizado: 'verde',
+  cancelado: 'rojo',
+  vencido: 'gris',
+};
+
+export const tonoEstadoTrabajo = (estado) => TONO_ESTADO_TRABAJO[estado] ?? 'gris';
+
+// El Inicio del contratador recibe el estado ya traducido por el backend
+// (mapEstadoToStatus en trabajos-service.js): se vuelve al estado de la base
+// para usar la misma tabla de colores.
+export const ESTADO_TRABAJO_POR_STATUS = {
+  PENDIENTE: 'abierto',
+  EN_CURSO: 'activa',
+  EN_ESPERA: 'en_espera',
+  FINALIZADO: 'finalizado',
+  CANCELADO: 'cancelado',
+  VENCIDO: 'vencido',
+};
+
+// Estado de la postulación -> tono.
+export const TONO_ESTADO_POSTULACION = {
+  pendiente: 'ambar',
+  aceptado: 'verde',
+  rechazado: 'rojo',
+  retirado: 'gris',
+  por_reconfirmar: 'naranja',
+};
+
+// p: postulación con `estado` y `estado_trabajo`. Una aceptada cuyo trabajo
+// se canceló va en rojo (su etiqueta es "Trabajo cancelado").
+export function tonoEstadoPostulacion(p) {
+  if (p.estado === 'aceptado' && p.estado_trabajo === 'cancelado') return 'rojo';
+  return TONO_ESTADO_POSTULACION[p.estado] ?? 'gris';
+}
+
 // Una postulación aceptada muestra el estado del trabajo: "Aceptado" no dice
 // si ya se hizo o si el contratador lo canceló.
 const ESTADO_TRABAJO_ACEPTADO_LABEL = {
