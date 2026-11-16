@@ -12,18 +12,26 @@
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: #ffffff;
+  background: var(--color-card);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
   box-shadow: 0 2px 12px rgba(45, 59, 142, 0.06);
   flex-shrink: 0;
 }
 
 .backBtn {
-  background: none;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  background: var(--color-cta-bg);
   border: none;
-  font-size: var(--fs-2xl);
+  border-radius: 50%;
+  font-size: var(--fs-xl);
   color: var(--color-primary);
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
 }
 
 .headerAvatar,
@@ -38,8 +46,10 @@
 .headerAvatarFallback {
   display: grid;
   place-items: center;
-  background: var(--color-border);
-  color: var(--color-primary);
+  /* Color propio de la persona (lo pone Avatar), igual que en la lista de chats */
+  background: var(--avatar-bg, var(--color-primary-soft));
+  color: var(--avatar-fg, var(--color-primary));
+  font-size: var(--fs-md);
   font-weight: 800;
 }
 
@@ -51,19 +61,29 @@
 
 .headerNombre {
   font-weight: 800;
-  font-size: var(--fs-base);
-  color: var(--color-text);
+  font-size: var(--fs-lg);
+  color: var(--color-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* Título del trabajo como chip, igual que en la lista de chats */
 .headerTrabajo {
-  font-size: var(--fs-xs);
-  font-weight: 700;
+  align-self: flex-start;
+  max-width: 100%;
+  margin-top: 2px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
   color: var(--color-primary);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lista {
@@ -76,8 +96,13 @@
 }
 
 .msg {
+  align-self: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--color-cta-bg);
   text-align: center;
-  color: #94A3B8;
+  color: var(--color-primary);
+  font-weight: 600;
   font-size: var(--fs-md);
   margin-top: 24px;
 }
@@ -95,16 +120,17 @@
 .bubbleMia {
   align-self: flex-end;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-card);
   border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 12px rgba(45, 59, 142, 0.18);
 }
 
 .bubbleAjena {
   align-self: flex-start;
-  background: #ffffff;
+  background: var(--color-card);
   color: var(--color-text);
   border-bottom-left-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(45, 59, 142, 0.06);
 }
 
 .bubbleTexto {
@@ -132,7 +158,7 @@
   display: flex;
   gap: 8px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
-  background: #ffffff;
+  background: var(--color-card);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
@@ -144,7 +170,7 @@
   padding: 10px 16px;
   font-size: var(--fs-base);
   font-family: inherit;
-  background: #F5F6FA;
+  background: var(--color-bg);
   outline: none;
 }
 
@@ -157,8 +183,10 @@
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: var(--color-primary);
-  color: #ffffff;
+  /* Naranja: es la acción principal de la pantalla, como en el Inicio */
+  background: var(--color-orange);
+  color: var(--color-card);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -197,10 +225,11 @@
 .soloLectura {
   margin: 0;
   padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0));
-  background: var(--color-bg);
+  background: var(--color-warning-bg);
   border-top: 1px solid var(--color-border);
   font-size: var(--fs-md);
-  color: var(--color-muted);
+  font-weight: 600;
+  color: var(--color-warning-text);
   text-align: center;
   flex-shrink: 0;
 }

@@ -1,5 +1,5 @@
 .card {
-  background: white;
+  background: var(--color-card);
   border-radius: 24px;
   box-shadow: 0px 12px 32px -4px rgba(23, 29, 110, 0.06);
   padding: 21px;
@@ -20,13 +20,14 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--color-primary);
+  /* Color propio de cada persona (lo pone Avatar) */
+  background: var(--avatar-bg, var(--color-primary));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--fs-xl);
   font-weight: 700;
-  color: white;
+  color: var(--avatar-fg, var(--color-card));
   flex-shrink: 0;
   font-family: 'Inter', sans-serif;
 }
@@ -61,7 +62,7 @@
   align-items: center;
   gap: 8px;
   font-size: var(--fs-base);
-  color: #464651;
+  color: var(--color-muted);
   margin: 0;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -84,7 +85,7 @@
 
 .ratingCount {
   font-size: var(--fs-sm);
-  color: #464651;
+  color: var(--color-muted);
   font-family: 'Inter', sans-serif;
   font-weight: 500;
 }
@@ -109,39 +110,39 @@
 
 .badgeVerificado {
   composes: badge;
-  background: rgba(38, 99, 141, 0.1);
-  color: #26638d;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
 }
 
 .badgeTop {
   composes: badge;
-  background: rgba(225, 129, 13, 0.1);
-  color: var(--color-orange);
+  background: var(--color-orange-bg);
+  color: var(--color-orange-text);
 }
 
 .badgeTrabajo {
   composes: badge;
-  background: rgba(23, 29, 110, 0.1);
-  color: #171d6e;
+  background: var(--color-cta-bg);
+  color: var(--color-primary-dark);
 }
 
 .badgeAceptada {
   composes: badge;
-  background: rgba(22, 163, 74, 0.1);
-  color: var(--color-success-dark);
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .badgeRechazada {
   composes: badge;
-  background: rgba(220, 38, 38, 0.1);
-  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  color: var(--color-danger-dark);
 }
 
 /* ── Precio propuesto ── */
 .price {
   margin: 0;
   font-size: var(--fs-base);
-  color: #464651;
+  color: var(--color-muted);
   font-family: 'Inter', sans-serif;
   font-weight: 500;
 }

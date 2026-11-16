@@ -1,5 +1,5 @@
 .page {
-    background: #F5F7FA;
+    background: var(--color-bg);
     min-height: 100vh;
 }
 
@@ -19,8 +19,9 @@
     gap: 8px;
     width: 100%;
     border: none;
-    background: var(--color-primary);
-    color: #ffffff;
+    background: var(--color-orange);
+    color: var(--color-card);
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
     padding: 13px;
     border-radius: 999px;
     font-size: var(--fs-base);
@@ -45,17 +46,17 @@
 }
 
 .estado {
-    background: #FFFFFF;
+    background: var(--color-card);
     border-radius: 16px;
     padding: 40px 24px;
     text-align: center;
     color: var(--color-muted);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .estado h2 {
     margin: 0 0 8px;
-    color: var(--color-primary-dark);
+    color: var(--color-primary);
     font-size: var(--fs-lg);
 }
 

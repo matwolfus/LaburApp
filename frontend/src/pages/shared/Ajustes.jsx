@@ -15,9 +15,29 @@ export default function Ajustes() {
       textAlign: 'center',
       color: 'var(--color-muted)',
     }}>
-      <Settings size={40} strokeWidth={1.5} />
+      <span style={{
+        width: 72,
+        height: 72,
+        borderRadius: '50%',
+        display: 'grid',
+        placeItems: 'center',
+        background: 'var(--color-cta-bg)',
+        color: 'var(--color-primary)',
+      }}>
+        <Settings size={32} strokeWidth={1.75} />
+      </span>
       <h2 style={{ margin: 0, color: 'var(--color-primary)' }}>Ajustes</h2>
-      <p style={{ margin: 0, fontSize: 'var(--fs-base)' }}>Disponible próximamente.</p>
+      <p style={{
+        margin: 0,
+        padding: '4px 12px',
+        borderRadius: 999,
+        background: 'var(--color-orange-bg)',
+        color: 'var(--color-orange-text)',
+        fontSize: 'var(--fs-sm)',
+        fontWeight: 800,
+        textTransform: 'uppercase',
+        letterSpacing: '0.04em',
+      }}>Disponible próximamente.</p>
     </div>
   );
 }

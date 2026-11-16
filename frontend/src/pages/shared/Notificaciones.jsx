@@ -6,7 +6,8 @@ import { getNotificaciones, marcarNotificacionLeida, marcarTodasNotificacionesLe
 import { notificarCambioBadges } from '../../hooks/useBadges';
 import '../../styles/notificaciones.css';
 
-// Config por tipo de notificación: ícono + a dónde lleva el botón de acción.
+// Config por tipo de notificación: color del ícono (solo estética), ícono y
+// a dónde lleva el botón de acción.
 // El target de cada tipo depende de QUIÉN recibe ese tipo de notificación,
 // no del modo activo actual del usuario (que puede haber cambiado desde
 // que se generó la notificación):
@@ -35,46 +36,55 @@ const pathTrabajoSegunRol = (n) =>
 
 const TIPO_CONFIG = {
   nueva_postulacion: {
+    tono: 'azul',
     icon: UserPlus,
     actionLabel: 'Ver Perfil',
     getPath: (n) => `/perfil/${n.id_referencia}`,
   },
   postulacion_aceptada: {
+    tono: 'verde',
     icon: CheckCircle2,
     actionLabel: 'Ver trabajo',
     getPath: (n) => `/trabajador/trabajos/${n.id_referencia}`,
   },
   postulacion_rechazada: {
+    tono: 'rojo',
     icon: XCircle,
     actionLabel: 'Ver trabajo',
     getPath: (n) => `/trabajador/trabajos/${n.id_referencia}`,
   },
   postulacion_cancelada: {
+    tono: 'ambar',
     icon: UserMinus,
     actionLabel: 'Ver detalle',
     getPath: (n) => `/ofertas/${n.id_referencia}/detalle`,
   },
   reconfirmar_postulacion: {
+    tono: 'naranja',
     icon: RotateCcw,
     actionLabel: 'Ver trabajo',
     getPath: (n) => `/trabajador/trabajos/${n.id_referencia}`,
   },
   nuevo_mensaje: {
+    tono: 'azul',
     icon: MessageSquare,
     actionLabel: 'Ver chat',
     getPath: (n) => `/chats/${n.id_referencia}`,
   },
   trabajo_cancelado: {
+    tono: 'rojo',
     icon: Ban,
     actionLabel: 'Ver trabajo',
     getPath: (n) => `/trabajador/trabajos/${n.id_referencia}`,
   },
   trabajo_completado: {
+    tono: 'verde',
     icon: CheckCircle2,
     actionLabel: 'Ver trabajo',
     getPath: pathTrabajoSegunRol,
   },
   nueva_resena: {
+    tono: 'ambar',
     icon: Star,
     actionLabel: 'Ver trabajo',
     getPath: pathTrabajoSegunRol,
@@ -171,7 +181,7 @@ export default function Notificaciones() {
     const pideReconfirmar = n.tipo === 'reconfirmar_postulacion' && n.id_postulacion && n.respondida !== 'true';
     return (
       <div className={`notif-card ${n.leido ? '' : 'notif-card--no-leida'}`} key={n.id}>
-        <div className="notif-card__icon">
+        <div className={`notif-card__icon notif-card__icon--${config?.tono ?? 'azul'}`}>
           <Icon size={20} strokeWidth={2} />
         </div>
         <div className="notif-card__body">

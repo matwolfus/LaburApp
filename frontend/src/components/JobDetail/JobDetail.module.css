@@ -36,8 +36,9 @@
 .heroPlaceholder {
   width: 100%;
   height: 100%;
-  background-color: #0D9488;
-  color: white;
+  /* Sin foto: degradé de la marca (antes verde agua, fuera de la paleta) */
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: var(--color-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,8 +78,8 @@
   height: 15px;
   margin-left: 4px;
   border-radius: 50%;
-  background: #1680E8;
-  color: white;
+  background: var(--color-primary-light);
+  color: var(--color-card);
   font-size: var(--fs-2xs);
   font-weight: 800;
 }
@@ -148,20 +149,20 @@
 }
 
 .badgeAbierto {
-  background: rgba(45, 59, 142, 0.1);
+  background: var(--color-primary-soft);
   color: var(--color-primary);
 }
 
 .badgeActiva {
-  background: rgba(13, 148, 136, 0.12);
-  color: #0D9488;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .urgente {
   font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--color-orange);
-  background: rgba(249, 115, 22, 0.1);
+  color: var(--color-orange-text);
+  background: var(--color-orange-bg);
   padding: 6px 14px;
   border-radius: 50px;
 }
@@ -178,13 +179,13 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--color-muted);
+  color: var(--color-primary);
   margin: 0;
 }
 
 .sectionText {
   font-size: var(--fs-base);
-  color: #334155;
+  color: var(--color-text);
   line-height: 1.55;
   margin: 0;
   white-space: pre-line;
@@ -210,7 +211,7 @@
   align-items: center;
   gap: 10px;
   font-size: var(--fs-base);
-  color: #334155;
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -268,8 +269,9 @@
 }
 
 .employerAvatarFallback {
-  background: #e8edf8;
-  color: var(--color-primary);
+  /* Color propio de cada persona (lo pone Avatar) */
+  background: var(--avatar-bg, var(--color-primary-soft));
+  color: var(--avatar-fg, var(--color-primary));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -313,8 +315,8 @@
   flex-shrink: 0;
   font-size: var(--fs-xs);
   font-weight: 700;
-  color: var(--color-success-dark);
-  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
   padding: 5px 10px;
   border-radius: 50px;
 }
@@ -471,13 +473,13 @@
   margin: 16px 0 4px;
   padding: 14px;
   border-radius: 14px;
-  background: #FFF7ED;
-  border: 1px solid #FED7AA;
+  background: var(--color-orange-bg);
+  border: 1px solid var(--color-orange-border);
 }
 
 .enEsperaBox p {
   margin: 0 0 12px;
   font-size: var(--fs-base);
   line-height: 1.45;
-  color: #9A3412;
+  color: var(--color-orange-text);
 }

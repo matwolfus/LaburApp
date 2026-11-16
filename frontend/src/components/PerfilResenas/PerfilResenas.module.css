@@ -1,12 +1,11 @@
 .card {
-    background: #FFFFFF;
+    background: var(--color-card);
 
     border-radius: 16px;
 
     padding: 18px;
 
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .header {
@@ -29,11 +28,11 @@
     font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: var(--color-primary-dark);
+    color: var(--color-primary);
 }
 
 .icon {
-    color: var(--color-orange);
+    color: var(--color-star);
 }
 
 .cantidad {
@@ -47,9 +46,9 @@
 
     border-radius: 50%;
 
-    background: #EEF0F6;
+    background: var(--color-orange);
 
-    color: var(--color-primary);
+    color: var(--color-card);
 
     font-size: var(--fs-xs);
     font-weight: 700;
@@ -68,7 +67,7 @@
 
     font-size: var(--fs-md);
 
-    color: #9AA0B4;
+    color: var(--color-muted);
 }
 
 .card {

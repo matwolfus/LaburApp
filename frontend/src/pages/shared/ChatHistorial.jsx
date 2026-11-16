@@ -34,7 +34,9 @@ export default function ChatHistorial() {
   if (conversaciones.length === 0) {
     return (
       <div className={styles.empty}>
-        <MessageSquare size={40} strokeWidth={1.5} />
+        <span className={styles.emptyIcon}>
+          <MessageSquare size={32} strokeWidth={1.75} />
+        </span>
         <h2 className={styles.emptyTitle}>Chat</h2>
         <p className={styles.emptyText}>
           Todavía no tenés conversaciones. Se abren automáticamente cuando aceptás (o te aceptan) en un trabajo.
@@ -50,7 +52,7 @@ export default function ChatHistorial() {
         {conversaciones.map((c) => (
           <button
             key={c.id_postulacion}
-            className={styles.item}
+            className={c.no_leidos > 0 ? `${styles.item} ${styles.itemNoLeido}` : styles.item}
             onClick={() => navigate(`/chats/${c.id_postulacion}`)}
           >
             <Avatar

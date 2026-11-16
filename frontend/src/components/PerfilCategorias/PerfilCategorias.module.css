@@ -1,12 +1,11 @@
 .card {
-    background: #FFFFFF;
+    background: var(--color-card);
 
     border-radius: 16px;
 
     padding: 18px;
 
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .title {
@@ -19,7 +18,7 @@
     font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: var(--color-primary-dark);
+    color: var(--color-primary);
 }
 
 .icon {
@@ -38,16 +37,16 @@
     display: inline-flex;
     align-items: center;
 
-    background: #E7EFFE;
+    background: var(--color-primary-soft);
 
-    color: #2255C4;
+    color: var(--color-primary);
 
     padding: 7px 14px;
 
     border-radius: 999px;
 
     font-size: var(--fs-md);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .vacio {
@@ -55,7 +54,7 @@
 
     font-size: var(--fs-md);
 
-    color: #9AA0B4;
+    color: var(--color-muted);
 }
 
 
@@ -70,6 +69,6 @@
 }
 
 .pillInsignia {
-    background: #FFF4E8;
-    color: #B45309;
+    background: var(--color-orange-bg);
+    color: var(--color-orange-text);
 }

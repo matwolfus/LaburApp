@@ -8,7 +8,7 @@
     padding: 8px 14px 8px 10px;
     border: none;
     border-radius: 999px;
-    background: #ffffff;
+    background: var(--color-card);
     color: var(--color-primary);
     font-family: inherit;
     font-size: var(--fs-base);
@@ -19,5 +19,5 @@
 }
 
 .volverBtn:hover {
-    background: #eef1fb;
+    background: var(--color-cta-bg);
 }

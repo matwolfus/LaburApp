@@ -60,3 +60,12 @@ export function getIniciales(nombre, fallback = '?') {
     .join('');
   return iniciales || fallback;
 }
+
+// Número estable de 1 a `cantidad` según el nombre: la misma persona siempre
+// cae en el mismo color de avatar (ver --avatar-N-bg en index.css).
+export function colorDeNombre(nombre, cantidad = 5) {
+  const texto = String(nombre ?? '').trim().toLowerCase();
+  let suma = 0;
+  for (const letra of texto) suma = (suma * 31 + letra.charCodeAt(0)) % 9973;
+  return (suma % cantidad) + 1;
+}

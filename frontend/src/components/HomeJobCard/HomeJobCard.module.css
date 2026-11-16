@@ -78,11 +78,11 @@
 }
 
 .statusPending {
-  background: #FEF3C7;   /* amarillo crema (como el mockup) */
-  color: #B45309;        /* ámbar oscuro */
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
 }
 
 .statusDone {
-  background: #DCFCE7;   /* verde claro */
-  color: #15803D;        /* verde */
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }

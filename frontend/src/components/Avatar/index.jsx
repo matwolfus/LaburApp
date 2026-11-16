@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getIniciales } from '../../utils/formato';
+import { colorDeNombre, getIniciales } from '../../utils/formato';
 
 // Foto de perfil con fallback a iniciales. Único componente para esto en la
 // app (antes había una implementación distinta en cada pantalla).
@@ -27,8 +27,12 @@ export default function Avatar({ src, nombre, className, fallbackClassName, fall
   }
 
   const iniciales = getIniciales(nombre, '');
+  // Color propio de la persona como variables CSS: el CSS de cada pantalla
+  // decide si las usa (background: var(--avatar-bg, ...)).
+  const n = colorDeNombre(nombre);
+  const colores = { '--avatar-bg': `var(--avatar-${n}-bg)`, '--avatar-fg': `var(--avatar-${n}-fg)` };
   return (
-    <Tag className={fallbackClassName ?? className} aria-hidden="true">
+    <Tag className={fallbackClassName ?? className} style={colores} aria-hidden="true">
       {iniciales || fallback}
     </Tag>
   );

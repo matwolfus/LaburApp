@@ -18,6 +18,29 @@
   --color-cta-bg:       #EAF4FD;
   --color-avatar:       #9CA3AF;
 
+  /* ===== Tonos suaves para chips, íconos y avatares =====
+     Fondo claro + texto oscuro del mismo color, como los estados del Inicio. */
+  --color-primary-light: #4F5BC0;  /* segundo tono del degradé azul (banner del perfil) */
+  --color-primary-soft:  #E6E9F7;  /* fondo azul suave más marcado que --color-cta-bg */
+  --color-orange-bg:     #FFEDD5;  /* fondo naranja suave */
+  --color-orange-text:   #C2410C;  /* texto naranja sobre --color-orange-bg */
+  --color-orange-border: #FED7AA;  /* borde de avisos naranjas */
+  --color-warning-bg:    #FEF3C7;  /* estado "en curso / pendiente" */
+  --color-warning-text:  #B45309;
+  --color-success-bg:    #DCFCE7;  /* estado "completado / aceptado" */
+  --color-success-text:  #15803D;
+  --color-star:          #F59E0B;  /* estrellas de calificación */
+  --color-unread-bg:     #EEF3FF;  /* tarjeta con algo sin leer */
+  --color-unread-border: #C7D4F7;
+
+  /* Colores de los avatares de iniciales: cada persona cae siempre en el
+     mismo par (lo elige Avatar a partir del nombre). */
+  --avatar-1-bg: var(--color-primary-soft);  --avatar-1-fg: var(--color-primary);
+  --avatar-2-bg: var(--color-orange-bg);     --avatar-2-fg: var(--color-orange-text);
+  --avatar-3-bg: var(--color-success-bg);    --avatar-3-fg: var(--color-success-text);
+  --avatar-4-bg: var(--color-warning-bg);    --avatar-4-fg: var(--color-warning-text);
+  --avatar-5-bg: var(--color-primary);       --avatar-5-fg: var(--color-card);
+
   /* ===== Tamaños de letra ===== */
   --fs-2xs:  10px;
   --fs-xs:   11px;
@@ -154,10 +177,11 @@
 
 .buscar-hero h1 {
   margin: 0 0 8px;
-  font-size: var(--fs-6xl);
-  line-height: 1.15;
+  font-size: var(--fs-5xl);
+  line-height: 1.2;
   font-weight: 800;
-  color: #172554;
+  letter-spacing: -0.5px;
+  color: var(--color-primary);
 }
 
 .buscar-hero p {
@@ -179,13 +203,19 @@
 
   padding: 0 16px;
 
-  background: var(--color-divider);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
+  box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
+}
+
+.buscar-search-box:focus-within {
+  border-color: var(--color-primary);
 }
 
 .buscar-search-icon {
   margin-right: 10px;
-  color: var(--color-muted);
+  color: var(--color-primary);
   font-size: var(--fs-3xl);
 }
 
@@ -215,8 +245,8 @@
   border: none;
   border-radius: 50%;
 
-  background: #dbe1ea;
-  color: #475569;
+  background: var(--color-divider);
+  color: var(--color-muted);
 
   font-size: var(--fs-2xl);
   cursor: pointer;
@@ -243,11 +273,11 @@
 .buscar-chip {
   flex-shrink: 0;
 
-  border: 1px solid #dbe1ea;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
 
-  background: white;
-  color: #475569;
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
 
   padding: 9px 17px;
 
@@ -262,6 +292,7 @@
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
+  box-shadow: 0 4px 12px rgba(45, 59, 142, 0.25);
 }
 
 .buscar-chip-skeleton {
@@ -271,7 +302,7 @@
   height: 38px;
 
   border-radius: 999px;
-  background: #e2e8f0;
+  background: var(--color-border);
 
   animation: buscar-pulse 1.2s infinite ease-in-out;
 }
@@ -288,17 +319,18 @@
 }
 
 .buscar-location-separator {
-  color: #cbd5e1;
+  color: var(--color-border);
 }
 
 .buscar-results-section {
   width: 100%;
 }
 
+/* Contador de resultados: título de sección en azul, como en el Inicio */
 .buscar-results-header {
   margin-bottom: 14px;
 
-  color: #475569;
+  color: var(--color-primary);
   font-size: var(--fs-lg);
   font-weight: 700;
 }
@@ -316,6 +348,7 @@
 
   background: var(--color-card);
   border-radius: 20px;
+  box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 
   display: flex;
   flex-direction: column;
@@ -326,8 +359,8 @@
 }
 
 .buscar-state-icon {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
 
   display: flex;
   align-items: center;
@@ -347,7 +380,7 @@
 .buscar-state-container h3 {
   margin: 0 0 8px;
   font-size: var(--fs-xl);
-  color: var(--color-text);
+  color: var(--color-primary);
 }
 
 .buscar-state-container p {
@@ -365,8 +398,8 @@
 
   margin-bottom: 18px;
 
-  border: 4px solid #e2e8f0;
-  border-top-color: var(--color-primary);
+  border: 4px solid var(--color-border);
+  border-top-color: var(--color-orange);
   border-radius: 50%;
 
   animation: buscar-spin 0.8s linear infinite;
@@ -376,11 +409,11 @@
   margin-top: 18px;
 
   border: none;
-  border-radius: 12px;
+  border-radius: 999px;
 
-  padding: 11px 18px;
+  padding: 11px 22px;
 
-  background: var(--color-primary);
+  background: var(--color-orange);
   color: white;
 
   font-family: 'Nunito', sans-serif;

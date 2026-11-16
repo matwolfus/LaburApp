@@ -1,12 +1,11 @@
 .card {
-    background: #FFFFFF;
+    background: var(--color-card);
 
     border-radius: 16px;
 
     padding: 18px;
 
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .title {
@@ -19,7 +18,7 @@
     font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: var(--color-primary-dark);
+    color: var(--color-primary);
 }
 
 .icon {
@@ -29,7 +28,9 @@
 .text {
     margin: 0;
 
-    background: #F5F6FA;
+    background: var(--color-cta-bg);
+
+    border-left: 3px solid var(--color-primary);
 
     border-radius: 12px;
 
@@ -39,7 +40,7 @@
 
     line-height: 1.6;
 
-    color: #4B5062;
+    color: var(--color-text);
 }
 
 

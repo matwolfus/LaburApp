@@ -84,7 +84,7 @@
   background: var(--color-card);
   border-radius: var(--radius-card);
   border: 0.5px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
+  box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -100,15 +100,16 @@
   border-radius: var(--radius-img);
   object-fit: cover;
   flex-shrink: 0;
-  background-color: #0D9488;
+  background-color: var(--color-cta-bg);
 }
 
-/* Placeholder cuando el trabajo no tiene foto (o la URL falla) */
+/* Placeholder cuando el trabajo no tiene foto (o la URL falla):
+   ícono de la categoría en azul sobre celeste, como en el Inicio */
 .job-card__image--placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--color-primary);
 }
 
 .job-card__info { flex: 1; min-width: 0; padding-top: 2px; }
@@ -154,8 +155,11 @@
 
 /* Avatar stack */
 .avatar-stack                   { display: flex; align-items: center; }
-.avatar-stack__item             { width: 28px; height: 28px; border-radius: 50%; background-color: var(--color-avatar); border: 2px solid white; margin-left: -8px; }
+.avatar-stack__item             { width: 28px; height: 28px; border-radius: 50%; background-color: var(--avatar-1-bg); border: 2px solid var(--color-card); margin-left: -8px; }
 .avatar-stack__item:first-child { margin-left: 0; }
+/* Postulantes sin foto: un color distinto por círculo en vez de gris */
+.avatar-stack__item:nth-child(2) { background-color: var(--avatar-2-bg); }
+.avatar-stack__item:nth-child(3) { background-color: var(--avatar-3-bg); }
 .avatar-stack__extra {
   width: 28px; height: 28px; border-radius: 50%;
   background: var(--color-primary); color: white;
@@ -167,8 +171,8 @@
 
 .job-card__count {
   font-size: var(--fs-md);
-  color: var(--color-muted);
-  font-weight: 600;
+  color: var(--color-primary);
+  font-weight: 700;
   font-family: 'Nunito', sans-serif;
 }
 
@@ -207,7 +211,7 @@
 /* ── CTA card ─────────────────────────────────────── */
 .cta-card {
   background: var(--color-cta-bg);
-  border: 1.5px dashed #93C5FD;
+  border: 1.5px dashed var(--color-unread-border);
   border-radius: var(--radius-card);
   padding: 28px 20px;
   text-align: center;
@@ -235,6 +239,7 @@
 .cta-card__btn {
   background: var(--color-orange);
   color: white;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
   border: none;
   border-radius: 50px;
   padding: 13px 30px;
@@ -262,13 +267,35 @@
   margin-top: 12px;
   padding: 12px;
   border-radius: 12px;
-  background: #FFF7ED;
-  border: 1px solid #FED7AA;
+  background: var(--color-orange-bg);
+  border: 1px solid var(--color-orange-border);
 }
 
 .job-card__reconfirmar p {
   margin: 0 0 10px;
   font-size: var(--fs-md);
-  color: #9A3412;
+  color: var(--color-orange-text);
   line-height: 1.4;
 }
+
+/* Chip de estado (mismo formato que los estados de "Tus Trabajos" en el Inicio) */
+.job-chip {
+  display: inline-block;
+  align-self: center;
+  margin-top: 2px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: 'Nunito', sans-serif;
+}
+.job-card__info .job-chip { margin-top: 8px; }
+
+.job-chip--verde   { background: var(--color-success-bg); color: var(--color-success-text); }
+.job-chip--ambar   { background: var(--color-warning-bg); color: var(--color-warning-text); }
+.job-chip--naranja { background: var(--color-orange-bg);  color: var(--color-orange-text); }
+.job-chip--rojo    { background: var(--color-danger-bg);  color: var(--color-danger-dark); }
+.job-chip--gris    { background: var(--color-divider);    color: var(--color-muted); }

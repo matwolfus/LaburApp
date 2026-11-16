@@ -3,10 +3,13 @@
   font-family: 'Nunito', sans-serif;
 }
 
+/* Mismo título que el saludo del Inicio */
 .title {
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-5xl);
   font-weight: 800;
   color: var(--color-primary);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
   margin: 0 0 16px;
 }
 
@@ -28,6 +31,16 @@
   color: var(--color-muted);
 }
 
+.emptyIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
+}
+
 .emptyTitle {
   margin: 0;
   color: var(--color-primary);
@@ -42,7 +55,7 @@
 .lista {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .item {
@@ -51,12 +64,24 @@
   gap: 12px;
   width: 100%;
   text-align: left;
-  background: #ffffff;
+  background: var(--color-card);
   border: none;
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 14px;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-family: inherit;
+  /* Misma sombra azulada que las tarjetas del Inicio */
+  box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
+}
+
+.item:active {
+  opacity: 0.85;
+}
+
+/* Conversación con mensajes sin leer: fondo celeste + franja naranja */
+.itemNoLeido {
+  background: var(--color-unread-bg);
+  box-shadow: inset 4px 0 0 var(--color-orange), 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .avatar,
@@ -68,11 +93,13 @@
   object-fit: cover;
 }
 
+/* Iniciales con el color propio de cada persona (lo pone Avatar) */
 .avatarFallback {
   display: grid;
   place-items: center;
-  background: var(--color-border);
-  color: var(--color-primary);
+  background: var(--avatar-bg, var(--color-primary-soft));
+  color: var(--avatar-fg, var(--color-primary));
+  font-size: var(--fs-base);
   font-weight: 800;
 }
 
@@ -90,8 +117,8 @@
 
 .nombre {
   font-weight: 800;
-  font-size: var(--fs-base);
-  color: var(--color-text);
+  font-size: var(--fs-lg);
+  color: var(--color-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -99,21 +126,37 @@
 
 .hora {
   font-size: var(--fs-xs);
-  color: #94A3B8;
+  font-weight: 600;
+  color: var(--color-muted);
   flex-shrink: 0;
 }
 
+.itemNoLeido .hora {
+  color: var(--color-orange);
+  font-weight: 800;
+}
+
+/* Título del trabajo como chip con el color de la marca */
 .trabajo {
-  margin: 2px 0 0;
-  font-size: var(--fs-xs);
-  font-weight: 700;
+  display: inline-block;
+  max-width: 100%;
+  margin: 4px 0 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
   color: var(--color-primary);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
 }
 
 .preview {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: var(--fs-md);
   color: var(--color-muted);
   white-space: nowrap;
@@ -121,16 +164,22 @@
   text-overflow: ellipsis;
 }
 
+.itemNoLeido .preview {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
 .badge {
   flex-shrink: 0;
   background: var(--color-orange);
-  color: #ffffff;
+  color: var(--color-card);
   font-size: var(--fs-xs);
   font-weight: 800;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
   padding: 0 6px;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
 }
