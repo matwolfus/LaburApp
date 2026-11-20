@@ -14,7 +14,7 @@
   display: block;
   margin-bottom: 12px;
 
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   color: var(--color-primary);
 }
@@ -29,7 +29,7 @@
   border: none;
   background: transparent;
 
-  font-size: 16px;
+  font-size: var(--fs-lg);
   color: #4b5563;
 }
 

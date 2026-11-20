@@ -1,19 +1,8 @@
-import { useState } from "react";
 import { Pencil } from "lucide-react";
+import Avatar from "../Avatar";
 import styles from "./PerfilHeader.module.css";
 
-function getIniciales(nombre = "") {
-    return nombre
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((palabra) => palabra[0]?.toUpperCase())
-        .join("");
-}
-
 export default function PerfilHeader({ perfil, modo, setModo, own = true, onEdit }) {
-
-    const [avatarError, setAvatarError] = useState(false);
 
     return (
         <div className={styles.header}>
@@ -25,18 +14,14 @@ export default function PerfilHeader({ perfil, modo, setModo, own = true, onEdit
                 </button>
             )}
 
-            {perfil.avatar && !avatarError ? (
-                <img
-                    src={perfil.avatar}
-                    alt={perfil.nombreCompleto}
-                    className={styles.avatar}
-                    onError={() => setAvatarError(true)}
-                />
-            ) : (
-                <div className={styles.avatarPlaceholder}>
-                    {getIniciales(perfil.nombreCompleto)}
-                </div>
-            )}
+            <Avatar
+                src={perfil.avatar}
+                nombre={perfil.nombreCompleto}
+                alt={perfil.nombreCompleto}
+                className={styles.avatar}
+                fallbackClassName={styles.avatarPlaceholder}
+                fallback=""
+            />
 
             <h1 className={styles.nombre}>
                 {perfil.nombreCompleto}

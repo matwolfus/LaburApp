@@ -34,27 +34,27 @@
 
 .success {
   background: rgba(22, 163, 74, 0.12);
-  color: #16A34A;
+  color: var(--color-success-dark);
   box-shadow: 0 0 0 8px rgba(22, 163, 74, 0.06);
 }
 
 .error {
   background: rgba(220, 38, 38, 0.1);
-  color: #DC2626;
+  color: var(--color-danger);
   box-shadow: 0 0 0 8px rgba(220, 38, 38, 0.05);
 }
 
 .title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
-  color: #1F2937;
+  color: var(--color-text);
 }
 
 .subtitle {
   margin: 4px 0 0;
-  font-size: 14px;
-  color: #6B7280;
+  font-size: var(--fs-base);
+  color: var(--color-muted);
 }
 
 .rows {
@@ -70,10 +70,10 @@
   align-items: center;
   gap: 10px;
   padding: 12px 0;
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   color: #4B5062;
   text-align: left;
-  border-bottom: 1px solid #E8ECF3;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .row:last-child {
@@ -88,7 +88,7 @@
   height: 28px;
   border-radius: 50%;
   background: #EEF0F6;
-  color: #2F3685;
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 
@@ -96,11 +96,11 @@
   width: 100%;
   margin-top: 24px;
   border: none;
-  background: #F97316;
+  background: var(--color-orange);
   color: white;
   padding: 15px;
   border-radius: 50px;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -112,8 +112,8 @@
   margin-top: 12px;
   border: none;
   background: transparent;
-  color: #2F3685;
-  font-size: 13.5px;
+  color: var(--color-primary);
+  font-size: var(--fs-base);
   font-weight: 700;
   cursor: pointer;
 }

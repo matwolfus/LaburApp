@@ -1,18 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-
-:root {
-  --color-primary:  #2D3B8E;
-  --color-orange:   #F97316;
-  --color-bg:       #F4F6FB;
-  --color-card:     #FFFFFF;
-  --color-cta-bg:   #EAF4FD;
-  --color-muted:    #64748B;
-  --color-avatar:   #9CA3AF;
-  --color-divider:  #EEF1F6;
-  --radius-card:    16px;
-  --radius-img:     12px;
-}
-
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ── Page ─────────────────────────────────────────── */
@@ -31,7 +16,7 @@
 .ofertas-page__header  { margin-bottom: 28px; }
 
 .ofertas-page__title {
-  font-size: 28px;
+  font-size: var(--fs-5xl);
   font-weight: 800;
   color: var(--color-primary);
   margin: 0 0 6px;
@@ -40,7 +25,7 @@
 }
 
 .ofertas-page__subtitle {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--color-muted);
   margin: 0;
   font-weight: 400;
@@ -51,13 +36,13 @@
 .ofertas-loading,
 .ofertas-error,
 .ofertas-empty {
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--color-muted);
   text-align: center;
   padding: 24px 0;
   font-family: 'Nunito', sans-serif;
 }
-.ofertas-error { color: #EF4444; }
+.ofertas-error { color: var(--color-danger); }
 
 /* ── Section header ───────────────────────────────── */
 .section-header {
@@ -68,7 +53,7 @@
 }
 
 .section-header__title {
-  font-size: 20px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   color: var(--color-primary);
   margin: 0;
@@ -79,7 +64,7 @@
   background: none;
   border: none;
   color: var(--color-primary);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -98,8 +83,8 @@
 .job-card {
   background: var(--color-card);
   border-radius: var(--radius-card);
-  border: 0.5px solid #E8ECF3;
-  box-shadow: 0 1px 3px rgba(45, 59, 142, 0.05);
+  border: 0.5px solid var(--color-border);
+  box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -115,21 +100,22 @@
   border-radius: var(--radius-img);
   object-fit: cover;
   flex-shrink: 0;
-  background-color: #0D9488;
+  background-color: var(--color-cta-bg);
 }
 
-/* Placeholder cuando el trabajo no tiene foto (o la URL falla) */
+/* Placeholder cuando el trabajo no tiene foto (o la URL falla):
+   ícono de la categoría en azul sobre celeste, como en el Inicio */
 .job-card__image--placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--color-primary);
 }
 
 .job-card__info { flex: 1; min-width: 0; padding-top: 2px; }
 
 .job-card__title {
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   color: var(--color-primary);
   margin: 0 0 8px;
@@ -145,7 +131,7 @@
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--color-muted);
   margin: 0;
   font-weight: 400;
@@ -169,21 +155,24 @@
 
 /* Avatar stack */
 .avatar-stack                   { display: flex; align-items: center; }
-.avatar-stack__item             { width: 28px; height: 28px; border-radius: 50%; background-color: var(--color-avatar); border: 2px solid white; margin-left: -8px; }
+.avatar-stack__item             { width: 28px; height: 28px; border-radius: 50%; background-color: var(--avatar-1-bg); border: 2px solid var(--color-card); margin-left: -8px; }
 .avatar-stack__item:first-child { margin-left: 0; }
+/* Postulantes sin foto: un color distinto por círculo en vez de gris */
+.avatar-stack__item:nth-child(2) { background-color: var(--avatar-2-bg); }
+.avatar-stack__item:nth-child(3) { background-color: var(--avatar-3-bg); }
 .avatar-stack__extra {
   width: 28px; height: 28px; border-radius: 50%;
   background: var(--color-primary); color: white;
-  font-size: 10px; font-weight: 700;
+  font-size: var(--fs-2xs); font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid white; margin-left: -8px;
   font-family: 'Nunito', sans-serif;
 }
 
 .job-card__count {
-  font-size: 13px;
-  color: var(--color-muted);
-  font-weight: 600;
+  font-size: var(--fs-md);
+  color: var(--color-primary);
+  font-weight: 700;
   font-family: 'Nunito', sans-serif;
 }
 
@@ -197,7 +186,7 @@
   border: 1.5px solid var(--color-primary);
   background: transparent;
   color: var(--color-primary);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   padding: 10px 22px;
   border-radius: 50px;
@@ -222,16 +211,16 @@
 /* ── CTA card ─────────────────────────────────────── */
 .cta-card {
   background: var(--color-cta-bg);
-  border: 1.5px dashed #93C5FD;
+  border: 1.5px dashed var(--color-unread-border);
   border-radius: var(--radius-card);
   padding: 28px 20px;
   text-align: center;
   margin-top: 22px;
 }
-.cta-card__icon  { font-size: 28px; margin-bottom: 12px; }
+.cta-card__icon  { font-size: var(--fs-5xl); margin-bottom: 12px; }
 
 .cta-card__title {
-  font-size: 16px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   color: var(--color-primary);
   margin: 0 0 8px;
@@ -239,7 +228,7 @@
 }
 
 .cta-card__text {
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--color-muted);
   margin: 0 0 20px;
   font-family: 'Nunito', sans-serif;
@@ -250,10 +239,11 @@
 .cta-card__btn {
   background: var(--color-orange);
   color: white;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
   border: none;
   border-radius: 50px;
   padding: 13px 30px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 800;
   cursor: pointer;
   font-family: 'Nunito', sans-serif;
@@ -277,13 +267,16 @@
   margin-top: 12px;
   padding: 12px;
   border-radius: 12px;
-  background: #FFF7ED;
-  border: 1px solid #FED7AA;
+  background: var(--color-orange-bg);
+  border: 1px solid var(--color-orange-border);
 }
 
 .job-card__reconfirmar p {
   margin: 0 0 10px;
-  font-size: 13px;
-  color: #9A3412;
+  font-size: var(--fs-md);
+  color: var(--color-orange-text);
   line-height: 1.4;
 }
+
+/* Chip de estado: la forma y los colores están en index.css (job-chip). */
+.job-card__info .job-chip { margin-top: 8px; }

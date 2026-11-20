@@ -1,5 +1,6 @@
 // backend/src/repositories/resenas-repository.js
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
 
 export default class ResenasRepository {
   constructor() {
@@ -7,7 +8,7 @@ export default class ResenasRepository {
   }
 
   // Determina si idUsuario puede dejar una reseña sobre el trabajo idTrabajo:
-  // tiene que ser el contratante o el trabajador del contrato de ese trabajo,
+  // tiene que ser el contratador o el trabajador del contrato de ese trabajo,
   // y el contrato tiene que estar 'completado'. idReceptor/esContratante ya
   // salen calculados acá para no tener que volver a resolverlos al crear la
   // reseña.
@@ -33,7 +34,7 @@ export default class ResenasRepository {
     const autorEsTrabajador = Number(contrato.id_trabajador) === Number(idUsuario);
 
     if (!autorEsContratante && !autorEsTrabajador) {
-      // Ni contratante ni trabajador de este contrato: no participó, no hay nada que reseñar.
+      // Ni contratador ni trabajador de este contrato: no participó, no hay nada que reseñar.
       return { puedeResenar: false, idContrato: contrato.id, idReceptor: null, esContratante: null, yaReseño: false };
     }
 
@@ -49,11 +50,11 @@ export default class ResenasRepository {
       idContrato: contrato.id,
       idReceptor,
       // Ojo con la polaridad: es_contratante en la tabla resenas describe la
-      // reseña en sí ("es sobre el desempeño del receptor COMO contratante"),
-      // no si el autor es el contratante. Eso pasa cuando el AUTOR es el
-      // TRABAJADOR (reseñando a su contratante) — es lo opuesto de
+      // reseña en sí ("es sobre el desempeño del receptor COMO contratador"),
+      // no si el autor es el contratador. Eso pasa cuando el AUTOR es el
+      // TRABAJADOR (reseñando a su contratador) — es lo opuesto de
       // autorEsContratante. Confirmado contra usuarios-repository.js#getPerfil:
-      // resenasTrabajador filtra es_contratante=false (autor=contratante),
+      // resenasTrabajador filtra es_contratante=false (autor=contratador),
       // resenasContratante filtra es_contratante=true (autor=trabajador).
       esContratante: autorEsTrabajador,
       yaReseño: !!existente,
@@ -66,7 +67,7 @@ export default class ResenasRepository {
   async crear({ idContrato, idAutor, idReceptor, esContratante, calificacion, comentario }) {
     const sql = `
       INSERT INTO resenas (id_contrato, id_autor, id_receptor, es_contratante, calificacion, comentario, creado_en)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, ${AHORA})
       RETURNING id
     `;
     return await this.db.queryReturnId(sql, [idContrato, idAutor, idReceptor, esContratante, calificacion, comentario ?? null]);

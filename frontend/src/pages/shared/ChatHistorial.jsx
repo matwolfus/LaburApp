@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageSquare } from 'lucide-react';
 import { getConversaciones } from '../../services/api';
+import Avatar from '../../components/Avatar';
 import styles from './ChatHistorial.module.css';
 
 function formatHora(fecha) {
@@ -33,7 +34,9 @@ export default function ChatHistorial() {
   if (conversaciones.length === 0) {
     return (
       <div className={styles.empty}>
-        <MessageSquare size={40} strokeWidth={1.5} />
+        <span className={styles.emptyIcon}>
+          <MessageSquare size={32} strokeWidth={1.75} />
+        </span>
         <h2 className={styles.emptyTitle}>Chat</h2>
         <p className={styles.emptyText}>
           Todavía no tenés conversaciones. Se abren automáticamente cuando aceptás (o te aceptan) en un trabajo.
@@ -49,14 +52,18 @@ export default function ChatHistorial() {
         {conversaciones.map((c) => (
           <button
             key={c.id_postulacion}
-            className={styles.item}
+            className={c.no_leidos > 0 ? `${styles.item} ${styles.itemNoLeido}` : styles.item}
             onClick={() => navigate(`/chats/${c.id_postulacion}`)}
           >
-            {c.otro_avatar ? (
-              <img src={c.otro_avatar} alt={c.otro_nombre} className={styles.avatar} />
-            ) : (
-              <div className={styles.avatarFallback}>{c.otro_nombre?.charAt(0)?.toUpperCase() || 'U'}</div>
-            )}
+            <Avatar
+              src={c.otro_avatar}
+              nombre={c.otro_nombre}
+              alt={c.otro_nombre}
+              className={styles.avatar}
+              fallbackClassName={styles.avatarFallback}
+              fallbackTag="span"
+              fallback="U"
+            />
 
             <div className={styles.info}>
               <div className={styles.row}>

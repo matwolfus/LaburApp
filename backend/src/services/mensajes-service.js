@@ -1,11 +1,16 @@
 // backend/src/services/mensajes-service.js
-import MensajesRepository, { ESTADOS_CHAT_ABIERTO } from '../repositories/mensajes-repository.js';
+import MensajesRepository from '../repositories/mensajes-repository.js';
+import NotificacionesService from './notificaciones-service.js';
+import { HttpError, badRequest } from '../helpers/http-error.js';
+import { sinFallar } from '../helpers/sin-fallar.js';
+import { ESTADOS_CHAT_ABIERTO } from '../domain/estados.js';
 
 const CUERPO_MAX_LENGTH = 2000;
 
 export default class MensajesService {
   constructor() {
     this.repository = new MensajesRepository();
+    this.notificacionesService = new NotificacionesService();
   }
 
   async getConversacionesAsync(idUsuario) {
@@ -22,17 +27,13 @@ export default class MensajesService {
   async #validarParticipante(idPostulacion, idUsuario) {
     const chat = await this.repository.getParticipantes(idPostulacion);
     if (!chat) {
-      const err = new Error('Chat no encontrado');
-      err.status = 404;
-      throw err;
+      throw new HttpError(404, 'Chat no encontrado');
     }
     const participa =
       Number(chat.id_contratante) === Number(idUsuario) ||
       Number(chat.id_trabajador) === Number(idUsuario);
     if (!participa) {
-      const err = new Error('No participás de este chat');
-      err.status = 403;
-      throw err;
+      throw new HttpError(403, 'No participás de este chat');
     }
     return chat;
   }
@@ -56,17 +57,15 @@ export default class MensajesService {
 
     // Postulación retirada / rechazada: chat en solo lectura.
     if (!ESTADOS_CHAT_ABIERTO.includes(chat.estado)) {
-      const err = new Error('Este chat está cerrado: la postulación ya no está activa');
-      err.status = 403;
-      throw err;
+      throw new HttpError(403, 'Este chat está cerrado: la postulación ya no está activa');
     }
 
     const texto = (cuerpo ?? '').trim();
     if (!texto) {
-      throw new Error('El mensaje no puede estar vacío');
+      throw badRequest('El mensaje no puede estar vacío');
     }
     if (texto.length > CUERPO_MAX_LENGTH) {
-      throw new Error(`El mensaje no puede superar los ${CUERPO_MAX_LENGTH} caracteres`);
+      throw badRequest(`El mensaje no puede superar los ${CUERPO_MAX_LENGTH} caracteres`);
     }
 
     const mensaje = await this.repository.crear(idPostulacion, idRemitente, texto);
@@ -75,6 +74,10 @@ export default class MensajesService {
       ? chat.id_trabajador
       : chat.id_contratante;
 
-    return { mensaje, idOtro };
+    await sinFallar('avisar nuevo mensaje', () =>
+      this.notificacionesService.avisarNuevoMensaje({ idDestinatario: idOtro, idPostulacion })
+    );
+
+    return mensaje;
   }
 }

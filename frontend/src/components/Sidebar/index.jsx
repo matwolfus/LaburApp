@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { X, Settings, UserCog, UserPen, LogOut } from 'lucide-react';
-import { logout } from '../../services/api';
+import { useAuth } from '../../context/useAuth';
 import { useRoleSwitch } from '../../hooks/useRoleSwitch';
 import LoadingOverlay from '../LoadingOverlay';
 import styles from './Sidebar.module.css';
@@ -10,6 +10,7 @@ import styles from './Sidebar.module.css';
 export default function Sidebar({ open, onClose }) {
   const navigate = useNavigate();
   const { modo, otroModo, switching, changeModo } = useRoleSwitch();
+  const { cerrarSesion } = useAuth();
 
   const goTo = (path) => {
     onClose();
@@ -18,7 +19,7 @@ export default function Sidebar({ open, onClose }) {
 
   const handleLogout = () => {
     onClose();
-    logout();
+    cerrarSesion(); // token + modo en memoria
     navigate('/login');
   };
 

@@ -1,9 +1,9 @@
 // backend/src/repositories/mensajes-repository.js
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
 
-// Estados de postulación en los que el chat admite mensajes nuevos. En
-// 'retirado' / 'rechazado' el historial se puede leer pero no escribir.
-export const ESTADOS_CHAT_ABIERTO = ['pendiente', 'aceptado', 'por_reconfirmar'];
+// En 'retirado' / 'rechazado' el historial se puede leer pero no escribir.
+import { ESTADOS_CHAT_ABIERTO } from '../domain/estados.js';
 
 export default class MensajesRepository {
   constructor() {
@@ -11,7 +11,7 @@ export default class MensajesRepository {
   }
 
   // Lista de conversaciones del usuario: un chat por postulación de la que
-  // participa (como contratante dueño del trabajo o como trabajador que se
+  // participa (como contratador dueño del trabajo o como trabajador que se
   // postuló), con el último mensaje, cantidad de no leídos, y datos de la
   // otra persona / del trabajo. Incluye las postulaciones aceptadas aunque
   // no tengan mensajes todavía (para poder arrancar la conversación).
@@ -101,7 +101,7 @@ export default class MensajesRepository {
         (SELECT c.id FROM contratos c WHERE c.id_postulacion = $1 AND c.estado = 'activo' ORDER BY c.creado_en DESC LIMIT 1),
         $2,
         $3,
-        NOW()
+        ${AHORA}
       )
       RETURNING id, enviado_en
     `;
@@ -111,14 +111,14 @@ export default class MensajesRepository {
   // Marca como leídos los mensajes de LA OTRA persona (nunca los propios).
   async marcarLeidos(idPostulacion, idUsuario) {
     await this.db.queryAll(
-      `UPDATE mensajes SET leido_en = NOW()
+      `UPDATE mensajes SET leido_en = ${AHORA}
        WHERE id_postulacion = $1 AND id_remitente <> $2 AND leido_en IS NULL`,
       [idPostulacion, idUsuario]
     );
   }
 
   // Para que el service valide que idUsuario participa del chat (es el
-  // contratante dueño del trabajo o el trabajador de la postulación) antes
+  // contratador dueño del trabajo o el trabajador de la postulación) antes
   // de mostrarle/dejarlo escribir mensajes.
   async getParticipantes(idPostulacion) {
     return await this.db.queryOne(

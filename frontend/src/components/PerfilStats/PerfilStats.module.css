@@ -7,7 +7,7 @@
 }
 
 .stat {
-    background: #FFFFFF;
+    background: var(--color-card);
 
     border-radius: 16px;
 
@@ -20,22 +20,36 @@
     align-items: center;
     gap: 4px;
 
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
+/* Ícono en un círculo de color, distinto en cada dato (como las categorías del Inicio) */
 .icon {
-    color: #E1810D;
-    margin-bottom: 2px;
+    box-sizing: content-box;
+    padding: 8px;
+    border-radius: 50%;
+    background: var(--color-cta-bg);
+    color: var(--color-primary);
+    margin-bottom: 4px;
+}
+
+.stat:nth-child(2) .icon {
+    background: var(--color-warning-bg);
+    color: var(--color-warning-text);
+}
+
+.stat:nth-child(3) .icon {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
 }
 
 .stat h2 {
     margin: 0;
 
-    font-size: 21px;
+    font-size: var(--fs-2xl);
     font-weight: 700;
 
-    color: #2F3685;
+    color: var(--color-primary);
 }
 
 .stat span {
@@ -43,14 +57,14 @@
 
     margin-top: 5px;
 
-    font-size: 11px;
+    font-size: var(--fs-xs);
     font-weight: 600;
 
     letter-spacing: 0.04em;
 
     text-transform: uppercase;
 
-    color: #9AA0B4;
+    color: var(--color-muted);
 }
 
 .stats {
@@ -64,9 +78,9 @@
 }
 
 .stat h2 {
-    font-size: 18px;
+    font-size: var(--fs-xl);
 }
 
 .stat span {
-    font-size: 10px;
+    font-size: var(--fs-2xs);
 }

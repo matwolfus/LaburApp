@@ -1,5 +1,4 @@
 // backend/src/controllers/categorias-controller.js
-// ACÁ AGREGUÉ
 import { Router } from 'express';
 import CategoriasService from '../services/categorias-service.js';
 
@@ -18,4 +17,3 @@ router.get('/', async (req, res) => {
 });
 
 export default router;
-// ACÁ YA NO

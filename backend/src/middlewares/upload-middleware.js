@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
+import { HttpError, badRequest } from '../helpers/http-error.js';
 
 // Se mantiene solo para servir (via server.js) fotos ya subidas antes de la
 // migración a Supabase Storage, que quedaron guardadas en disco local.
@@ -31,9 +32,21 @@ const storage = multer.memoryStorage();
 
 function fileFilter(req, file, cb) {
   if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-    return cb(new Error('Solo se permiten imágenes (jpg, png, webp)'));
+    return cb(badRequest('Solo se permiten imágenes (jpg, png, webp)'));
   }
   cb(null, true);
+}
+
+// Prefijo de las URLs públicas de nuestro bucket. Sirve para rechazar URLs
+// externas en campos que deberían apuntar a una foto subida por /api/uploads.
+const PUBLIC_BUCKET_PREFIX =
+  `${(process.env.SUPABASE_URL ?? '').replace(/\/+$/, '')}/storage/v1/object/public/${BUCKET}/`;
+
+export function esUrlDelBucket(url) {
+  return typeof url === 'string'
+    && !!process.env.SUPABASE_URL
+    && url.startsWith(PUBLIC_BUCKET_PREFIX)
+    && !url.includes('..');
 }
 
 export const uploadFotos = multer({
@@ -53,7 +66,9 @@ export async function uploadToStorage(file) {
     .upload(filename, file.buffer, { contentType: file.mimetype });
 
   if (error) {
-    throw new Error(`Error subiendo la imagen: ${error.message}`);
+    // El detalle de Supabase queda en el log; al cliente, un mensaje genérico.
+    console.error('Error subiendo la imagen a Supabase Storage:', error);
+    throw new HttpError(502, 'No se pudo subir la imagen, intentá de nuevo');
   }
 
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(filename);

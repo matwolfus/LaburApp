@@ -1,6 +1,6 @@
 .container {
     min-height: 100vh;
-    background-color: var(--color-bg, #f4f6fb);
+    background-color: var(--color-bg);
     display: flex;
     justify-content: center;
     padding: 20px 16px 0;
@@ -21,8 +21,8 @@
 }
 
 .pageHeader h1 {
-    color: var(--color-primary, #2d3b8e);
-    font-size: 24px;
+    color: var(--color-primary);
+    font-size: var(--fs-4xl);
     font-weight: 800;
     line-height: 1.15;
     margin: 0;
@@ -30,8 +30,8 @@
 
 .subtitle {
     margin: 2px 0 0;
-    font-size: 13px;
-    color: var(--color-muted, #64748b);
+    font-size: var(--fs-md);
+    color: var(--color-muted);
 }
 
 .backBtn {
@@ -41,7 +41,7 @@
     border: none;
     border-radius: 50%;
     background: #ffffff;
-    color: var(--color-primary, #2d3b8e);
+    color: var(--color-primary);
     display: grid;
     place-items: center;
     cursor: pointer;
@@ -55,20 +55,20 @@
 
 .loading {
     text-align: center;
-    color: #6b7280;
+    color: var(--color-muted);
     padding: 40px 0;
-    font-size: 15px;
+    font-size: var(--fs-lg);
 }
 
 /* ===== Mensajes ===== */
 
 .error {
     background-color: #fdecec;
-    color: #c0392b;
+    color: var(--color-danger);
     border: 1px solid #f5c2c0;
     border-radius: 12px;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: var(--fs-base);
     margin-bottom: 16px;
 }
 
@@ -78,7 +78,7 @@
     border: 1px solid #b9ecc9;
     border-radius: 12px;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: var(--fs-base);
     margin-bottom: 16px;
 }
 
@@ -127,9 +127,9 @@
     border-radius: 50%;
     display: grid;
     place-items: center;
-    font-size: 40px;
+    font-size: var(--fs-7xl);
     font-weight: 800;
-    color: var(--color-primary, #2d3b8e);
+    color: var(--color-primary);
 }
 
 .avatarBadge {
@@ -139,11 +139,11 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    background: var(--color-orange, #f97316);
+    background: var(--color-orange);
     color: #ffffff;
     display: grid;
     place-items: center;
-    border: 3px solid var(--color-bg, #f4f6fb);
+    border: 3px solid var(--color-bg);
     box-shadow: 0 2px 8px rgba(249, 115, 22, 0.35);
 }
 
@@ -153,14 +153,14 @@
 
 .avatarHint {
     margin: 10px 0 0;
-    font-size: 12.5px;
-    color: var(--color-muted, #64748b);
+    font-size: var(--fs-md);
+    color: var(--color-muted);
 }
 
 .avatarError {
     margin: 8px 0 0;
-    font-size: 13px;
-    color: #c0392b;
+    font-size: var(--fs-md);
+    color: var(--color-danger);
     text-align: center;
 }
 
@@ -179,14 +179,14 @@
     align-items: center;
     gap: 8px;
     margin: 0 0 14px;
-    font-size: 15px;
+    font-size: var(--fs-lg);
     font-weight: 800;
-    color: var(--color-primary, #2d3b8e);
+    color: var(--color-primary);
 }
 
 .cardTitleIcon {
     flex-shrink: 0;
-    color: var(--color-orange, #f97316);
+    color: var(--color-orange);
 }
 
 /* ===== Campos del formulario ===== */
@@ -197,10 +197,10 @@
 
 .field label {
     display: block;
-    font-size: 12px;
+    font-size: var(--fs-sm);
     font-weight: 700;
     letter-spacing: 0.02em;
-    color: var(--color-muted, #64748b);
+    color: var(--color-muted);
     margin-bottom: 6px;
 }
 
@@ -224,7 +224,7 @@
     border: 1.5px solid #e6e9f2;
     border-radius: 14px;
     padding: 13px 14px;
-    font-size: 14.5px;
+    font-size: var(--fs-base);
     font-family: inherit;
     color: #26263a;
     background-color: #f8f9fc;
@@ -250,7 +250,7 @@
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-    border-color: var(--color-primary, #2d3b8e);
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px rgba(45, 59, 142, 0.12);
     background-color: #ffffff;
 }
@@ -268,7 +268,7 @@
 
 .hint {
     margin: 6px 0 0;
-    font-size: 12.5px;
+    font-size: var(--fs-md);
     font-weight: 600;
 }
 
@@ -277,14 +277,14 @@
 }
 
 .fail {
-    color: #c0392b;
+    color: var(--color-danger);
 }
 
 /* ===== Categorías ===== */
 
 .categoriasHint {
-    font-size: 12.5px;
-    color: var(--color-muted, #64748b);
+    font-size: var(--fs-md);
+    color: var(--color-muted);
     margin: -6px 0 12px;
     line-height: 1.45;
 }
@@ -295,7 +295,7 @@
     border-radius: 14px;
     background: #f8f9fc;
     border: 1.5px dashed #dfe3ee;
-    font-size: 13px;
+    font-size: var(--fs-md);
     color: #8a92a8;
     text-align: center;
 }
@@ -313,7 +313,7 @@
     gap: 6px;
     padding: 9px 14px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: var(--fs-md);
     font-weight: 700;
     font-family: inherit;
     border: 1.5px solid #e1e5f0;
@@ -324,7 +324,7 @@
 }
 
 .categoriaChip:hover {
-    border-color: var(--color-primary, #2d3b8e);
+    border-color: var(--color-primary);
 }
 
 /* Insignia: chip de solo lectura, sin estados de hover/click */
@@ -340,13 +340,13 @@
 }
 
 .categoriaChipActive {
-    background-color: var(--color-primary, #2d3b8e);
-    border-color: var(--color-primary, #2d3b8e);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
     color: #ffffff;
 }
 
 .categoriaChipActive:hover {
-    border-color: var(--color-primary, #2d3b8e);
+    border-color: var(--color-primary);
 }
 
 /* ===== Botones (barra fija abajo) ===== */
@@ -368,7 +368,7 @@
     flex: 1;
     padding: 14px 16px;
     border-radius: 999px;
-    font-size: 14.5px;
+    font-size: var(--fs-base);
     font-weight: 800;
     font-family: inherit;
     border: none;
@@ -378,7 +378,7 @@
 
 .buttons button[type="button"] {
     background-color: #ffffff;
-    color: var(--color-primary, #2d3b8e);
+    color: var(--color-primary);
     border: 1.5px solid #dfe3ee;
 }
 
@@ -388,7 +388,7 @@
 
 .buttons button[type="submit"] {
     flex: 1.5;
-    background-color: var(--color-orange, #f97316);
+    background-color: var(--color-orange);
     color: #ffffff;
     box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
 }
@@ -403,126 +403,7 @@
     cursor: not-allowed;
 }
 
-/* ===== Pantalla de confirmación ===== */
-
-@keyframes fadeSlideUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes popIn {
-    0%   { opacity: 0; transform: scale(0.4); }
-    65%  { opacity: 1; transform: scale(1.08); }
-    100% { transform: scale(1); }
-}
-
-@keyframes ringPulse {
-    0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35); }
-    100% { box-shadow: 0 0 0 16px rgba(34, 197, 94, 0); }
-}
-
-.confirmWrapper {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-top: 48px;
-    gap: 10px;
-}
-
-.confirmIconOuter {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    background: rgba(34, 197, 94, 0.12);
-    display: grid;
-    place-items: center;
-    margin-bottom: 8px;
-    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-.confirmIconInner {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: grid;
-    place-items: center;
-    animation: ringPulse 1s ease-out 0.35s both;
-}
-
-.confirmTitle {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--color-primary, #2d3b8e);
-    animation: fadeSlideUp 0.4s ease-out 0.2s both;
-}
-
-.confirmSubtitle {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 12px;
-    animation: fadeSlideUp 0.4s ease-out 0.28s both;
-}
-
-.confirmCard {
-    width: 100%;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 6px 18px;
-    margin-bottom: 8px;
-    box-shadow: 0 4px 16px rgba(45, 59, 142, 0.06);
-    animation: fadeSlideUp 0.4s ease-out 0.36s both;
-}
-
-.confirmRow {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 0;
-    text-align: left;
-    font-size: 13px;
-    color: #333;
-}
-
-.confirmRowIcon {
-    flex-shrink: 0;
-    color: var(--color-primary, #2d3b8e);
-}
-
-.confirmDivider {
-    height: 1px;
-    background: #eef1f6;
-}
-
-.confirmPrimaryBtn {
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 999px;
-    font-size: 14.5px;
-    font-weight: 800;
-    font-family: inherit;
-    border: none;
-    cursor: pointer;
-    background-color: var(--color-orange, #f97316);
-    color: #ffffff;
-    margin-top: 14px;
-    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
-    animation: fadeSlideUp 0.4s ease-out 0.52s both;
-}
-
-.confirmPrimaryBtn:hover {
-    opacity: 0.92;
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .confirmIconOuter,
-    .confirmIconInner,
-    .confirmTitle,
-    .confirmSubtitle,
-    .confirmCard,
-    .confirmPrimaryBtn,
     .avatarButton {
         animation: none;
         transition: none;

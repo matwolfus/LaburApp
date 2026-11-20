@@ -2,9 +2,9 @@
 -- Se corre a mano en el SQL Editor de Supabase. Es idempotente: no duplica
 -- barrios que ya existen (compara nombre + provincia).
 --
--- Hoy la tabla provincias solo tiene "Buenos Aires" (id 1), así que los barrios
--- se cargan bajo esa provincia. Si más adelante agregás "Ciudad Autónoma de
--- Buenos Aires" como provincia aparte, el filtro de abajo la prefiere.
+-- Va DESPUÉS de migracion-corregir.sql, que crea las provincias (entre ellas
+-- "Ciudad Autónoma de Buenos Aires"): el filtro de abajo elige esa. En una base
+-- vieja que solo tenga "Buenos Aires" con los barrios, usa esa.
 
 DO $$
 DECLARE

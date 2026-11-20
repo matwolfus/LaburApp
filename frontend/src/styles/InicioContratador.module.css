@@ -18,7 +18,7 @@
 }
 
 .greetingTitle {
-  font-size: 28px;
+  font-size: var(--fs-5xl);
   font-weight: 800;
   line-height: 1.2;
   color: var(--color-primary);
@@ -34,7 +34,7 @@
   padding: 16px 24px;
   background: var(--color-orange);
   color: var(--color-card);
-  font-size: 16px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   border: none;
   border-radius: 999px;
@@ -54,12 +54,12 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 18px;
+  font-size: var(--fs-xl);
   line-height: 1;
 }
 
 .sectionTitle {
-  font-size: 16px;
+  font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--color-primary);
   margin-bottom: 14px;
@@ -78,7 +78,7 @@
 }
 
 .linkBtn {
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
   color: var(--color-primary);
   background: none;
@@ -106,7 +106,7 @@
 }
 
 .emptyText {
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--color-muted);
   text-align: center;
   padding: 20px 0;

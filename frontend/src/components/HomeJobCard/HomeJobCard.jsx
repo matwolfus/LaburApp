@@ -1,19 +1,32 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCategoryIcon } from "../../utils/categoryIcons";
+import IconoCategoria from "../IconoCategoria";
+import { ESTADO_TRABAJO_POR_STATUS, tonoEstadoTrabajo } from "../../constants/dominio";
 import styles from "./HomeJobCard.module.css";
 
 const TRUNCATE_AT = 60;
+
+// status viene ya mapeado del backend (ver mapEstadoToStatus en trabajos-service.js).
+// El color sale de la tabla compartida (TONO_ESTADO_TRABAJO en constants/dominio.js).
+const STATUS_LABEL = {
+  PENDIENTE:  "Pendiente",
+  EN_CURSO:   "En curso",
+  EN_ESPERA:  "En espera",
+  FINALIZADO: "Finalizado",
+  CANCELADO:  "Cancelado",
+  VENCIDO:    "Vencido",
+};
 
 const HomeJobCard = ({ job }) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const { id, title, description, status, category } = job;
-  const CategoryIcon = getCategoryIcon(category);
 
   const desc = description ?? "";
   const isLong = desc.length > TRUNCATE_AT;
-  const isPending = status === "PENDIENTE";
+  // Un status desconocido se muestra como "Pendiente", igual que antes.
+  const statusConocido = Object.hasOwn(STATUS_LABEL, status) ? status : "PENDIENTE";
+  const tono = tonoEstadoTrabajo(ESTADO_TRABAJO_POR_STATUS[statusConocido]);
 
   const goToDetalle = () => navigate(`/ofertas/${id}/detalle`);
 
@@ -31,7 +44,7 @@ const HomeJobCard = ({ job }) => {
       }}
     >
       <div className={styles.iconWrap}>
-        <CategoryIcon className={styles.icon} aria-hidden="true" />
+        <IconoCategoria categoria={category} className={styles.icon} aria-hidden="true" />
       </div>
 
       <div className={styles.info}>
@@ -56,8 +69,8 @@ const HomeJobCard = ({ job }) => {
         )}
       </div>
 
-      <span className={isPending ? styles.statusPending : styles.statusDone}>
-        {isPending ? "Pendiente" : "Finalizado"}
+      <span className={`${styles.status} job-chip--${tono}`}>
+        {STATUS_LABEL[statusConocido]}
       </span>
     </div>
   );

@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Avatar from '../Avatar';
 import styles from './WorkerSearchCard.module.css';
 
 const WorkerSearchCard = ({
@@ -7,13 +7,12 @@ const WorkerSearchCard = ({
   name,
   photo_url,
   description,
-  rating = 0,
+  rating = null, // null = todavía no tiene reseñas
   localidad = null,
   provincia = null,
   idPostulacionChat = null,
 }) => {
   const navigate = useNavigate();
-  const [liked, setLiked] = useState(false);
 
   return (
     <article className={styles.card}>
@@ -22,46 +21,29 @@ const WorkerSearchCard = ({
       <div className={styles.top}>
 
         <div className={styles.avatarWrapper}>
-          {photo_url ? (
-            <img
-              src={photo_url}
-              alt={`Foto de ${name}`}
-              className={styles.avatar}
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          ) : (
-            <div className={styles.avatarFallback}>
-              {name?.charAt(0)?.toUpperCase() || '?'}
-            </div>
-          )}
+          <Avatar src={photo_url} nombre={name} className={styles.avatar} fallbackClassName={styles.avatarFallback} />
         </div>
 
         <div className={styles.info}>
           <div className={styles.nameRow}>
             <h2 className={styles.name}>{name}</h2>
-            <span className={styles.verified} aria-label="Perfil verificado">✓</span>
           </div>
 
           <div className={styles.ratingRow}>
-            <span className={styles.star}>★</span>
-            <span className={styles.ratingValue}>{Number(rating).toFixed(1)}</span>
+            {rating != null ? (
+              <>
+                <span className={styles.star}>★</span>
+                <span className={styles.ratingValue}>{Number(rating).toFixed(1)}</span>
+              </>
+            ) : (
+              <span className={styles.ratingValue}>Sin reseñas</span>
+            )}
           </div>
 
           {(localidad || provincia) && (
             <p className={styles.location}>📍 {[localidad, provincia].filter(Boolean).join(', ')}</p>
           )}
         </div>
-
-        {/* CORAZÓN */}
-        <button
-          type="button"
-          className={`${styles.favorite} ${liked ? styles.favoriteActive : ''}`}
-          onClick={() => setLiked(!liked)}
-          aria-label={liked ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-          aria-pressed={liked}
-        >
-          {liked ? '♥' : '♡'}
-        </button>
 
       </div>
 
@@ -74,9 +56,16 @@ const WorkerSearchCard = ({
         </div>
       )}
 
-      {/* CONTACTAR: el chat vive atado a una postulación, sin una no hay chat */}
-      {idPostulacionChat && (
-        <div className={styles.details}>
+      <div className={styles.details}>
+        <button
+          type="button"
+          className={styles.contactBtn}
+          onClick={() => navigate(`/perfil/${id}`)}
+        >
+          Ver perfil
+        </button>
+        {/* CONTACTAR: el chat vive atado a una postulación, sin una no hay chat */}
+        {idPostulacionChat && (
           <button
             type="button"
             className={styles.contactBtn}
@@ -84,8 +73,8 @@ const WorkerSearchCard = ({
           >
             Contactar
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
     </article>
   );

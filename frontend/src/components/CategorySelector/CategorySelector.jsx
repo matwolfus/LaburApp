@@ -27,7 +27,7 @@ const CategoryChipsSelector = ({ selectedId, onChange }) => {
   if (error) return <p className={styles.errorText}>{error}</p>;
 
   return (
-    <div className={styles.chipsWrapper} role="radiogroup" aria-label="Categoría de la tarea">
+    <div className={styles.chipsWrapper} role="radiogroup" aria-label="Categoría del trabajo">
       {categories.map((cat) => {
         const isSelected = selectedId === cat.id;
         return (

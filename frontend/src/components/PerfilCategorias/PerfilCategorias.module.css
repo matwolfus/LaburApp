@@ -1,12 +1,11 @@
 .card {
-    background: #FFFFFF;
+    background: var(--color-card);
 
     border-radius: 16px;
 
     padding: 18px;
 
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .title {
@@ -16,14 +15,14 @@
     align-items: center;
     gap: 7px;
 
-    font-size: 16px;
+    font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: #1A2560;
+    color: var(--color-primary);
 }
 
 .icon {
-    color: #2F3685;
+    color: var(--color-primary);
 }
 
 .lista {
@@ -38,24 +37,24 @@
     display: inline-flex;
     align-items: center;
 
-    background: #E7EFFE;
+    background: var(--color-primary-soft);
 
-    color: #2255C4;
+    color: var(--color-primary);
 
     padding: 7px 14px;
 
     border-radius: 999px;
 
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: var(--fs-md);
+    font-weight: 700;
 }
 
 .vacio {
     margin: 0;
 
-    font-size: 13px;
+    font-size: var(--fs-md);
 
-    color: #9AA0B4;
+    color: var(--color-muted);
 }
 
 
@@ -66,10 +65,10 @@
 
 /* Insignias: categorías con trabajos completados. */
 .iconInsignia {
-    color: #F97316;
+    color: var(--color-orange);
 }
 
 .pillInsignia {
-    background: #FFF4E8;
-    color: #B45309;
+    background: var(--color-orange-bg);
+    color: var(--color-orange-text);
 }

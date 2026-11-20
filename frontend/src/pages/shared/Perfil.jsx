@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getMiUsuario } from "../../services/api";
 import { useAuth } from "../../context/useAuth";
 import { useRoleSwitch } from "../../hooks/useRoleSwitch";
+import { datosPerfilSegunModo } from "../../utils/perfil";
 import styles from '../../styles/Perfil.module.css'
 
 import PerfilHeader from "../../components/PerfilHeader";
@@ -17,7 +18,8 @@ export default function PerfilPage() {
 
     const navigate = useNavigate();
     const [perfil, setPerfil] = useState(null);
-    const { modo, hydrateModo, modoError } = useAuth();
+    // El modo lo carga AuthProvider (única fuente de verdad); acá solo se lee.
+    const { modo, modoError } = useAuth();
     const { switching, changeModo } = useRoleSwitch();
 
     // Reconfirmación al cambiar de rol: roleSwitchTarget es el modo que se
@@ -34,16 +36,6 @@ export default function PerfilPage() {
 
                 setPerfil(perfilCompleto);
 
-                // Solo hidrata si todavía no hay modo activo (sesión recién
-                // iniciada / primer login post-feature). Nunca pisa un modo
-                // que el usuario ya eligió a mano vía el toggle — eso sería
-                // un PATCH "actualizar a lo mismo" en cada visita a Perfil,
-                // y acá ni siquiera pega al backend porque es hidratación,
-                // no una decisión del usuario.
-                if (!modo) {
-                    hydrateModo(perfilCompleto.ultimoRol);
-                }
-
             } catch (error) {
 
                 console.error("Error al cargar el perfil:", error);
@@ -56,45 +48,7 @@ export default function PerfilPage() {
 
     }, []);
 
-    const datos = useMemo(() => {
-
-        if (!perfil || !modo) return null;
-
-        return {
-
-            rating:
-                modo === "trabajador"
-                    ? perfil.ratingTrabajador
-                    : perfil.ratingContratante,
-
-            cantidadTrabajos:
-                modo === "trabajador"
-                    ? perfil.trabajosRealizados
-                    : perfil.trabajosPublicados,
-
-            cantidadResenas:
-                modo === "trabajador"
-                    ? perfil.cantidadResenasTrabajador
-                    : perfil.cantidadResenasContratante,
-
-            biografia:
-                modo === "trabajador"
-                    ? perfil.biografiaTrabajador
-                    : perfil.biografiaContratante,
-
-            categorias:
-                modo === "trabajador"
-                    ? (perfil.insignias || []).map((c) => c.nombre)
-                    : perfil.categoriasContrata,
-
-            resenas:
-                modo === "trabajador"
-                    ? perfil.resenasTrabajador
-                    : perfil.resenasContratante
-
-        };
-
-    }, [perfil, modo]);
+    const datos = useMemo(() => datosPerfilSegunModo(perfil, modo), [perfil, modo]);
 
     // Pide confirmación antes de tocar el modo activo (a diferencia de
     // hidratar, esto SÍ es una decisión del usuario). Si confirma, se

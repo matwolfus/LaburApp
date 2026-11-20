@@ -1,4 +1,5 @@
-﻿// TODO: trabajo entity
+// backend/src/entities/trabajo.js
+// Datos de un trabajo tal como llegan del formulario "Nuevo / Editar trabajo".
 export default class Trabajo {
 
     constructor(
@@ -10,13 +11,11 @@ export default class Trabajo {
         presupuesto,
         estado,
         programado_para,
-        // ACÁ AGREGUÉ
         prioridad,
         duracion,
         direccion,
         lat,
         lng
-        // ACÁ YA NO
     ) {
 
         this.id_contratante = id_contratante;
@@ -27,12 +26,10 @@ export default class Trabajo {
         this.presupuesto = presupuesto;
         this.estado = estado;
         this.programado_para = programado_para;
-        // ACÁ AGREGUÉ
         this.prioridad = prioridad;
         this.duracion = duracion;
         this.direccion = direccion;
         this.lat = lat;
         this.lng = lng;
-        // ACÁ YA NO
     }
 }

@@ -8,30 +8,30 @@
 
 .title {
   margin: 0 0 6px;
-  font-size: 19px;
+  font-size: var(--fs-xl);
   font-weight: 800;
-  color: #1F2937;
+  color: var(--color-text);
 }
 
 .jobTitle {
   margin: 0 0 18px;
-  font-size: 13.5px;
-  color: #6B7280;
+  font-size: var(--fs-base);
+  color: var(--color-muted);
 }
 
 .priceLabel {
   align-self: center;
   margin: 0 0 4px;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  color: #6B7280;
+  color: var(--color-muted);
 }
 
 .price {
   margin: 0 0 6px;
-  font-size: 28px;
+  font-size: var(--fs-5xl);
   font-weight: 800;
-  color: var(--color-primary, #2D3B8E);
+  color: var(--color-primary);
 }
 
 .priceInput {
@@ -40,7 +40,7 @@
   margin: 4px 0 6px;
   border-radius: 14px;
   border: 1.5px solid #E2E8F0;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-family: inherit;
   text-align: center;
 }
@@ -48,8 +48,8 @@
 .linkBtn {
   border: none;
   background: transparent;
-  color: var(--color-primary, #2D3B8E);
-  font-size: 13px;
+  color: var(--color-primary);
+  font-size: var(--fs-md);
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
@@ -58,19 +58,19 @@
 }
 
 .error {
-  color: #DC2626;
-  font-size: 13px;
+  color: var(--color-danger);
+  font-size: var(--fs-md);
   margin: 0 0 10px;
 }
 
 .confirmBtn {
   width: 100%;
   border: none;
-  background: var(--color-orange, #F97316);
+  background: var(--color-orange);
   color: white;
   padding: 15px;
   border-radius: 50px;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -87,8 +87,8 @@
   margin-top: 8px;
   border: none;
   background: transparent;
-  color: #6B7280;
-  font-size: 14px;
+  color: var(--color-muted);
+  font-size: var(--fs-base);
   font-weight: 600;
   cursor: pointer;
   padding: 10px;

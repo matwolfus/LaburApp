@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 
 import { getPerfil, getConversaciones } from "../../services/api";
+import { datosPerfilSegunModo } from "../../utils/perfil";
 
 import PerfilHeader from "../../components/PerfilHeader";
 import PerfilStats from "../../components/PerfilStats";
@@ -88,45 +89,7 @@ export default function VerPerfil() {
     }, [id]);
 
 
-    const datos = useMemo(() => {
-
-        if (!perfil || !modo) {
-            return null;
-        }
-
-        const esTrabajador = modo === "trabajador";
-
-        return {
-
-            esTrabajador,
-
-            rating: esTrabajador
-                ? perfil.ratingTrabajador
-                : perfil.ratingContratante,
-
-            cantidadTrabajos: esTrabajador
-                ? perfil.trabajosRealizados
-                : perfil.trabajosPublicados,
-
-            cantidadResenas: esTrabajador
-                ? perfil.cantidadResenasTrabajador
-                : perfil.cantidadResenasContratante,
-
-            biografia: esTrabajador
-                ? perfil.biografiaTrabajador
-                : perfil.biografiaContratante,
-
-            categorias: esTrabajador
-                ? (perfil.insignias || []).map((c) => c.nombre)
-                : perfil.categoriasContrata,
-
-            resenas: esTrabajador
-                ? perfil.resenasTrabajador
-                : perfil.resenasContratante
-
-        };
-
-    }, [perfil, modo]);
+    const datos = useMemo(() => datosPerfilSegunModo(perfil, modo), [perfil, modo]);
 
 
     // =========================

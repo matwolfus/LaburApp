@@ -1,139 +1,46 @@
 import { Router } from 'express';
-
-import NotificacionesService
-    from './../services/notificaciones-service.js';
-
-import authMiddleware
-    from './../middlewares/auth-middleware.js';
-
-import PostulacionesService
-    from './../services/postulaciones-service.js';
+import NotificacionesService from './../services/notificaciones-service.js';
+import PostulacionesService from './../services/postulaciones-service.js';
+import authMiddleware from './../middlewares/auth-middleware.js';
+import { idParam } from './../middlewares/error-middleware.js';
+import { forbidden, notFound } from './../helpers/http-error.js';
 
 const router = Router();
-
 const service = new NotificacionesService();
-
 const postulacionesService = new PostulacionesService();
 
+router.param('id', idParam);
 
-// =========================================================
-// GET NOTIFICACIONES DEL USUARIO LOGUEADO
-// =========================================================
-
+// GET /api/notificaciones -> las del usuario logueado
 router.get('/', authMiddleware, async (req, res) => {
-
-    try {
-
-        // Así las reconfirmaciones vencidas ya no muestran los botones.
-        await postulacionesService.expirarReconfirmacionesAsync();
-
-        const notificaciones =
-            await service.getByUsuarioAsync(req.userId);
-
-        return res.status(200).json(notificaciones);
-
-    } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo notificaciones'
-        });
-    }
+    // Así las reconfirmaciones vencidas ya no muestran los botones.
+    await postulacionesService.expirarReconfirmacionesAsync();
+    res.status(200).json(await service.getByUsuarioAsync(req.userId));
 });
 
-
-// =========================================================
-// CANTIDAD DE NO LEIDAS (badge de la campanita)
-// =========================================================
-
+// GET /api/notificaciones/no-leidas/count -> badge de la campanita
 router.get('/no-leidas/count', authMiddleware, async (req, res) => {
-
-    try {
-
-        const count =
-            await service.getNoLeidasCountAsync(req.userId);
-
-        return res.status(200).json({ count });
-
-    } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error obteniendo notificaciones no leidas'
-        });
-    }
+    const count = await service.getNoLeidasCountAsync(req.userId);
+    res.status(200).json({ count });
 });
 
-
-// =========================================================
-// MARCAR TODAS COMO LEIDAS (al entrar a la pantalla)
+// PATCH /api/notificaciones/leidas -> marca todas como leídas (al entrar a la pantalla).
 // Debe declararse ANTES de '/:id/leido'.
-// =========================================================
-
 router.patch('/leidas', authMiddleware, async (req, res) => {
-
-    try {
-
-        await service.marcarTodasLeidasAsync(req.userId);
-
-        return res.status(200).json({
-            message: 'Notificaciones marcadas como leidas'
-        });
-
-    } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error marcando notificaciones como leidas'
-        });
-    }
+    await service.marcarTodasLeidasAsync(req.userId);
+    res.status(200).json({ message: 'Notificaciones marcadas como leidas' });
 });
 
-
-// =========================================================
-// MARCAR NOTIFICACION COMO LEIDA
-// =========================================================
-
+// PATCH /api/notificaciones/:id/leido -> solo el dueño puede marcarla.
 router.patch('/:id/leido', authMiddleware, async (req, res) => {
+    const id = req.params.id;
+    const notificacion = await service.getByIdAsync(id);
 
-    try {
+    if (!notificacion) throw notFound('Notificación no encontrada');
+    if (Number(notificacion.id_usuario) !== req.userId) throw forbidden();
 
-        const id = req.params.id;
-
-        const notificacion = await service.getByIdAsync(id);
-
-        if (!notificacion) {
-
-            return res.status(404).json({
-                message: 'Notificacion no encontrada'
-            });
-        }
-
-        // Solo el dueño de la notificación puede marcarla como leída.
-        if (Number(notificacion.id_usuario) !== req.userId) {
-
-            return res.status(403).json({
-                message: 'No autorizado'
-            });
-        }
-
-        await service.marcarLeidoAsync(id);
-
-        return res.status(200).json({
-            message: 'Notificacion marcada como leida'
-        });
-
-    } catch (error) {
-
-        console.log(error);
-
-        return res.status(500).json({
-            message: 'Error marcando notificacion como leida'
-        });
-    }
+    await service.marcarLeidoAsync(id);
+    res.status(200).json({ message: 'Notificacion marcada como leida' });
 });
 
 export default router;

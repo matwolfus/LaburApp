@@ -5,6 +5,12 @@ import SectionHeader from '../../components/SectionHeader';
 import { getOfertas } from '../../services/api';
 import '../../styles/ofertas.css';
 
+const ESTADO_CERRADO_LABEL = {
+  finalizado: 'Completado',
+  cancelado: 'Cancelado',
+  vencido: 'Vencido',
+};
+
 export default function Ofertas() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
@@ -28,12 +34,16 @@ export default function Ofertas() {
   if (loading) return <div className="ofertas-loading">Cargando ofertas...</div>;
   if (error)   return <div className="ofertas-error">Error: {error}</div>;
 
-  // 'abierto' es el estado default de una changua recién publicada (todavía buscando
-  // candidatos), por eso se agrupa junto con 'proxima' en "Próximas Ofertas".
-  const upcomingJobs = jobs.filter((job) => ['abierto', 'proxima'].includes(job.estado));
+  // 'abierto' = publicada y buscando candidatos.
+  const upcomingJobs = jobs.filter((job) => job.estado === 'abierto');
   const activeJobs = jobs.filter((job) => job.estado === 'activa');
-  // El trabajador aceptado canceló: esperan que el contratante los reabra.
+  // El trabajador aceptado canceló: esperan que el contratador los reabra.
   const enEsperaJobs = jobs.filter((job) => job.estado === 'en_espera');
+  // Trabajos cerrados. Antes no aparecían en ninguna sección: un trabajo
+  // vencido, finalizado o cancelado desaparecía de "Ofertas". Más recientes primero.
+  const historialJobs = jobs
+    .filter((job) => Object.hasOwn(ESTADO_CERRADO_LABEL, job.estado))
+    .sort((a, b) => String(b.scheduled_at ?? '').localeCompare(String(a.scheduled_at ?? '')));
 
   return (
     <div className="ofertas-page">
@@ -77,6 +87,17 @@ export default function Ofertas() {
           : activeJobs.map(job => <JobCard key={job.id} job={job} />)
         }
       </div>
+
+      {historialJobs.length > 0 && (
+        <>
+          <SectionHeader title="Historial" />
+          <div className="job-list">
+            {historialJobs.map(job => (
+              <JobCard key={job.id} job={job} estadoLabel={ESTADO_CERRADO_LABEL[job.estado]} />
+            ))}
+          </div>
+        </>
+      )}
 
     </div>
   );

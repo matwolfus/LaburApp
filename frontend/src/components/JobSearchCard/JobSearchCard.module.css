@@ -1,5 +1,5 @@
 .card {
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 20px;
   padding: 16px;
   display: flex;
@@ -33,14 +33,14 @@
 
 .image {
   object-fit: cover;
-  background: #eeeef1;
+  background: var(--color-divider);
 }
 
 .imageFallback {
   display: grid;
   place-items: center;
-  background: #e8edf8;
-  color: #303889;
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
 }
 
 .info {
@@ -53,35 +53,37 @@
 
 .title {
   margin: 0;
-  color: #303889;
-  font-size: 15px;
+  color: var(--color-primary);
+  font-size: var(--fs-lg);
   font-weight: 700;
   line-height: 1.3;
 }
 
 .category {
   align-self: flex-start;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: #e8edf8;
-  color: #303889;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: var(--fs-2xs);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .location {
   margin: 0;
-  color: #747680;
-  font-size: 12px;
+  color: var(--color-muted);
+  font-size: var(--fs-sm);
 }
 
 .description {
   margin: 0;
   padding: 8px 10px;
   border-radius: 10px;
-  background: #f5f5f7;
-  color: #565862;
-  font-size: 12px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--fs-sm);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -96,9 +98,13 @@
   gap: 10px;
 }
 
+/* Presupuesto como chip verde: dato destacado */
 .price {
-  color: #252a70;
-  font-size: 14px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-size: var(--fs-base);
   font-weight: 800;
 }
 
@@ -107,17 +113,18 @@
   padding: 10px 20px;
   border: none;
   border-radius: 16px;
-  background: #ed8500;
-  color: #ffffff;
+  background: var(--color-orange);
+  color: var(--color-card);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
 .applyBtn:hover {
-  background: #db7900;
+  filter: brightness(0.95);
   transform: translateY(-1px);
 }
 
@@ -129,8 +136,8 @@
   margin-left: auto;
   padding: 10px 16px;
   border-radius: 16px;
-  background: #E5E7EB;
-  color: #6B7280;
-  font-size: 13px;
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
+  font-size: var(--fs-md);
   font-weight: 700;
 }

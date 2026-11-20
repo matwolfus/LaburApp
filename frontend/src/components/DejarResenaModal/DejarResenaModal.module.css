@@ -8,15 +8,15 @@
 
 .title {
   margin: 0 0 4px;
-  font-size: 19px;
+  font-size: var(--fs-xl);
   font-weight: 800;
-  color: #1F2937;
+  color: var(--color-text);
 }
 
 .subtitle {
   margin: 0 0 18px;
-  font-size: 13.5px;
-  color: #6B7280;
+  font-size: var(--fs-base);
+  color: var(--color-muted);
 }
 
 .stars {
@@ -43,19 +43,19 @@
 
 .fieldLabel {
   align-self: flex-start;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  color: #6B7280;
+  color: var(--color-muted);
   margin-bottom: 6px;
 }
 
 .textarea {
   width: 100%;
   background: #F5F6FA;
-  border: 1px solid #E8ECF3;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 12px 14px;
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   font-family: inherit;
   resize: vertical;
   margin-bottom: 14px;
@@ -63,19 +63,19 @@
 }
 
 .error {
-  color: #DC2626;
-  font-size: 13px;
+  color: var(--color-danger);
+  font-size: var(--fs-md);
   margin: 0 0 10px;
 }
 
 .confirmBtn {
   width: 100%;
   border: none;
-  background: #2F3685;
+  background: var(--color-primary);
   color: white;
   padding: 15px;
   border-radius: 50px;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -92,8 +92,8 @@
   margin-top: 12px;
   border: none;
   background: transparent;
-  color: #2F3685;
-  font-size: 13.5px;
+  color: var(--color-primary);
+  font-size: var(--fs-base);
   font-weight: 700;
   cursor: pointer;
 }

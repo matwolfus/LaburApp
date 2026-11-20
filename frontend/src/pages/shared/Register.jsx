@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom"
 import { register } from "../../services/api"
 import { useAuth } from "../../context/useAuth"
 import Banner from "../../assets/Banner.png"
+import { EMAIL_REGEX } from "../../constants/dominio"
 import "../../styles/Register.css"
 
+// Misma regla que validatePassword() de usuarios-service.js en el backend:
+// carácter especial = cualquier cosa que no sea letra o número.
 function validatePassword(pwd) {
   return {
     minLength: pwd.length >= 8,
@@ -20,10 +23,14 @@ function validateTelefono(tel) {
 
 const ERROR_MESSAGES = {
   EMAIL_ALREADY_EXISTS: "Ya existe una cuenta con ese email.",
+  INVALID_EMAIL: "El email no es válido.",
   PASSWORDS_DONT_MATCH: "Las contraseñas no coinciden.",
   INVALID_PASSWORD: "La contraseña no cumple los requisitos.",
+  PASSWORD_TOO_LONG: "La contraseña no puede superar los 72 caracteres.",
   INVALID_PHONE_LENGTH: "El teléfono debe tener 10 dígitos.",
   INVALID_ROL: "Elegí si sos contratador o trabajador.",
+  INVALID_NOMBRE: "Ingresá tu nombre (hasta 60 caracteres).",
+  INVALID_APELLIDO: "Ingresá tu apellido (hasta 60 caracteres).",
 }
 
 const IconUser = () => (
@@ -123,16 +130,17 @@ export default function Register() {
         if (data.errorCode === "INVALID_PASSWORD" && data.passwordValidation) {
           setPwdValidation(data.passwordValidation)
         }
-        setApiError(data.errorCode)
+        setApiError(ERROR_MESSAGES[data.errorCode] ?? data.error ?? "No se pudo crear la cuenta.")
       }
-    } catch {
-      setApiError(null)
+    } catch (err) {
+      // Sin conexión o error del servidor: antes se tragaba y no se mostraba nada.
+      setApiError(err.message || "Ocurrió un error. Intentá de nuevo.")
     } finally {
       setLoading(false)
     }
   }
 
-  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+  const emailValido = EMAIL_REGEX.test(form.email.trim())
   const telefonoValido = validateTelefono(form.telefono)
 
   const allValid =
@@ -183,6 +191,7 @@ export default function Register() {
         <input
           type="text"
           name="nombre"
+          maxLength={60}
           placeholder="Nombre"
           value={form.nombre}
           onChange={handleChange}
@@ -195,6 +204,7 @@ export default function Register() {
         <input
           type="text"
           name="apellido"
+          maxLength={60}
           placeholder="Apellido"
           value={form.apellido}
           onChange={handleChange}
@@ -307,7 +317,7 @@ export default function Register() {
       )}
 
       {apiError && (
-        <p className="error-message">{ERROR_MESSAGES[apiError]}</p>
+        <p className="error-message">{apiError}</p>
       )}
 
       <button

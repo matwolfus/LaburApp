@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import Avatar from '../Avatar';
+import { formatPesos } from '../../utils/formato';
 import styles from './PostulantCard.module.css'
 
 const BADGE_CONFIG = {
@@ -9,7 +11,7 @@ const BADGE_CONFIG = {
 
 // Valores de `estado` restringidos por CHECK constraint en la tabla postulaciones:
 // 'pendiente' | 'aceptado' | 'rechazado' | 'retirado' | 'por_reconfirmar'
-// (las dos últimas no llegan acá: el backend no las lista al contratante).
+// (las dos últimas no llegan acá: el backend no las lista al contratador).
 const ESTADO_CONFIG = {
   aceptado:  { label: 'Aceptado',  className: styles.badgeAceptada },
   rechazado: { label: 'Rechazado', className: styles.badgeRechazada },
@@ -18,22 +20,24 @@ const ESTADO_CONFIG = {
 const PostulantCard = ({ postulant, onAceptar, puedeAceptar = true }) => {
   const navigate = useNavigate();
   const { id, idTrabajador, name, location, rating, reviews, price, badges = [], avatar, estado } = postulant;
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2);
   const estadoBadge = ESTADO_CONFIG[estado];
 
   return (
     <div className={styles.card}>
       <div className={styles.top}>
-        {avatar
-          ? <img src={avatar} alt={name} className={styles.avatarImg} />
-          : <div className={styles.avatar}>{initials}</div>
-        }
+        <Avatar src={avatar} nombre={name} alt={name} className={styles.avatarImg} fallbackClassName={styles.avatar} />
         <div className={styles.info}>
           <p className={styles.name}>{name}</p>
           <p className={styles.location}>📍 {location}</p>
           <div className={styles.rating}>
-            <span className={styles.ratingValue}>⭐ {rating.toFixed(1)}</span>
-            <span className={styles.ratingCount}>({reviews} reseñas)</span>
+            {rating != null ? (
+              <>
+                <span className={styles.ratingValue}>⭐ {rating.toFixed(1)}</span>
+                <span className={styles.ratingCount}>({reviews} {reviews === 1 ? 'reseña' : 'reseñas'})</span>
+              </>
+            ) : (
+              <span className={styles.ratingCount}>Sin reseñas</span>
+            )}
           </div>
         </div>
       </div>
@@ -47,7 +51,7 @@ const PostulantCard = ({ postulant, onAceptar, puedeAceptar = true }) => {
       )}
       {price != null && (
         <p className={styles.price}>
-          Propuesta: <span className={styles.priceValue}>${Number(price).toLocaleString('es-AR')}</span>
+          Propuesta: <span className={styles.priceValue}>{formatPesos(price)}</span>
         </p>
       )}
       <div className={styles.actions}>

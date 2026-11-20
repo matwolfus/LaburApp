@@ -7,20 +7,20 @@
 }
 
 .icon {
-  color: var(--color-primary, #2D3B8E);
+  color: var(--color-primary);
   margin-bottom: 10px;
 }
 
 .title {
   margin: 0 0 8px;
-  font-size: 19px;
+  font-size: var(--fs-xl);
   font-weight: 800;
-  color: #1F2937;
+  color: var(--color-text);
 }
 
 .text {
   margin: 0 0 16px;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: #4B5062;
   line-height: 1.5;
 }
@@ -32,19 +32,19 @@
 }
 
 .error {
-  color: #DC2626;
-  font-size: 13px;
+  color: var(--color-danger);
+  font-size: var(--fs-md);
   margin: 0 0 10px;
 }
 
 .confirmBtn {
   width: 100%;
   border: none;
-  background: var(--color-primary, #2D3B8E);
+  background: var(--color-primary);
   color: white;
   padding: 15px;
   border-radius: 50px;
-  font-size: 15px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   cursor: pointer;
   transition: opacity 0.15s;
@@ -61,8 +61,8 @@
   margin-top: 12px;
   border: none;
   background: transparent;
-  color: #2F3685;
-  font-size: 13.5px;
+  color: var(--color-primary);
+  font-size: var(--fs-base);
   font-weight: 700;
   cursor: pointer;
 }

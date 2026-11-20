@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { getCategoryIcon } from '../../utils/categoryIcons';
+import IconoCategoria from '../IconoCategoria';
+import { formatPesos } from '../../utils/formato';
 import styles from './JobSearchCard.module.css';
 
 // Tarjeta de un trabajo abierto en las pantallas de trabajador (Home /
@@ -11,7 +12,6 @@ import styles from './JobSearchCard.module.css';
 const JobSearchCard = ({ id, title, description, budget, address, category, localidad, provincia, image_url, yaPostulado = false }) => {
   const navigate = useNavigate();
   const ubicacion = [localidad, provincia].filter(Boolean).join(', ') || address;
-  const CategoryIcon = getCategoryIcon(category);
   const irAlDetalle = () => navigate(`/trabajador/trabajos/${id}`);
 
   return (
@@ -29,7 +29,7 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
           <img src={image_url} alt="" className={styles.image} />
         ) : (
           <div className={styles.imageFallback} aria-hidden="true">
-            <CategoryIcon size={24} strokeWidth={2} />
+            <IconoCategoria categoria={category} size={24} strokeWidth={2} />
           </div>
         )}
 
@@ -46,7 +46,7 @@ const JobSearchCard = ({ id, title, description, budget, address, category, loca
 
       <div className={styles.footer}>
         {budget != null && (
-          <span className={styles.price}>${Number(budget).toLocaleString('es-AR')}</span>
+          <span className={styles.price}>{formatPesos(budget)}</span>
         )}
         {yaPostulado ? (
           <span className={styles.appliedBtn}>✓ Ya postulado</span>

@@ -1,4 +1,5 @@
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
 
 // La tabla `notificaciones` guarda el detalle variable (titulo/cuerpo/id_referencia)
 // en una sola columna `datos jsonb`, en vez de columnas separadas. Este repository
@@ -24,6 +25,7 @@ export default class NotificacionesRepository {
                 (datos->>'id_postulacion')::int AS id_postulacion,
                 datos->>'localidad'     AS localidad,
                 datos->>'respondida'    AS respondida,
+                datos->>'rol_destinatario' AS rol_destinatario,
                 leido,
                 creado_en
             FROM notificaciones
@@ -61,7 +63,7 @@ export default class NotificacionesRepository {
                 $2,
                 $3,
                 FALSE,
-                NOW()
+                ${AHORA}
             )
             RETURNING id
         `;

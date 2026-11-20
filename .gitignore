@@ -4,3 +4,7 @@ logs/
 dist/
 .DS_Store
 backend/uploads/
+
+# Dumps binarios de la base (pg_dump.txt sí va: datos ficticios)
+*.dump
+*.log

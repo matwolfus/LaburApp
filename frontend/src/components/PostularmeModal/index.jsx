@@ -4,9 +4,9 @@ import { Bell, MessageSquare } from 'lucide-react';
 import Modal from '../Modal';
 import ResultModal from '../ResultModal';
 import { postularme } from '../../services/api';
+import { formatPesos } from '../../utils/formato';
 import styles from './PostularmeModal.module.css';
 
-const formatPrecio = (n) => `$${Number(n).toLocaleString('es-AR')}`;
 
 // Postulación en un paso: confirmar al precio publicado. La contraoferta es
 // opcional y solo se muestra si el usuario la pide ("Proponer otro precio").
@@ -80,7 +80,7 @@ export default function PostularmeModal({ open, job, onClose, onPosted }) {
         {!otroPrecio ? (
           <>
             <p className={styles.priceLabel}>Te postulás por</p>
-            <p className={styles.price}>{job?.budget != null ? formatPrecio(job.budget) : 'A coordinar'}</p>
+            <p className={styles.price}>{job?.budget != null ? formatPesos(job.budget) : 'A coordinar'}</p>
             <button type="button" className={styles.linkBtn} onClick={() => setOtroPrecio(true)}>
               Proponer otro precio
             </button>
@@ -88,7 +88,7 @@ export default function PostularmeModal({ open, job, onClose, onPosted }) {
         ) : (
           <>
             <label className={styles.priceLabel} htmlFor="precio-propio">
-              Tu precio{job?.budget != null && ` (publicado: ${formatPrecio(job.budget)})`}
+              Tu precio{job?.budget != null && ` (publicado: ${formatPesos(job.budget)})`}
             </label>
             <input
               id="precio-propio"

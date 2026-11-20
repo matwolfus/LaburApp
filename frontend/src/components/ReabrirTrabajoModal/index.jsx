@@ -3,18 +3,14 @@ import { RotateCcw } from 'lucide-react';
 import Modal from '../Modal';
 import DateTimePicker from '../DateTimeSelector/DateTimeSelector';
 import { reabrirTrabajo } from '../../services/api';
+import { hoyLocal } from '../../utils/fechas';
+import { PLAZO_RECONFIRMACION_DIAS } from '../../constants/dominio';
 import styles from './ReabrirTrabajoModal.module.css';
 
-// Hoy en formato YYYY-MM-DD (hora local), para el min del input de fecha.
-function hoyLocal() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 // El trabajador aceptado canceló y el trabajo quedó en espera: el
-// contratante lo reabre eligiendo una fecha nueva. Los postulantes que el
+// contratador lo reabre eligiendo una fecha nueva. Los postulantes que el
 // sistema había rechazado reciben un aviso para confirmar si siguen
-// interesados (tienen 2 días).
+// interesados (tienen PLAZO_RECONFIRMACION_DIAS días).
 export default function ReabrirTrabajoModal({ open, jobId, onClose, onReopened }) {
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
@@ -54,7 +50,7 @@ export default function ReabrirTrabajoModal({ open, jobId, onClose, onReopened }
         <h2 className={styles.title}>Reabrir trabajo</h2>
         <p className={styles.text}>
           Elegí una nueva fecha. Los postulantes anteriores van a recibir un aviso
-          para confirmar si siguen interesados (tienen 2 días para responder).
+          para confirmar si siguen interesados (tienen {PLAZO_RECONFIRMACION_DIAS} días para responder).
         </p>
 
         <div className={styles.picker}>

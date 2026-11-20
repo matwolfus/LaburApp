@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCategoryIcon } from '../utils/categoryIcons';
+import IconoCategoria from './IconoCategoria';
+import { formatFechaTrabajo } from '../utils/formato';
+import { tonoEstadoTrabajo } from '../constants/dominio';
 
 //El componente recibe un objeto job con todos los datos de un trabajo.
-export default function JobCard({ job }) {
+// estadoLabel (opcional): etiqueta para trabajos cerrados ("Completado", "Vencido"...).
+export default function JobCard({ job, estadoLabel = null }) {
   const navigate = useNavigate();
   const [imgError, setImgError] = useState(false);
 
   const { id, title, category, scheduled_at, image_url, applicants_count, applicant_avatars } = job; //extrae de JOB en lugar de hacer const title = job.title ...
-  const CategoryIcon = getCategoryIcon(category);
 
   // Mostramos la foto solo si hay URL y no falló al cargar; si no, va un placeholder.
   const showImage = image_url && !imgError;
@@ -16,21 +18,8 @@ export default function JobCard({ job }) {
   // Avatares de los postulantes (vienen del backend, hasta 3). El resto se cuenta en "+N".
   const avatars = Array.isArray(applicant_avatars) ? applicant_avatars : [];
   const count = Number(applicants_count) || 0;
-  // scheduled_at puede venir null (changua publicada sin fecha/hora todavía).
-  // Viene como string local sin offset ("YYYY-MM-DDTHH:MM:SS"), así que new Date()
-  // la interpreta como hora local tal cual está escrita, sin corrimientos.
-  const date = scheduled_at ? new Date(scheduled_at) : null;
-
-  // Cuando no se elige horario, NuevoTrabajo manda medianoche (00:00) como default:
-  // no hay forma de distinguir eso de un horario elegido a propósito, así que lo tratamos como "sin horario".
-  const tieneHorario = date && (date.getHours() !== 0 || date.getMinutes() !== 0);
-
-  const formattedDate = date
-    ? date.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
-    : 'Sin fecha';
-  const formattedTime = tieneHorario
-    ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-    : null;
+  // scheduled_at puede venir null (trabajo publicado sin fecha/hora todavía).
+  const fecha = formatFechaTrabajo(scheduled_at) ?? 'Sin fecha';
  
   return (
     <div className="job-card">
@@ -44,15 +33,18 @@ export default function JobCard({ job }) {
           />
         ) : (
           <div className="job-card__image job-card__image--placeholder" aria-hidden="true">
-            <CategoryIcon size={28} strokeWidth={2} />
+            <IconoCategoria categoria={category} size={28} strokeWidth={2} />
           </div>
         )}
         <div className="job-card__info">
           <h3 className="job-card__title">{title}</h3>
           <p className="job-card__date">
             <span className="job-card__date-icon">🕐</span>
-            {formattedDate}{formattedTime ? ` - ${formattedTime} hs` : ''}
+            {fecha}
           </p>
+          {estadoLabel && (
+            <span className={`job-chip job-chip--${tonoEstadoTrabajo(job.estado)}`}>{estadoLabel}</span>
+          )}
         </div>
       </div>
  

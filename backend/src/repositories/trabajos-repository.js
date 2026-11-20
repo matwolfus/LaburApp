@@ -1,53 +1,17 @@
 ﻿// backend/src/repositories/trabajos-repository.js
 import Db from './db-pg.js';
+import { AHORA } from './sql-fechas.js';
+import { cantidadComoContratador, promedioComoContratador } from './sql-calificaciones.js';
+import { FILTRO_POSTULANTES_VISIBLES } from './postulaciones-repository.js';
 
 export default class TrabajosRepository {
   constructor() {
     this.db = new Db();
   }
 
-// Devuelve todos los trabajos de un empleador determinado filtrados por estado
-async getJobsByEmployerAndStatus(employerId, status) {
-    await this.expirarVencidos();
-
-    // Usamos subconsultas (en vez de JOIN + GROUP BY) para: (a) no inflar el COUNT
-    // por el cruce con imagenes_trabajo, y (b) sumar los avatares de los primeros
-    // 3 postulantes para mostrarlos en la tarjeta.
-    const sql = `
-      SELECT
-        t.id,
-        t.titulo          AS title,
-        t.programado_para AS scheduled_at,
-        c.nombre          AS category,
-        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
-        (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
-        COALESCE((
-          SELECT json_agg(sub.url_avatar)
-          FROM (
-            SELECT u.url_avatar
-            FROM postulaciones p
-            JOIN usuarios u ON u.id = p.id_trabajador
-            WHERE p.id_trabajo = t.id
-            ORDER BY p.postulado_en ASC
-            LIMIT 3
-          ) sub
-        ), '[]') AS applicant_avatars
-      FROM trabajos t
-      LEFT JOIN categorias c ON c.id = t.id_categoria
-      WHERE t.id_contratante = $1
-        AND t.estado         = $2
-      ORDER BY t.programado_para ASC
-    `;
-
-    // en el parámetro $1 se pasa el ID del empleador y en $2 el estado. EN el 2 Se pasa "proxima" o "activa"
-    
-    return await this.db.queryAll(sql, [employerId, status]);
-  }
-
-  // ACÁ AGREGUÉ
-  // Todas las ofertas de un contratante (cualquier estado) para la pantalla "Ofertas".
-  // Misma forma que getJobsByEmployerAndStatus (la necesita JobCard), pero sin filtrar por
-  // estado, e incluyendo 'estado' para que el frontend agrupe en Próximas/Activas.
+  // Todas las ofertas de un contratador (cualquier estado) para la pantalla "Ofertas".
+  // Incluye 'estado' para que el frontend agrupe en secciones. Subconsultas en vez de
+  // JOIN + GROUP BY para no inflar el COUNT por el cruce con imagenes_trabajo.
   async getAllJobsByEmployer(employerId) {
     await this.expirarVencidos();
 
@@ -58,7 +22,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
         t.estado,
         t.programado_para AS scheduled_at,
         c.nombre          AS category,
-        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+        (SELECT COUNT(*)::int FROM postulaciones p WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}) AS applicants_count,
         (SELECT MIN(i.url_imagen) FROM imagenes_trabajo i WHERE i.id_trabajo = t.id) AS image_url,
         COALESCE((
           SELECT json_agg(sub.url_avatar)
@@ -66,7 +30,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
             SELECT u.url_avatar
             FROM postulaciones p
             JOIN usuarios u ON u.id = p.id_trabajador
-            WHERE p.id_trabajo = t.id
+            WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}
             ORDER BY p.postulado_en ASC
             LIMIT 3
           ) sub
@@ -78,13 +42,16 @@ async getJobsByEmployerAndStatus(employerId, status) {
     `;
     return await this.db.queryAll(sql, [employerId]);
   }
-  // ACÁ YA NO
 
-  // ACÁ AGREGUÉ
-  // Trabajos de un contratante para la home ("Tus Trabajos").
+  // Trabajos de un contratador para la home ("Tus Trabajos").
   // Devuelve la forma que espera HomeJobCard: { id, image_url, title, description, estado, category }.
-  // El estado crudo se mapea a status ('PENDIENTE'/'FINALIZADO') en el service.
+  // El estado crudo se mapea a status (PENDIENTE, EN_CURSO, FINALIZADO...) en el
+  // service: ver STATUS_POR_ESTADO en trabajos-service.js.
   async getJobsByEmployer(employerId) {
+    // Igual que el resto de las lecturas: primero vencer los que ya pasaron
+    // de fecha, si no la home los muestra como pendientes.
+    await this.expirarVencidos();
+
     const sql = `
       SELECT
         t.id,
@@ -102,33 +69,28 @@ async getJobsByEmployerAndStatus(employerId, status) {
     `;
     return await this.db.queryAll(sql, [employerId]);
   }
-  // ACÁ YA NO
 
-  // Caducidad: un trabajo 'abierto'/'proxima' cuya fecha programada ya pasó
-  // sin haberse activado nunca (aceptar una postulación pasa el estado a
-  // 'activa' en la misma transacción que crea el contrato, así que un
-  // trabajo en 'abierto'/'proxima' nunca tiene contrato) se marca 'vencido'.
-  // No hay cron en el proyecto: se resuelve con un UPDATE liviano antes de
-  // cada lectura de trabajos abiertos, mismo patrón "chequeo al leer" que ya
-  // usa el resto del código en vez de sumar una dependencia nueva.
+  // Caducidad: un trabajo 'abierto' cuya fecha programada ya pasó sin que se
+  // aceptara a nadie se marca 'vencido'. No hay cron en el proyecto: se
+  // resuelve con un UPDATE liviano antes de cada lectura de trabajos.
   async expirarVencidos() {
     await this.db.queryAll(`
       UPDATE trabajos
-      SET estado = 'vencido', actualizado_en = NOW()
-      WHERE estado IN ('abierto', 'proxima')
+      SET estado = 'vencido', actualizado_en = ${AHORA}
+      WHERE estado = 'abierto'
         AND programado_para IS NOT NULL
         AND (
           -- Sin horario elegido se guarda 00:00: vence recién cuando pasa el día.
           CASE WHEN programado_para::time = '00:00'
-            THEN programado_para::date < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')::date
-            ELSE programado_para < (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires')
+            THEN programado_para::date < ${AHORA}::date
+            ELSE programado_para < ${AHORA}
           END
         )
     `);
   }
 
    // Trabajos abiertos para que un trabajador los descubra (Home / Buscar).
-  // Sin auth -> NO joinea usuarios (no exponer datos del contratante a
+  // Sin auth -> NO joinea usuarios (no exponer datos del contratador a
   // cualquiera sin loguearse). Filtros opcionales y combinables: categoría,
   // provincia y localidad. Sin filtros trae todos los abiertos (feed del Home).
   // idExcluirContratante: el usuario logueado, para no mostrarle como
@@ -217,10 +179,11 @@ async getJobsByEmployerAndStatus(employerId, status) {
         emp.nombre_completo         AS employer_name,
         emp.url_avatar              AS employer_avatar,
         emp.verificado              AS employer_verificado,
-        emp.prom_calif_contratante  AS employer_rating,
+        ${promedioComoContratador('t.id_contratante')} AS employer_rating,
+        ${cantidadComoContratador('t.id_contratante')} AS employer_reviews_count,
 
         (SELECT COUNT(*) FROM trabajos t2 WHERE t2.id_contratante = t.id_contratante) AS employer_jobs_count,
-        (SELECT COUNT(*) FROM postulaciones p WHERE p.id_trabajo = t.id) AS applicants_count,
+        (SELECT COUNT(*)::int FROM postulaciones p WHERE p.id_trabajo = t.id AND ${FILTRO_POSTULANTES_VISIBLES}) AS applicants_count,
 
         (SELECT co.precio_acordado FROM contratos co
           WHERE co.id_trabajo = t.id AND co.estado = 'activo' LIMIT 1) AS contract_price,
@@ -266,131 +229,38 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
       WHERE t.id = $1
 
-      GROUP BY t.id, c.nombre, l.nombre, l.id_provincia, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado, emp.prom_calif_contratante
+      GROUP BY t.id, c.nombre, l.nombre, l.id_provincia, pr.nombre, emp.nombre_completo, emp.url_avatar, emp.verificado
     `;
 
     return await this.db.queryOne(sql, [jobId, viewerUserId]);
   }
 
-  // Devuelve el id del contratador dueño del trabajo (o null si no existe).
-  // Se usa para chequear propiedad antes de mostrar/tocar postulaciones.
-  async getOwnerId(jobId) {
-    const sql = `SELECT id_contratante FROM trabajos WHERE id = $1`;
-    const row = await this.db.queryOne(sql, [jobId]);
-    return row ? row.id_contratante : null;
-  }
-
-  // Fecha programada y estado actuales, para validar una edición.
-  async getSchedule(jobId) {
-    return await this.db.queryOne(
-      `SELECT programado_para, estado FROM trabajos WHERE id = $1`,
-      [jobId]
+  // Cambia el estado de un trabajo solo si sigue en uno de los estados
+  // esperados (`desde`): si otra request lo cambió en el medio, no toca nada
+  // y devuelve null. Qué transiciones son válidas lo decide el servicio con
+  // domain/estados.js; acá solo se protege contra carreras.
+  async cambiarEstadoAsync(jobId, desde, hacia, db = this.db) {
+    return await db.queryReturnId(
+      `UPDATE trabajos SET estado = $3, actualizado_en = ${AHORA}
+       WHERE id = $1 AND estado = ANY($2::varchar[])
+       RETURNING id`,
+      [jobId, desde, hacia]
     );
   }
 
-  // Marca un trabajo 'activa' como 'finalizado' y cierra su contrato
-  // ('activo' -> 'completado'). Ambas escrituras en una sola transacción:
-  // sin esto, un contrato podría quedar 'activo' para siempre aunque el
-  // trabajo ya esté finalizado, y las stats del perfil (que cuentan
-  // contratos 'completado') seguirían mostrando 0.
-  async completarTrabajo(jobId) {
-    return await this.db.withTransaction(async (txDb) => {
-
-      const updated = await txDb.queryOne(
-        `UPDATE trabajos SET estado = 'finalizado', actualizado_en = NOW()
-         WHERE id = $1
-         RETURNING id`,
-        [jobId]
-      );
-
-      if (!updated) return null;
-
-      const contrato = await txDb.queryOne(
-        `UPDATE contratos SET estado = 'completado', completado_en = NOW()
-         WHERE id_trabajo = $1 AND estado = 'activo'
-         RETURNING id_trabajador`,
-        [jobId]
-      );
-
-      return { id: updated.id, idTrabajador: contrato?.id_trabajador ?? null };
-    });
+  // Reabre un trabajo 'en_espera' con una fecha nueva.
+  async reabrirAsync(jobId, programadoPara, db = this.db) {
+    return await db.queryReturnId(
+      `UPDATE trabajos
+       SET estado = 'abierto', programado_para = $2, actualizado_en = ${AHORA}
+       WHERE id = $1 AND estado = 'en_espera'
+       RETURNING id`,
+      [jobId, programadoPara]
+    );
   }
 
-  // Cancela un trabajo (lo puede hacer el contratador mientras no esté
-  // 'finalizado'): pasa trabajos.estado a 'cancelado', rechaza las
-  // postulaciones pendientes y cierra el contrato activo si había uno (por
-  // ejemplo si ya había un trabajador aceptado cuando se cancela). Todo en
-  // una transacción, mismo criterio que completarTrabajo. Devuelve los ids
-  // de trabajador a notificar (postulantes rechazados + el contratado, si
-  // corresponde) para que el controller notifique después del commit.
-  async cancelarTrabajo(jobId) {
-    return await this.db.withTransaction(async (txDb) => {
-
-      const updated = await txDb.queryOne(
-        `UPDATE trabajos SET estado = 'cancelado', actualizado_en = NOW()
-         WHERE id = $1
-         RETURNING id`,
-        [jobId]
-      );
-
-      if (!updated) return null;
-
-      const rechazados = await txDb.queryAll(
-        `UPDATE postulaciones
-         SET estado = 'rechazado', rechazo_automatico = FALSE, reconfirmar_hasta = NULL
-         WHERE id_trabajo = $1 AND estado IN ('pendiente', 'por_reconfirmar')
-         RETURNING id_trabajador`,
-        [jobId]
-      );
-
-      const contratosCancelados = await txDb.queryAll(
-        `UPDATE contratos SET estado = 'cancelado'
-         WHERE id_trabajo = $1 AND estado = 'activo'
-         RETURNING id_trabajador`,
-        [jobId]
-      );
-
-      const idsANotificar = [
-        ...rechazados.map((r) => r.id_trabajador),
-        ...contratosCancelados.map((c) => c.id_trabajador),
-      ];
-
-      return { id: updated.id, idsANotificar };
-    });
-  }
-
-  // Reabre un trabajo 'en_espera' (el trabajador aceptado canceló): vuelve a
-  // 'abierto' con una fecha nueva, y los postulantes que el sistema rechazó
-  // al aceptar a otro pasan a 'por_reconfirmar' con 2 días para responder.
-  // Devuelve esas postulaciones para que el controller las notifique.
-  async reabrirTrabajo(jobId, programadoPara) {
-    return await this.db.withTransaction(async (txDb) => {
-
-      const updated = await txDb.queryOne(
-        `UPDATE trabajos
-         SET estado = 'abierto', programado_para = $2, actualizado_en = NOW()
-         WHERE id = $1 AND estado = 'en_espera'
-         RETURNING id`,
-        [jobId, programadoPara]
-      );
-
-      if (!updated) return null;
-
-      const aReconfirmar = await txDb.queryAll(
-        `UPDATE postulaciones
-         SET estado = 'por_reconfirmar', reconfirmar_hasta = (NOW() AT TIME ZONE 'America/Argentina/Buenos_Aires') + INTERVAL '2 days'
-         WHERE id_trabajo = $1 AND estado = 'rechazado' AND rechazo_automatico = TRUE
-         RETURNING id, id_trabajador`,
-        [jobId]
-      );
-
-      return { id: updated.id, aReconfirmar };
-    });
-  }
-
-  // ACÁ AGREGUÉ
   // Crea un trabajo. NO inserta 'estado' a propósito: usa el DEFAULT de la tabla ('abierto').
-  async createJob(entity) {
+  async createJob(entity, db = this.db) {
     const sql = `
       INSERT INTO trabajos (
         id_contratante,
@@ -425,7 +295,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
       entity.lng ?? null,
     ];
 
-    return await this.db.queryReturnId(sql, values);
+    return await db.queryReturnId(sql, values);
   }
 
   // Inserta todas las fotos en UNA sola query (multi-row). Si no hay URLs, no hace nada.
@@ -450,7 +320,6 @@ async getJobsByEmployerAndStatus(employerId, status) {
 
     return await db.queryAll(sql, values);
   }
-  // ACÁ YA NO
 
   // Actualiza los datos de un trabajo y reemplaza sus fotos, todo en una sola transacción:
   // si el reemplazo de fotos falla, el UPDATE de los datos también se revierte (no queda
@@ -474,7 +343,7 @@ async getJobsByEmployerAndStatus(employerId, status) {
           id_localidad    = COALESCE($12, id_localidad),
           -- Un trabajo vencido vuelve a 'abierto' si la nueva fecha ya no está en el pasado.
           estado          = CASE WHEN estado = 'vencido' AND $13::boolean THEN 'abierto' ELSE estado END,
-          actualizado_en  = NOW()
+          actualizado_en  = ${AHORA}
         WHERE id = $1
         RETURNING id
       `;

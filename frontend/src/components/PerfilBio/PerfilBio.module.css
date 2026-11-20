@@ -1,12 +1,11 @@
 .card {
-    background: #FFFFFF;
+    background: var(--color-card);
 
     border-radius: 16px;
 
     padding: 18px;
 
-    box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0px 12px 32px -4px rgba(45, 59, 142, 0.08);
 }
 
 .title {
@@ -16,30 +15,32 @@
     align-items: center;
     gap: 7px;
 
-    font-size: 16px;
+    font-size: var(--fs-lg);
     font-weight: 700;
 
-    color: #1A2560;
+    color: var(--color-primary);
 }
 
 .icon {
-    color: #2F3685;
+    color: var(--color-primary);
 }
 
 .text {
     margin: 0;
 
-    background: #F5F6FA;
+    background: var(--color-cta-bg);
+
+    border-left: 3px solid var(--color-primary);
 
     border-radius: 12px;
 
     padding: 13px 15px;
 
-    font-size: 13.5px;
+    font-size: var(--fs-base);
 
     line-height: 1.6;
 
-    color: #4B5062;
+    color: var(--color-text);
 }
 
 

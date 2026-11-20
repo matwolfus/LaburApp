@@ -1,5 +1,4 @@
 // backend/src/services/categorias-service.js
-// ACÁ AGREGUÉ
 import CategoriasRepository from '../repositories/categorias-repository.js';
 
 export default class CategoriasService {
@@ -11,4 +10,3 @@ export default class CategoriasService {
     return await this.repository.getAll();
   }
 }
-// ACÁ YA NO

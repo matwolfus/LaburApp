@@ -5,7 +5,7 @@
 
 .msg {
   padding: 24px 20px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   color: var(--color-muted);
   text-align: center;
 }
@@ -36,8 +36,9 @@
 .heroPlaceholder {
   width: 100%;
   height: 100%;
-  background-color: #0D9488;
-  color: white;
+  /* Sin foto: degradé de la marca (antes verde agua, fuera de la paleta) */
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  color: var(--color-card);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,7 +57,7 @@
 .heroTitle {
   margin: 0;
   color: white;
-  font-size: 21px;
+  font-size: var(--fs-2xl);
   font-weight: 800;
   line-height: 1.25;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
@@ -65,7 +66,7 @@
 .heroSubtitle {
   margin: 6px 0 0;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 600;
 }
 
@@ -77,9 +78,9 @@
   height: 15px;
   margin-left: 4px;
   border-radius: 50%;
-  background: #1680E8;
-  color: white;
-  font-size: 9px;
+  background: var(--color-primary-light);
+  color: var(--color-card);
+  font-size: var(--fs-2xs);
   font-weight: 800;
 }
 
@@ -108,7 +109,7 @@
 }
 
 .summaryValue {
-  font-size: 13px;
+  font-size: var(--fs-md);
   font-weight: 800;
   color: var(--color-primary);
   white-space: nowrap;
@@ -118,7 +119,7 @@
 }
 
 .summaryLabel {
-  font-size: 10px;
+  font-size: var(--fs-2xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -128,7 +129,7 @@
 .summaryDivider {
   width: 1px;
   align-self: stretch;
-  background: #E8ECF3;
+  background: var(--color-border);
 }
 
 /* ── Header row (badges) ──────────────────────────── */
@@ -140,7 +141,7 @@
 }
 
 .badge {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   padding: 6px 14px;
   border-radius: 50px;
@@ -148,20 +149,20 @@
 }
 
 .badgeAbierto {
-  background: rgba(45, 59, 142, 0.1);
+  background: var(--color-primary-soft);
   color: var(--color-primary);
 }
 
 .badgeActiva {
-  background: rgba(13, 148, 136, 0.12);
-  color: #0D9488;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
 }
 
 .urgente {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--color-orange);
-  background: rgba(249, 115, 22, 0.1);
+  color: var(--color-orange-text);
+  background: var(--color-orange-bg);
   padding: 6px 14px;
   border-radius: 50px;
 }
@@ -174,17 +175,17 @@
 }
 
 .sectionTitle {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--color-muted);
+  color: var(--color-primary);
   margin: 0;
 }
 
 .sectionText {
-  font-size: 14px;
-  color: #334155;
+  font-size: var(--fs-base);
+  color: var(--color-text);
   line-height: 1.55;
   margin: 0;
   white-space: pre-line;
@@ -198,7 +199,7 @@
 .infoGrid {
   background: var(--color-card);
   border-radius: var(--radius-card);
-  border: 0.5px solid #E8ECF3;
+  border: 0.5px solid var(--color-border);
   padding: 14px 18px;
   display: flex;
   flex-direction: column;
@@ -209,8 +210,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
-  color: #334155;
+  font-size: var(--fs-base);
+  color: var(--color-text);
   font-weight: 600;
 }
 
@@ -220,7 +221,7 @@
 }
 
 .precioOriginal {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 500;
   color: var(--color-muted);
   text-decoration: line-through;
@@ -249,7 +250,7 @@
   width: 100%;
   background: var(--color-card);
   border-radius: var(--radius-card);
-  border: 0.5px solid #E8ECF3;
+  border: 0.5px solid var(--color-border);
   padding: 14px 16px;
   text-align: left;
   cursor: pointer;
@@ -268,8 +269,9 @@
 }
 
 .employerAvatarFallback {
-  background: #e8edf8;
-  color: var(--color-primary);
+  /* Color propio de cada persona (lo pone Avatar) */
+  background: var(--avatar-bg, var(--color-primary-soft));
+  color: var(--avatar-fg, var(--color-primary));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,7 +285,7 @@
 
 .employerName {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--color-primary);
 }
@@ -293,28 +295,28 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--color-muted);
 }
 
 .employerLink {
   margin: 2px 0 0;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  color: var(--color-orange, #F97316);
+  color: var(--color-orange);
 }
 
 .starIcon {
-  color: #E1810D;
-  fill: #E1810D;
+  color: var(--color-orange);
+  fill: var(--color-orange);
 }
 
 .verificadoBadge {
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  color: #16A34A;
-  background: rgba(22, 163, 74, 0.1);
+  color: var(--color-success-text);
+  background: var(--color-success-bg);
   padding: 5px 10px;
   border-radius: 50px;
 }
@@ -325,10 +327,10 @@
   align-items: center;
   gap: 10px;
   background: var(--color-card);
-  border: 0.5px solid #E8ECF3;
+  border: 0.5px solid var(--color-border);
   border-radius: var(--radius-card);
   padding: 14px 16px;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--color-primary);
   cursor: pointer;
@@ -337,8 +339,8 @@
 
 /* ── Actions ──────────────────────────────────────── */
 .actionError {
-  color: #DC2626;
-  font-size: 13px;
+  color: var(--color-danger);
+  font-size: var(--fs-md);
   margin: 0;
   text-align: center;
 }
@@ -355,7 +357,7 @@
   border: none;
   background: var(--color-primary);
   color: white;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   padding: 14px 24px;
   border-radius: 50px;
@@ -372,9 +374,9 @@
   flex: 1;
   min-width: 140px;
   border: none;
-  background: var(--color-orange, #F97316);
+  background: var(--color-orange);
   color: white;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   padding: 14px 24px;
   border-radius: 50px;
@@ -393,7 +395,7 @@
   border: 1.5px solid var(--color-primary);
   background: transparent;
   color: var(--color-primary);
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   padding: 14px 24px;
   border-radius: 50px;
@@ -412,9 +414,9 @@
   justify-content: center;
   gap: 8px;
   border: none;
-  background: #16A34A;
+  background: var(--color-success-dark);
   color: white;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   padding: 14px 24px;
   border-radius: 50px;
@@ -436,17 +438,17 @@
 }
 
 .postuladoLabel {
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 700;
   color: var(--color-muted);
   text-align: center;
 }
 
 .cancelarBtn {
-  border: 1.5px solid #DC2626;
+  border: 1.5px solid var(--color-danger);
   background: transparent;
-  color: #DC2626;
-  font-size: 13px;
+  color: var(--color-danger);
+  font-size: var(--fs-md);
   font-weight: 700;
   padding: 10px 20px;
   border-radius: 50px;
@@ -458,9 +460,9 @@
 .aceptadoBadge {
   flex: 1;
   text-align: center;
-  font-size: 14px;
+  font-size: var(--fs-base);
   font-weight: 800;
-  color: #16A34A;
+  color: var(--color-success-dark);
   background: rgba(22, 163, 74, 0.1);
   padding: 14px;
   border-radius: 16px;
@@ -471,13 +473,13 @@
   margin: 16px 0 4px;
   padding: 14px;
   border-radius: 14px;
-  background: #FFF7ED;
-  border: 1px solid #FED7AA;
+  background: var(--color-orange-bg);
+  border: 1px solid var(--color-orange-border);
 }
 
 .enEsperaBox p {
   margin: 0 0 12px;
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   line-height: 1.45;
-  color: #9A3412;
+  color: var(--color-orange-text);
 }

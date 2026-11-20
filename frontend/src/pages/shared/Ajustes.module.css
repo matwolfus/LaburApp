@@ -1,0 +1,38 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.icono {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-cta-bg);
+  color: var(--color-primary);
+}
+
+.titulo {
+  margin: 0;
+  color: var(--color-primary);
+}
+
+/* "Disponible próximamente" como chip naranja */
+.aviso {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-orange-bg);
+  color: var(--color-orange-text);
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
