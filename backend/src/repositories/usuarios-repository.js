@@ -72,6 +72,18 @@ export default class UsuariosRepository {
         return await this.db.queryOne(sql, [id]);
     }
 
+    // Email y nombre para mandarle un mail al usuario. Va aparte de getById
+    // para no exponer el email donde se usa el perfil.
+    async getContactoById(id) {
+        const sql = `
+            SELECT id, email, nombre_completo
+            FROM usuarios
+            WHERE id = $1
+        `;
+
+        return await this.db.queryOne(sql, [id]);
+    }
+
     // Trabajadores recomendados para la home.
     async getRecommendedWorkers(limit = 10) {
         // rating: NULL si todavía no tiene reseñas (el front muestra "Sin reseñas").

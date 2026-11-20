@@ -7,6 +7,8 @@ import PostulacionesRepository from '../repositories/postulaciones-repository.js
 import TrabajosRepository from '../repositories/trabajos-repository.js';
 import ContratosService from './contratos-service.js';
 import NotificacionesService from './notificaciones-service.js';
+import MailService from './mail-service.js';
+import UsuariosRepository from '../repositories/usuarios-repository.js';
 import { badRequest, conflict, forbidden, notFound } from '../helpers/http-error.js';
 import { precioOpcional } from '../helpers/validaciones.js';
 import { sinFallar } from '../helpers/sin-fallar.js';
@@ -28,6 +30,8 @@ export default class PostulacionesService {
         this.trabajosRepository = new TrabajosRepository();
         this.contratosService = new ContratosService();
         this.notificacionesService = new NotificacionesService();
+        this.mailService = new MailService();
+        this.usuariosRepository = new UsuariosRepository();
     }
 
     // =========================================================
@@ -170,6 +174,17 @@ export default class PostulacionesService {
                 idsRechazados,
             })
         );
+
+        // Aparte de la notificación: si el mail falla, la notificación ya quedó.
+        await sinFallar('mail de aceptación', async () => {
+            const trabajador = await this.usuariosRepository.getContactoById(postulacion.id_trabajador);
+            if (!trabajador?.email) return;
+            await this.mailService.enviarPostulacionAceptadaAsync({
+                email: trabajador.email,
+                nombre: trabajador.nombre_completo?.trim().split(/\s+/)[0],
+                tituloTrabajo: trabajo.title,
+            });
+        });
     }
 
     // =========================================================
